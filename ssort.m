@@ -26,15 +26,17 @@ deltat = 1e-4;
 ThisControlParadigm = 1;
 ThisTrial = 1;
 temp = [];
-artifact_map = 0;
 spikes.A = 0;
 spikes.B = 0;
 spikes.artifacts = 0;
 R = 0; % this holds the dimensionality reduced data
 V = 0; % holds the current trace
 Vf = 0; % filtered V
+V_snippets = [];
 time = 0;
 loc =0; % holds current spike times
+FileName = [];
+PathName = [];
 
 
 % handles
@@ -103,6 +105,7 @@ autosort_control = uicontrol(fig,'units','normalized','Position',[.135 .60 .1 .0
 		OutputChannelNames = temp.OutputChannelNames;
 		metadata = temp.metadata;
 		timestamps = temp.timestamps;
+        spikes = temp.spikes;
 		clear temp
 
         waitbar(0.3,load_waitbar,'Updating listboxes...')
@@ -172,6 +175,7 @@ autosort_control = uicontrol(fig,'units','normalized','Position',[.135 .60 .1 .0
                     % get widths right
                     ons(offs-ons==0) = ons(offs-ons==0) - 1;
                     offs(offs-ons==1) = offs(offs-ons==1) + 1;
+                    ons = ons-2; offs = offs+2;
                     for j = 1:length(ons)
                         temp(ons(j):offs(j)) = 1;
                     end
@@ -183,8 +187,7 @@ autosort_control = uicontrol(fig,'units','normalized','Position',[.135 .60 .1 .0
 
         set(fig,'Name',strcat(versionname,'--',FileName))
 
-        
-
+    
 
         % clean up
         close(load_waitbar)
@@ -318,16 +321,19 @@ autosort_control = uicontrol(fig,'units','normalized','Position',[.135 .60 .1 .0
 
 
         if get(filtermode,'Value') == 1
-            V = filter_trace(temp);
+            disp('Need to filter data...')
+            [V,Vf] = filter_trace(temp);
             
 
             % do we have to find spikes too?
             if get(findmode,'Value') == 1
+                disp('need to find spikes...')
                 loc=find_spikes(V);
                 plot(ax,time,V,'k'); 
                 % do we already have sorted spikes?
                 if length(spikes) < ThisControlParadigm
                     % no spikes
+                    disp('no spikes...')
                     loc = find_spikes(V);
                     h_scatter1 = scatter(ax,time(loc),V(loc));
                 else
@@ -340,6 +346,7 @@ autosort_control = uicontrol(fig,'units','normalized','Position',[.135 .60 .1 .0
                         h_scatter2 = scatter(ax,time(B),V(B),'b');
                     else
                         % no spikes
+                        disp('spikes exists, but not for this trial')
                         if get(autosort_control,'Value') == 1
                             % sort spikes and show them
                         else
@@ -366,10 +373,12 @@ autosort_control = uicontrol(fig,'units','normalized','Position',[.135 .60 .1 .0
 
 
             else
+                disp('No need to find spikes...')
                 set(method_control,'Enable','off')
                 plot(ax,time,V,'k'); 
             end
         else
+            disp('Plotting data as is...')
             plot(ax,time,temp,'k');
         end
 
@@ -400,10 +409,10 @@ autosort_control = uicontrol(fig,'units','normalized','Position',[.135 .60 .1 .0
 
     function reduce_dimensions_callback(~,~)
         method=(get(method_control,'Value'));
-        R = reduce_dimensions(method);
+        [R,V_snippets] = reduce_dimensions(method);
     end
 
-    function R = reduce_dimensions(method)
+    function [R,V_snippets] = reduce_dimensions(method)
 
         % take snippets for each putative spike
         t_before = 20;
@@ -440,7 +449,15 @@ autosort_control = uicontrol(fig,'units','normalized','Position',[.135 .60 .1 .0
         
 
         case 2
-            keyboard
+            % find total spike amplitude for each
+            spike_amplitude = zeros*loc;
+            for i = 1:length(loc)
+                spike_amplitude(i) = max(V_snippets(1:20,i)) - V(loc(i));
+            end
+            R = [spike_amplitude; Vf(loc)];
+            save('R.mat','R','V_snippets')
+            % only allow certain clustering 
+            set(cluster_control,'String',{'Manual'})
         end
     end
 
@@ -467,7 +484,10 @@ autosort_control = uicontrol(fig,'units','normalized','Position',[.135 .60 .1 .0
                 % mark as A or B
                 B = loc(R<cutoff);
                 A = loc(R>=cutoff);
-                
+            case 'Manual'
+                C = ManualCluster(R,V_snippets);
+                B = loc(C==2);
+                A = loc(C==1);
 
         end
 
@@ -478,10 +498,13 @@ autosort_control = uicontrol(fig,'units','normalized','Position',[.135 .60 .1 .0
         h_scatter2 = scatter(ax,time(B),V(B),'b');
 
         % save them
-        spikes(ThisControlParadigm).A(ThisTrial,:) = 0*time;
+        spikes(ThisControlParadigm).A(ThisTrial,:) = sparse(1,length(time));
         spikes(ThisControlParadigm).A(ThisTrial,A) = 1;
-        spikes(ThisControlParadigm).B(ThisTrial,:) = 0*time;
+        spikes(ThisControlParadigm).B(ThisTrial,:) = sparse(1,length(time));
         spikes(ThisControlParadigm).B(ThisTrial,B) = 1;
+
+        % save them
+        save(strcat(PathName,FileName),'spikes','-append')
 
     end
 
