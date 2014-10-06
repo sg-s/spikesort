@@ -57,12 +57,12 @@ linkaxes([ax2,ax],'x')
 % datapanel (allows you to choose what to plot where)
 datapanel = uipanel('Title','Data','Position',[.8 .57 .16 .4]);
 uicontrol(datapanel,'units','normalized','Position',[.02 .9 .510 .10],'Style', 'text', 'String', 'Control Signal','FontSize',10,'FontWeight','bold');
-valve_channel = uicontrol(datapanel,'units','normalized','Position',[.03 .7 .910 .25],'Style', 'listbox', 'String', '','FontSize',10,'FontWeight','bold','Callback',@plot_valve,'Min',0,'Max',2);
-uicontrol(datapanel,'units','normalized','Position',[.01 .6 .510 .10],'Style', 'text', 'String', 'Stimulus','FontSize',10,'FontWeight','bold');
-stim_channel = uicontrol(datapanel,'units','normalized','Position',[.03 .4 .910 .25],'Style', 'listbox', 'String', '','FontSize',10,'FontWeight','bold');
+valve_channel = uicontrol(datapanel,'units','normalized','Position',[.03 .68 .910 .25],'Style', 'listbox', 'String', '','FontSize',10,'FontWeight','bold','Callback',@plot_valve,'Min',0,'Max',2);
+uicontrol(datapanel,'units','normalized','Position',[.01 .56 .510 .10],'Style', 'text', 'String', 'Stimulus','FontSize',10,'FontWeight','bold');
+stim_channel = uicontrol(datapanel,'units','normalized','Position',[.03 .38 .910 .20],'Style', 'listbox', 'String', '','FontSize',10,'FontWeight','bold');
 
-uicontrol(datapanel,'units','normalized','Position',[.01 .3 .610 .10],'Style', 'text', 'String', 'Response','FontSize',12,'FontWeight','bold');
-resp_channel = uicontrol(datapanel,'units','normalized','Position',[.01 .1 .910 .25],'Style', 'listbox', 'String', '','FontSize',12,'FontWeight','bold');
+uicontrol(datapanel,'units','normalized','Position',[.01 .25 .610 .10],'Style', 'text', 'String', 'Response','FontSize',10,'FontWeight','bold');
+resp_channel = uicontrol(datapanel,'units','normalized','Position',[.01 .01 .910 .25],'Style', 'listbox', 'String', '','FontSize',10,'FontWeight','bold');
 
 
 % file I/O
@@ -78,22 +78,47 @@ trial_chooser = uicontrol(datachooserpanel,'units','normalized','Position',[.25 
 next_trial = uicontrol(datachooserpanel,'units','normalized','Position',[.75 .15 .15 .33],'Style', 'pushbutton', 'String', '>','callback',@choose_trial_callback);
 prev_trial = uicontrol(datachooserpanel,'units','normalized','Position',[.05 .15 .15 .33],'Style', 'pushbutton', 'String', '<','callback',@choose_trial_callback);
 
-
-dimredpanel = uipanel('Title','Dimensionality Reduction','Position',[.29 .65 .21 .33]);
+% dimension reduction and clustering panels
+dimredpanel = uipanel('Title','Dimensionality Reduction','Position',[.29 .92 .21 .07]);
 method_control = uicontrol(dimredpanel,'Style','popupmenu','String',{'1D Amplitudes','2D Amp+LFP','PCA'},'units','normalized','Position',[.02 .8 .9 .2],'Callback',@reduce_dimensions_callback,'Enable','off');
-
-
-cluster_panel = uipanel('Title','Clustering','Position',[.51 .65 .21 .33]);
+cluster_panel = uipanel('Title','Clustering','Position',[.51 .92 .21 .07]);
 cluster_control = uicontrol(cluster_panel,'Style','popupmenu','String',{'Gaussian Fit','Manual','Density Peaks'},'units','normalized','Position',[.02 .8 .9 .2],'Callback',@find_cluster);
+
+% manual override panel
+manualpanel = uibuttongroup(fig,'Title','Manual Override','Position',[.29 .66 .11 .24]);
+mode_new_A = uicontrol(manualpanel,'Position',[5 5 100 20], 'Style', 'radiobutton', 'String', '+A','FontSize',12);
+mode_new_B = uicontrol(manualpanel,'Position',[5 35 100 20], 'Style', 'radiobutton', 'String', '+B','FontSize',12);
+mode_delete = uicontrol(manualpanel,'Position',[5 65 100 20], 'Style', 'radiobutton', 'String', '-X','FontSize',12);
+mode_A2B = uicontrol(manualpanel,'Position',[5 95 100 20], 'Style', 'radiobutton', 'String', 'A->B','FontSize',12);
+mode_B2A = uicontrol(manualpanel,'Position',[5 125 100 20], 'Style', 'radiobutton', 'String', 'B->A','FontSize',12);
+modify_control = uicontrol(fig,'units','normalized','Position',[.29 .60 .1 .05],'Style','pushbutton','String','Modify','Value',0,'Callback',@modify_callback);
+
 
 % filter toggle switch
 filtermode = uicontrol(fig,'units','normalized','Position',[.035 .65 .1 .05],'Style','togglebutton','String','Filter','Value',1,'Callback',@plot_resp);
 findmode = uicontrol(fig,'units','normalized','Position',[.135 .65 .1 .05],'Style','togglebutton','String','Find Spikes','Value',1,'Callback',@plot_resp);
 
-autosort_control = uicontrol(fig,'units','normalized','Position',[.135 .60 .1 .05],'Style','togglebutton','String','Autosort','Callback',@autosort,'Value',0);
+redo_control = uicontrol(fig,'units','normalized','Position',[.035 .60 .1 .05],'Style','pushbutton','String','Redo','Value',0,'Callback',@redo);
+autosort_control = uicontrol(fig,'units','normalized','Position',[.135 .60 .1 .05],'Style','togglebutton','String','Autosort','Value',0);
 
 
 
+    function redo(~,~)
+        % need to reset spikes
+        if length(spikes) >= ThisControlParadigm
+            if width(spikes(ThisControlParadigm).A) >= ThisTrial
+                spikes(ThisControlParadigm).A(ThisTrial,:) = 0;
+                spikes(ThisControlParadigm).B(ThisTrial,:) = 0;
+            else
+                % all cool
+            end
+        else
+            % should have no problem
+        end       
+
+        % update the plot
+        plot_resp;
+    end
 
     function loadfilecallback(~,~)
         [FileName,PathName] = uigetfile('.mat');
@@ -166,9 +191,7 @@ autosort_control = uicontrol(fig,'units','normalized','Position',[.135 .60 .1 .0
             n = Kontroller_ntrials(data);
             for i = 1:length(data)
                 if n(i)
-                    time = 1:length(data(i).voltage);
-                    time = time*deltat;
-                    temp = mdot(data(i).voltage);
+                    temp = mdot(abs(data(i).voltage));
                     temp(temp>(mean(temp) + std(temp))) = 1;
                     temp(temp<1)= 0;
                     [ons,offs] = ComputeOnsOffs(temp);
@@ -179,7 +202,18 @@ autosort_control = uicontrol(fig,'units','normalized','Position',[.135 .60 .1 .0
                     for j = 1:length(ons)
                         temp(ons(j):offs(j)) = 1;
                     end
+
                     data(i).voltage(:,logical(temp)) = 0;
+
+                    % also suppress signals for 25 samples after any valve turns on
+                    % this is a hack
+                    temp = ComputeOnsOffs(ControlParadigm(i).Outputs(5,:));
+                    data(i).voltage(:,temp:temp+25) = 0;
+                    temp = ComputeOnsOffs(ControlParadigm(i).Outputs(6,:));
+                    data(i).voltage(:,temp:temp+25) = 0;
+
+                    
+
                 end
             end
 
@@ -218,6 +252,7 @@ autosort_control = uicontrol(fig,'units','normalized','Position',[.135 .60 .1 .0
                 temp{i} = strcat('Trial-',mat2str(i));
             end
             set(trial_chooser,'String',temp);
+            set(trial_chooser,'Value',1);
             ThisTrial = 1;
         else
             set(trial_chooser,'String','No data');
@@ -234,19 +269,30 @@ autosort_control = uicontrol(fig,'units','normalized','Position',[.135 .60 .1 .0
         n = n(ThisControlParadigm);
         if src == trial_chooser
             ThisTrial = get(trial_chooser,'Value');
+            disp('Moving directly to trial:')
+            disp(ThisTrial)
         elseif src== next_trial
             if ThisTrial < n
                 ThisTrial = ThisTrial +1;
                 set(trial_chooser,'Value',ThisTrial);
+                disp('Next trial')
+            else
+                % fake a call
+                choose_paradigm_callback(next_paradigm);
             end
         elseif src == prev_trial
             if ThisTrial > 1
                 ThisTrial = ThisTrial  - 1;
                 set(trial_chooser,'Value',ThisTrial);
+                disp('Previous trial')
+            else
+                % fake a call
+                choose_paradigm_callback(prev_paradigm);
             end
         else
             error('unknown source of callback 173. probably being incorrectly being called by something.')
         end
+
 
         % update the plots
         plot_stim;
@@ -335,38 +381,58 @@ autosort_control = uicontrol(fig,'units','normalized','Position',[.135 .60 .1 .0
                     % no spikes
                     disp('no spikes...')
                     loc = find_spikes(V);
-                    h_scatter1 = scatter(ax,time(loc),V(loc));
-                else
-                    % maybe?
-                    if ThisTrial <= width(spikes(ThisControlParadigm).A)
-                        % yes, have spikes
-                        A = find(spikes(ThisControlParadigm).A(ThisTrial,:));
-                        B = find(spikes(ThisControlParadigm).B(ThisTrial,:));
+                    if get(autosort_control,'Value') == 1
+                        % sort spikes and show them
+                        disp('Autosorting spikes...')
+                        [A,B] = autosort;
                         h_scatter1 = scatter(ax,time(A),V(A),'r');
                         h_scatter2 = scatter(ax,time(B),V(B),'b');
+                    else
+                        disp('Not autosorting spikes')
+                        h_scatter1 = scatter(ax,time(loc),V(loc));
+                    end
+                else
+                    disp('spikes is at least this paradigm long')
+                    % maybe?
+                    if ThisTrial <= width(spikes(ThisControlParadigm).A) 
+                        disp('spike matrix is suff. wide.')
+                        % check...
+                        if max(spikes(ThisControlParadigm).A(ThisTrial,:))
+                            % yes, have spikes
+                            disp('Have spikes. showing them. ')
+                            A = find(spikes(ThisControlParadigm).A(ThisTrial,:));
+                            B = find(spikes(ThisControlParadigm).B(ThisTrial,:));
+                            h_scatter1 = scatter(ax,time(A),V(A),'r');
+                            h_scatter2 = scatter(ax,time(B),V(B),'b');
+                        else
+                            disp('no spikes case 397')
+                            if get(autosort_control,'Value') == 1
+                                % sort spikes and show them
+                                [A,B] = autosort;
+                                h_scatter1 = scatter(ax,time(A),V(A),'r');
+                                h_scatter2 = scatter(ax,time(B),V(B),'b');
+                            else
+                                disp('No need to autosort')
+                                % no need to autosort
+                                h_scatter1 = scatter(ax,time(loc),V(loc));
+                            end
+                        end
                     else
                         % no spikes
                         disp('spikes exists, but not for this trial')
                         if get(autosort_control,'Value') == 1
                             % sort spikes and show them
+                            [A,B] = autosort;
+                            h_scatter1 = scatter(ax,time(A),V(A),'r');
+                            h_scatter2 = scatter(ax,time(B),V(B),'b');
                         else
+                            disp('No need to autosort')
+                            % no need to autosort
                             h_scatter1 = scatter(ax,time(loc),V(loc));
                         end
                     end
                 end
 
-
-                % % so we have to sort the spikes?
-                % if ~get(autosort_control,'Value') == 1
-                %     h_scatter1 = scatter(ax,time(loc),V(loc));
-                % else
-                %     % sort spikes automatically 
-                %     [A,B,X] = autosort(ThisControlParadigm,ThisTrial,V,loc);
-                %     scatter(ax,time(A),V(A),'r');
-                %     scatter(ax,time(B),V(B),'b');
-                %     scatter(ax,time(X),V(X),'k');
-
-                % end
 
                 % now rescale the Y axes so that only the interesting bit is retained
                 set(ax,'YLim',[1.1*min(V(loc)) -min(V(loc))]);
@@ -383,6 +449,12 @@ autosort_control = uicontrol(fig,'units','normalized','Position',[.135 .60 .1 .0
         end
 
         
+    end
+
+    function [A,B] = autosort()
+        reduce_dimensions_callback;
+        [A,B]=find_cluster;
+
     end
 
     function plot_valve(~,~)
