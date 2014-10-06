@@ -5,7 +5,10 @@
 % This work is licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License. 
 % To view a copy of this license, visit http://creativecommons.org/licenses/by-nc-sa/4.0/.
 function [] = ssort()
-versionname = 'spikesort for Kontroller b(14.10.06)';
+Opt.Input = 'file';
+dh=(DataHash(strcat(mfilename,'.m'),Opt));
+dh=dh(1:4);
+versionname = strcat('spikesort for Kontroller (Build-',dh,')');
 
 if ~strcmp(version('-release'),'2014b')
     error('Need MATLAB 2014b to run')
@@ -106,19 +109,19 @@ autosort_control = uicontrol(fig,'units','normalized','Position',[.135 .60 .1 .0
 
     function scroll(src,~)
         xlimits = get(ax,'XLim');
-        xrange = xlimits(2) - xlimits(1);
+        xrange = (xlimits(2) - xlimits(1));
         if src == scroll_back
             if xlimits(1) <= min(time)
                 return
             else
-                newlim(1) = max([min(time) (xlimits(1)-xrange)]);
+                newlim(1) = max([min(time) (xlimits(1)-.8*xrange)]);
                 newlim(2) = newlim(1)+xrange;
             end
         elseif src == scroll_fwd
             if xlimits(2) >= max(time)
                 return
             else
-                newlim(2) = min([max(time) (xlimits(2)+xrange)]);
+                newlim(2) = min([max(time) (xlimits(2)+.8*xrange)]);
                 newlim(1) = newlim(2)-xrange;
             end
         end
@@ -214,7 +217,7 @@ autosort_control = uicontrol(fig,'units','normalized','Position',[.135 .60 .1 .0
             n = Kontroller_ntrials(data);
             for i = 1:length(data)
                 if n(i)
-                    disp(i)
+        
                     temp = mdot(abs(data(i).voltage));
                     temp(temp>(mean(temp) + std(temp))) = 1;
                     temp(temp<1)= 0;
@@ -234,11 +237,12 @@ autosort_control = uicontrol(fig,'units','normalized','Position',[.135 .60 .1 .0
                     temp = ComputeOnsOffs(ControlParadigm(i).Outputs(5,:));
                     for j = 1:length(temp)
                         data(i).voltage(:,temp(j):temp(j)+25) = 0;
-                        temp = ComputeOnsOffs(ControlParadigm(i).Outputs(6,:));
+                    end
+                    temp = ComputeOnsOffs(ControlParadigm(i).Outputs(6,:));
+                    for j = 1:length(temp)
                         data(i).voltage(:,temp(j):temp(j)+25) = 0;
                     end
 
-                    
 
                 end
             end
@@ -645,7 +649,13 @@ autosort_control = uicontrol(fig,'units','normalized','Position',[.135 .60 .1 .0
         yrange = ylimits(2) - ylimits(1);
 
         if get(mode_new_A,'Value')==1
+            % snip out a small waveform around the point
+            [~,loc] = min(V(floor(p(1)-75:p(1)+75)));
+            spikes(ThisControlParadigm).A(ThisTrial,-75+loc+floor(p(1))) = 1;
         elseif get(mode_new_B,'Value')==1
+            % snip out a small waveform around the point
+            [~,loc] = min(V(floor(p(1)-75:p(1)+75)));
+            spikes(ThisControlParadigm).B(ThisTrial,-75+loc+floor(p(1))) = 1;
         elseif get(mode_delete,'Value')==1
             % find the closest spike
             Aspiketimes = find(spikes(ThisControlParadigm).A(ThisTrial,:));
@@ -685,7 +695,7 @@ autosort_control = uicontrol(fig,'units','normalized','Position',[.135 .60 .1 .0
 
         % update plot
         plot_resp;
-        
+
         % save them
         save(strcat(PathName,FileName),'spikes','-append')
     end
