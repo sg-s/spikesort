@@ -11,7 +11,7 @@ if ~strcmp(version('-release'),'2014b')
     error('Need MATLAB 2014b to run')
 end
 
-disp(versionname)
+%disp(versionname)
 
 % support for Kontroller
 ControlParadigm = [];
@@ -47,9 +47,11 @@ h_scatter2 = [];
 h_scatter3 = [];
 
 % make the master figure, and the axes to plot the voltage traces
-fig = figure('position',[50 50 1200 700], 'Toolbar','figure','Menubar','none','Name',versionname,'NumberTitle','off','IntegerHandle','off');
-ax = axes('parent',fig,'Position',[0.05 0.05 0.91 0.29]);
-ax2 = axes('parent',fig,'Position',[0.05 0.37 0.91 0.18]);
+fig = figure('position',[50 50 1200 700], 'Toolbar','figure','Menubar','none','Name',versionname,'NumberTitle','off','IntegerHandle','off','WindowButtonDownFcn',@mousecallback);
+ax = axes('parent',fig,'Position',[0.07 0.05 0.87 0.29]);
+scroll_back = uicontrol(fig,'units','normalized','Position',[0 .04 .04 .50],'Style', 'pushbutton', 'String', '<','callback',@scroll);
+scroll_fwd = uicontrol(fig,'units','normalized','Position',[.96 .04 .04 .50],'Style', 'pushbutton', 'String', '>','callback',@scroll);
+ax2 = axes('parent',fig,'Position',[0.07 0.37 0.87 0.18]);
 linkaxes([ax2,ax],'x')
 
 % make all the panels
@@ -101,6 +103,27 @@ findmode = uicontrol(fig,'units','normalized','Position',[.135 .65 .1 .05],'Styl
 redo_control = uicontrol(fig,'units','normalized','Position',[.035 .60 .1 .05],'Style','pushbutton','String','Redo','Value',0,'Callback',@redo);
 autosort_control = uicontrol(fig,'units','normalized','Position',[.135 .60 .1 .05],'Style','togglebutton','String','Autosort','Value',0);
 
+
+    function scroll(src,~)
+        xlimits = get(ax,'XLim');
+        xrange = xlimits(2) - xlimits(1);
+        if src == scroll_back
+            if xlimits(1) <= min(time)
+                return
+            else
+                newlim(1) = max([min(time) (xlimits(1)-xrange)]);
+                newlim(2) = newlim(1)+xrange;
+            end
+        elseif src == scroll_fwd
+            if xlimits(2) >= max(time)
+                return
+            else
+                newlim(2) = min([max(time) (xlimits(2)+xrange)]);
+                newlim(1) = newlim(2)-xrange;
+            end
+        end
+        set(ax,'Xlim',newlim)
+    end
 
 
     function redo(~,~)
@@ -191,6 +214,7 @@ autosort_control = uicontrol(fig,'units','normalized','Position',[.135 .60 .1 .0
             n = Kontroller_ntrials(data);
             for i = 1:length(data)
                 if n(i)
+                    disp(i)
                     temp = mdot(abs(data(i).voltage));
                     temp(temp>(mean(temp) + std(temp))) = 1;
                     temp(temp<1)= 0;
@@ -208,9 +232,11 @@ autosort_control = uicontrol(fig,'units','normalized','Position',[.135 .60 .1 .0
                     % also suppress signals for 25 samples after any valve turns on
                     % this is a hack
                     temp = ComputeOnsOffs(ControlParadigm(i).Outputs(5,:));
-                    data(i).voltage(:,temp:temp+25) = 0;
-                    temp = ComputeOnsOffs(ControlParadigm(i).Outputs(6,:));
-                    data(i).voltage(:,temp:temp+25) = 0;
+                    for j = 1:length(temp)
+                        data(i).voltage(:,temp(j):temp(j)+25) = 0;
+                        temp = ComputeOnsOffs(ControlParadigm(i).Outputs(6,:));
+                        data(i).voltage(:,temp(j):temp(j)+25) = 0;
+                    end
 
                     
 
@@ -269,13 +295,13 @@ autosort_control = uicontrol(fig,'units','normalized','Position',[.135 .60 .1 .0
         n = n(ThisControlParadigm);
         if src == trial_chooser
             ThisTrial = get(trial_chooser,'Value');
-            disp('Moving directly to trial:')
-            disp(ThisTrial)
+            %disp('Moving directly to trial:')
+            %disp(ThisTrial)
         elseif src== next_trial
             if ThisTrial < n
                 ThisTrial = ThisTrial +1;
                 set(trial_chooser,'Value',ThisTrial);
-                disp('Next trial')
+                %disp('Next trial')
             else
                 % fake a call
                 choose_paradigm_callback(next_paradigm);
@@ -284,7 +310,7 @@ autosort_control = uicontrol(fig,'units','normalized','Position',[.135 .60 .1 .0
             if ThisTrial > 1
                 ThisTrial = ThisTrial  - 1;
                 set(trial_chooser,'Value',ThisTrial);
-                disp('Previous trial')
+                %disp('Previous trial')
             else
                 % fake a call
                 choose_paradigm_callback(prev_paradigm);
@@ -306,6 +332,7 @@ autosort_control = uicontrol(fig,'units','normalized','Position',[.135 .60 .1 .0
         % plot the stimulus
         n = Kontroller_ntrials(data); 
         cla(ax2)
+        miny = Inf; maxy = -Inf;
         if n(ThisControlParadigm)
             plotwhat = get(stim_channel,'String');
             nchannels = length(get(stim_channel,'Value'));
@@ -320,9 +347,13 @@ autosort_control = uicontrol(fig,'units','normalized','Position',[.135 .60 .1 .0
                 temp = temp(ThisTrial,:);
                 time = deltat*(1:length(temp));
                 plot(ax2,time,temp,'Color',c(i,:)); hold on;
+                miny  =min([miny min(temp)]);
+                maxy  =max([maxy max(temp)]);
             end
         end
 
+        % rescale the Y axis approproately
+        set(ax2,'YLim',[miny maxy+.1*(maxy-miny)]);
 
         % plot the control signals using thick lines
         if n(ThisControlParadigm)
@@ -348,6 +379,8 @@ autosort_control = uicontrol(fig,'units','normalized','Position',[.135 .60 .1 .0
             end
         end
 
+        
+
     end
 
 
@@ -367,66 +400,66 @@ autosort_control = uicontrol(fig,'units','normalized','Position',[.135 .60 .1 .0
 
 
         if get(filtermode,'Value') == 1
-            disp('Need to filter data...')
+            %disp('Need to filter data...')
             [V,Vf] = filter_trace(temp);
             
 
             % do we have to find spikes too?
             if get(findmode,'Value') == 1
-                disp('need to find spikes...')
+                %disp('need to find spikes...')
                 loc=find_spikes(V);
                 plot(ax,time,V,'k'); 
                 % do we already have sorted spikes?
                 if length(spikes) < ThisControlParadigm
                     % no spikes
-                    disp('no spikes...')
+                    %disp('no spikes...')
                     loc = find_spikes(V);
                     if get(autosort_control,'Value') == 1
                         % sort spikes and show them
-                        disp('Autosorting spikes...')
+                        %disp('Autosorting spikes...')
                         [A,B] = autosort;
                         h_scatter1 = scatter(ax,time(A),V(A),'r');
                         h_scatter2 = scatter(ax,time(B),V(B),'b');
                     else
-                        disp('Not autosorting spikes')
+                        %disp('Not autosorting spikes')
                         h_scatter1 = scatter(ax,time(loc),V(loc));
                     end
                 else
-                    disp('spikes is at least this paradigm long')
+                    %disp('spikes is at least this paradigm long')
                     % maybe?
                     if ThisTrial <= width(spikes(ThisControlParadigm).A) 
-                        disp('spike matrix is suff. wide.')
+                        %disp('spike matrix is suff. wide.')
                         % check...
                         if max(spikes(ThisControlParadigm).A(ThisTrial,:))
                             % yes, have spikes
-                            disp('Have spikes. showing them. ')
+                            %disp('Have spikes. showing them. ')
                             A = find(spikes(ThisControlParadigm).A(ThisTrial,:));
                             B = find(spikes(ThisControlParadigm).B(ThisTrial,:));
                             h_scatter1 = scatter(ax,time(A),V(A),'r');
                             h_scatter2 = scatter(ax,time(B),V(B),'b');
                         else
-                            disp('no spikes case 397')
+                            %disp('no spikes case 397')
                             if get(autosort_control,'Value') == 1
                                 % sort spikes and show them
                                 [A,B] = autosort;
                                 h_scatter1 = scatter(ax,time(A),V(A),'r');
                                 h_scatter2 = scatter(ax,time(B),V(B),'b');
                             else
-                                disp('No need to autosort')
+                                %disp('No need to autosort')
                                 % no need to autosort
                                 h_scatter1 = scatter(ax,time(loc),V(loc));
                             end
                         end
                     else
                         % no spikes
-                        disp('spikes exists, but not for this trial')
+                        %disp('spikes exists, but not for this trial')
                         if get(autosort_control,'Value') == 1
                             % sort spikes and show them
                             [A,B] = autosort;
                             h_scatter1 = scatter(ax,time(A),V(A),'r');
                             h_scatter2 = scatter(ax,time(B),V(B),'b');
                         else
-                            disp('No need to autosort')
+                            %disp('No need to autosort')
                             % no need to autosort
                             h_scatter1 = scatter(ax,time(loc),V(loc));
                         end
@@ -439,12 +472,12 @@ autosort_control = uicontrol(fig,'units','normalized','Position',[.135 .60 .1 .0
 
 
             else
-                disp('No need to find spikes...')
+                %disp('No need to find spikes...')
                 set(method_control,'Enable','off')
                 plot(ax,time,V,'k'); 
             end
         else
-            disp('Plotting data as is...')
+            %disp('Plotting data as is...')
             plot(ax,time,temp,'k');
         end
 
@@ -545,7 +578,7 @@ autosort_control = uicontrol(fig,'units','normalized','Position',[.135 .60 .1 .0
                 g1=temp.a1.*exp(-((x-temp.b1)./temp.c1).^2);
                 g2=temp.a2.*exp(-((x-temp.b2)./temp.c2).^2);
                 if temp.b1 > temp.b2
-                    disp('456')
+                    %disp('456')
                     keyboard
                 else
                     cutoff=find((g1-g2)>0,1,'last');
@@ -578,6 +611,83 @@ autosort_control = uicontrol(fig,'units','normalized','Position',[.135 .60 .1 .0
         % save them
         save(strcat(PathName,FileName),'spikes','-append')
 
+    end
+
+    function modify_callback(~,~)
+        % get a point from the plot
+        axis(ax);
+        p = ginput(1);
+        modify(p);
+        
+    end
+
+    function mousecallback(~,~)
+        p=get(ax,'CurrentPoint');
+        p=p(1,1:2);
+        modify(p)
+    end
+
+    function modify(p)
+        % check that the point is within the axes
+        ylimits = get(ax,'YLim');
+        if p(2) > ylimits(2) || p(2) < ylimits(1)
+            %disp('Rejecting point: Y exceeded')
+            return
+        end
+        xlimits = get(ax,'XLim');
+        if p(1) > xlimits(2) || p(1) < xlimits(1)
+            %disp('Rejecting point: X exceeded')
+            return
+        end
+
+        p(1) = p(1)/deltat;
+        xrange = (xlimits(2) - xlimits(1))/deltat;
+        yrange = ylimits(2) - ylimits(1);
+
+        if get(mode_new_A,'Value')==1
+        elseif get(mode_new_B,'Value')==1
+        elseif get(mode_delete,'Value')==1
+            % find the closest spike
+            Aspiketimes = find(spikes(ThisControlParadigm).A(ThisTrial,:));
+            Bspiketimes = find(spikes(ThisControlParadigm).B(ThisTrial,:));
+
+            dA= (((Aspiketimes-p(1))/(xrange)).^2  + ((V(Aspiketimes) - p(2))/(5*yrange)).^2);
+            dB= (((Bspiketimes-p(1))/(xrange)).^2  + ((V(Bspiketimes) - p(2))/(5*yrange)).^2);
+            dist_to_A = min(dA);
+            dist_to_B = min(dB);
+            % dist_to_B = min(abs(find(spikes(ThisControlParadigm).B(ThisTrial,:)) - p(1)/deltat));
+            % dist_to_A = min(abs(find(spikes(ThisControlParadigm).A(ThisTrial,:)) - p(1)/deltat));
+            if dist_to_A < dist_to_B
+                [~,closest_spike] = min(dA);
+                spikes(ThisControlParadigm).A(ThisTrial,Aspiketimes(closest_spike)) = 0;
+            else
+                % closest_spike = find(abs(Bspiketimes - p(1)/deltat) == dist_to_B);
+                % closest_spike = Bspiketimes(closest_spike);
+                [~,closest_spike] = min(dB);
+                spikes(ThisControlParadigm).B(ThisTrial,Bspiketimes(closest_spike)) = 0;
+            end
+        elseif get(mode_A2B,'Value')==1 
+            % find the closest A spike
+            Aspiketimes = find(spikes(ThisControlParadigm).A(ThisTrial,:));
+            dA= (((Aspiketimes-p(1))/(xrange)).^2  + ((V(Aspiketimes) - p(2))/(5*yrange)).^2);
+            [~,closest_spike] = min(dA);
+            spikes(ThisControlParadigm).A(ThisTrial,Aspiketimes(closest_spike)) = 0;
+            spikes(ThisControlParadigm).B(ThisTrial,Aspiketimes(closest_spike)) = 1;
+
+        elseif get(mode_B2A,'Value')==1
+            % find the closest B spike
+            Bspiketimes = find(spikes(ThisControlParadigm).B(ThisTrial,:));
+            dB= (((Bspiketimes-p(1))/(xrange)).^2  + ((V(Bspiketimes) - p(2))/(5*yrange)).^2);
+            [~,closest_spike] = min(dB);
+            spikes(ThisControlParadigm).A(ThisTrial,Bspiketimes(closest_spike)) = 1;
+            spikes(ThisControlParadigm).B(ThisTrial,Bspiketimes(closest_spike)) = 0;
+        end
+
+        % update plot
+        plot_resp;
+        
+        % save them
+        save(strcat(PathName,FileName),'spikes','-append')
     end
 
 
