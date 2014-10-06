@@ -1,43 +1,12 @@
-function [] = spikesort_14_04_08()
-versionname = 'Spike Sorting Build 9.14';
+% spikesort.m
+% 
+% spikesort was originally written by carlotta martelli. modified by Srinivas Gorur-Shandilya at 10:20 , 09 April 2014. Contact me at http://srinivas.gs/contact/
+% 
+% This work is licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License. 
+% To view a copy of this license, visit http://creativecommons.org/licenses/by-nc-sa/4.0/.
+function [] = spikesort()
+versionname = 'Spike Sorting Build 14.10.02';
 disp(versionname)
-% Carlotta's spike sorting and processing GUI
-% Change log:
-% b4.26.a: Filter now finds as well, automatically switches modes
-% (neuron/Noise) [no longer the case]
-% b4.27.a : Added a "Blank Noise" button, that removes noise
-% b4.27.a : partly fixed a bug where dots were on zero and on spikes. [fixed in 4.28.b]
-% b4.27.b : added a display which displays the stimulus when on
-% b4.28.b : fixed bug where a line was drawn on the x-axis indicating spike
-% times.
-% b4.28.c : added an option for manual sorting, where you draw borders
-% around the PCA clusters [incomplete]
-% b4.28.c : added a button to remove all valve artifacts
-% b4.29.a : 
-% 1: improved the "supress noise" button, now works rather well and removes
-% nearly all of the noise
-% 2. Added an option to sort by amplitude, but it is incomplete, and I
-% would not use it
-% 3. Spike Shapes now reset to 0 before PCA. 
-% 4. finished the manual sorting option, I think it works rather
-% well now. 
-% 5. minor cosmetic changes, placement of buttons, etc.
-% 6. Added an "autofix" button in the manual clustering window
-% b5.5.a : numerous bug fixes, and the following new features:
-% 1. attempts to automatically load spike file if it can find it
-% 2. support for .pref files to allow a common build with hidden features
-% 3. autosort disabled till it has what it needs
-% b5.11.a
-% I keep pressing the wrong button like "find" and lose everything I did.
-% So buttons are disabled when they should not be pressed. 
-% b5.27.a:
-% bugfixes: fixed a bug where clicking the "done" button or the "next
-% experiment" button caused an error when using manual (level) sorting.
-% this was because a) I had forced the next experiment button to call
-% donecallback and b) because tlim was reinialised, and clicking done twice
-% would anyway cause an error. There is now a hack which works around this,
-% and it should all be OK now. 
-%% initialise variables, make the master window
 Aamp = [];
 svalve = [];
 Bamp = [];
@@ -99,6 +68,7 @@ autofixbutton = [];
 fig = figure('position',[50 50 1200 700],'WindowButtonDownFcn',@mousecallback, 'WindowKeyPressFcn',@keycallback, 'WindowScrollWheelFcn',@scrollcallback, 'Toolbar','none','Menubar','none','Name',versionname,'NumberTitle','off','IntegerHandle','off');
 ax = axes('parent',fig,'position',[0.05 0.05 0.9 0.29]);
 ax2 = axes('parent',fig,'position',[0.05 0.37 0.9 0.18]);
+linkaxes([ax2,ax],'x')
 % set(ax2,'xticklabel',{[]});
 ind = [];
 %% preferences support. 

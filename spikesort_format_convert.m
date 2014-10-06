@@ -1,6 +1,12 @@
-function spikesort_format_convert(filename)
 clc;
-load([filename '.mat']);
+clear all;
+files = dir('*.mat');
+file_names = {files.name}';
+
+for k = 1: length(file_names)
+    
+    load(char(file_names(k)));
+    disp(['formatting ' char(file_names(k)) ' ......' ])
 
     if 0
         CPrc = recombine_cparad(ControlParadigm);
@@ -10,7 +16,9 @@ load([filename '.mat']);
         CP_orig = ControlParadigm;
         ControlParadigm = CPrc;
     end
-    
+%     for i =1:length(data)
+%     data(i).voltage = data(i).Voltage; % get rid of this %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%     end
     nofrecparad = length(data); % total number of paradigms including start & end
     % inp_names = fieldnames(data);   % get input channel names
     flag = 0; % record formatted data
@@ -42,10 +50,11 @@ load([filename '.mat']);
                 valvesignal = zeros([length(data)-1,size(data(nofrecparad).voltage)]);
                 for i=2:length(data); 
                     for trial = 1: size(data(i).voltage,1)
-                    valvesignal(i-1,trial,:) = ControlParadigm(i).Outputs(4,:); 
-                    ORN(i-1,trial,:) = data(i).voltage(trial,:);
-                    PID(i-1,trial,:) = data(i).PID(trial,:);
-                    stimsignal(i-1,trial,:) = data(i).PID(trial,:);
+                    ltrl = length(ControlParadigm(i).Outputs(5,:));
+                    valvesignal(i-1,trial,1:ltrl) = ControlParadigm(i).Outputs(4,:); 
+                    ORN(i-1,trial,1:ltrl) = data(i).voltage(trial,:);
+                    PID(i-1,trial,1:ltrl) = data(i).PID(trial,:);
+                    stimsignal(i-1,trial,1:ltrl) = data(i).PID(trial,:);
                     end
                 end
             else
@@ -61,10 +70,11 @@ load([filename '.mat']);
                 valvesignal = zeros([length(data)-2,size(data(nofrecparad-1).voltage)]);
                 for i=2:length(data)-1; 
                     for trial = 1: size(data(i).voltage,1)
-                    valvesignal(i-1,trial,:) = ControlParadigm(i).Outputs(4,:); 
-                    ORN(i-1,trial,:) = data(i).voltage(trial,:);
-                    PID(i-1,trial,:) = data(i).PID(trial,:);
-                    stimsignal(i-1,trial,:) = data(i).PID(trial,:);
+                        ltrl = length(ControlParadigm(i).Outputs(5,:));
+                        valvesignal(i-1,trial,1:ltrl) = ControlParadigm(i).Outputs(5,:); 
+                        ORN(i-1,trial,1:ltrl) = data(i).voltage(trial,:);
+                        PID(i-1,trial,1:ltrl) = data(i).PID(trial,:);
+                        stimsignal(i-1,trial,1:ltrl) = data(i).PID(trial,:);
                     end
                 end
             else
@@ -75,12 +85,11 @@ load([filename '.mat']);
     end
     
     deltat=1/SamplingRate;
-
+    tname = char(file_names(k));
+    tname = tname(1:end-4);
     if flag==0
-        save([filename '_fmt.mat']);
+        save([tname '_fmt.mat']);
     end
-    clear all
-
-
-
-
+    clearvars -except file_names k
+end
+clear all
