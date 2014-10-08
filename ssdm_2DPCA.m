@@ -7,11 +7,6 @@
 % 
 % This work is licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License. 
 % To view a copy of this license, visit http://creativecommons.org/licenses/by-nc-sa/4.0/.
-function R = ssdm_2DPCA(V,deltat,loc)
-h = (20*1e4)/deltat; % deltat in seconds
-% 1D - find total spike amplitude for each
-spike_amplitude = zeros*loc;
-for i = 1:length(loc)
-    spike_amplitude(i) = max(V(loc(i)-h:loc(i))) - V(loc(i));
-end
-R = spike_amplitude;	
+function R = ssdm_2DPCA(V_snippets)
+[~,R]=princomp(V_snippets);
+R = R(1:2,:); % only return the first two dimensions 

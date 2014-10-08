@@ -109,8 +109,19 @@ for oi = 1:length(avail_methods)
 end
 clear oi
 method_control = uicontrol(dimredpanel,'Style','popupmenu','String',avail_methods,'units','normalized','Position',[.02 .8 .9 .2],'Callback',@reduce_dimensions_callback,'Enable','off');
+
+% find the available methods for clustering
+look_here = mfilename('fullpath');
+look_here=look_here(1:max(strfind(look_here,oss))); % this is where we should look for methods
+avail_methods=dir(strcat(look_here,'sscm_*.m'));
+avail_methods={avail_methods.name};
+for oi = 1:length(avail_methods)
+    temp = avail_methods{oi};
+    avail_methods{oi} = temp(6:end-2);
+end
+clear oi
 cluster_panel = uipanel('Title','Clustering','Position',[.51 .92 .21 .07]);
-cluster_control = uicontrol(cluster_panel,'Style','popupmenu','String',{'Gaussian Fit','Manual','Density Peaks'},'units','normalized','Position',[.02 .8 .9 .2],'Callback',@find_cluster);
+cluster_control = uicontrol(cluster_panel,'Style','popupmenu','String',avail_methods,'units','normalized','Position',[.02 .8 .9 .2],'Callback',@find_cluster);
 
 % manual override panel
 manualpanel = uibuttongroup(fig,'Title','Manual Override','Position',[.29 .66 .11 .24]);
@@ -609,33 +620,22 @@ autosort_control = uicontrol(fig,'units','normalized','Position',[.135 .60 .1 .0
 
     function [A,B] = find_cluster(~,~)
         % cluster based on the method
-        cluster_methods = get(cluster_control,'String');
-        this_cluster_method = get(cluster_control,'Value');
-        this_cluster_method = cluster_methods{this_cluster_method};
-        switch this_cluster_method
-            case 'Gaussian Fit'
-                [y,x] = hist(R,floor(length(R)/30));
-                temp = fit(x(:),y(:),'gauss2');
-                g1=temp.a1.*exp(-((x-temp.b1)./temp.c1).^2);
-                g2=temp.a2.*exp(-((x-temp.b2)./temp.c2).^2);
-                if temp.b1 > temp.b2
-                    cutoff=find((g2-g1)>0,1,'last');
-                    cutoff = x(cutoff);
-                else
-                    cutoff=find((g1-g2)>0,1,'last');
-                    cutoff = x(cutoff);
-
-                end
-
-                % mark as A or B
-                B = loc(R<cutoff);
-                A = loc(R>=cutoff);
-            case 'Manual'
-                C = ManualCluster(R,V_snippets);
-                B = loc(C==2);
-                A = loc(C==1);
-
+        methodname = get(cluster_control,'String');
+        method = get(cluster_control,'Value');
+        methodname = strcat('sscm_',methodname{method});
+        req_arg = arginnames(methodname); % find out what arguments the external method needs
+        % start constructing the eval string
+        es = strcat('[A,B]=',methodname,'(');
+        for ri =  1:length(req_arg)
+            es = strcat(es,req_arg{ri},',');
         end
+        clear ri
+        es = es(1:end-1);
+        es = strcat(es,');');
+        eval(es);
+        clear es
+        
+        
 
         % mark them
         delete(h_scatter1)
