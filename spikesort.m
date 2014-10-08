@@ -299,8 +299,8 @@ sine_control = uicontrol(fig,'units','normalized','Position',[.03 .59 .1 .05],'S
                         [ons,offs] = ComputeOnsOffs(ControlParadigm(i).Outputs(digital_channels(j),:));
 
                         for k = 1:length(ons)
-                            data(i).voltage(:,ons(k):ons(k)+35) = 0;
-                            data(i).voltage(:,offs(k):offs(k)+25) = 0;
+                            data(i).voltage(:,ons(k):ons(k)+35) = NaN;
+                            data(i).voltage(:,offs(k):offs(k)+25) = NaN;
                         end
                     end
 
@@ -561,7 +561,7 @@ sine_control = uicontrol(fig,'units','normalized','Position',[.03 .59 .1 .05],'S
             set(method_control,'Enable','off')
         end
 
-        
+
 
         
     end
@@ -582,7 +582,14 @@ sine_control = uicontrol(fig,'units','normalized','Position',[.03 .59 .1 .05],'S
 	end
 
     function [V, Vf] = filter_trace(V)
-        Vf = filtfilt(ones(1,100)/100,1,V);
+        if any(isnan(V))
+            % filter ignoring NaNs
+            Vf = V;
+            Vf(~isnan(V)) = filtfilt(ones(1,100)/100,1,V(~isnan(V)));
+        else
+            Vf = filtfilt(ones(1,100)/100,1,V);
+        end
+        
         V = V - Vf;
     end
 
@@ -706,10 +713,9 @@ sine_control = uicontrol(fig,'units','normalized','Position',[.03 .59 .1 .05],'S
         xrange = (xlimits(2) - xlimits(1))/deltat;
         yrange = ylimits(2) - ylimits(1);
         % get the width over which to search for spikes dynamically from the zoom factor
-        s = floor((.02*yrange)/1e-4);
+        s = floor((.02*xrange));
         if get(mode_new_A,'Value')==1
             % snip out a small waveform around the point
-            
             [~,loc] = min(V(floor(p(1)-s:p(1)+s)));
             spikes(ThisControlParadigm).A(ThisTrial,-s+loc+floor(p(1))) = 1;
         elseif get(mode_new_B,'Value')==1
