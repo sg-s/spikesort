@@ -14,6 +14,12 @@ catch
 end
 versionname = strcat('spikesort for Kontroller (Build-',dh,')'); clear dh
 
+
+% check dependencies 
+p=path;
+if isempty(strfind(p,'srinivas.gs_mtools'))
+    error('Needs srinivas.gs_mtools, available here: https://github.com/sg-s/srinivas.gs_mtools')
+end
 if ~strcmp(version('-release'),'2014b')
     error('Need MATLAB 2014b to run')
 end
@@ -57,7 +63,7 @@ h_scatter2 = [];
 h_scatter3 = [];
 
 % make the master figure, and the axes to plot the voltage traces
-fig = figure('position',[50 50 1200 700], 'Toolbar','figure','Menubar','none','Name',versionname,'NumberTitle','off','IntegerHandle','off','WindowButtonDownFcn',@mousecallback);
+fig = figure('position',[50 50 1200 700], 'Toolbar','figure','Menubar','none','Name',versionname,'NumberTitle','off','IntegerHandle','off','WindowButtonDownFcn',@mousecallback,'WindowScrollWheelFcn',@scroll);
 ax = axes('parent',fig,'Position',[0.07 0.05 0.87 0.29]);
 scroll_back = uicontrol(fig,'units','normalized','Position',[0 .04 .04 .50],'Style', 'pushbutton', 'String', '<','callback',@scroll);
 scroll_fwd = uicontrol(fig,'units','normalized','Position',[.96 .04 .04 .50],'Style', 'pushbutton', 'String', '>','callback',@scroll);
@@ -92,7 +98,17 @@ prev_trial = uicontrol(datachooserpanel,'units','normalized','Position',[.05 .15
 
 % dimension reduction and clustering panels
 dimredpanel = uipanel('Title','Dimensionality Reduction','Position',[.29 .92 .21 .07]);
-method_control = uicontrol(dimredpanel,'Style','popupmenu','String',{'1D Amplitudes','2D Amp+LFP','PCA'},'units','normalized','Position',[.02 .8 .9 .2],'Callback',@reduce_dimensions_callback,'Enable','off');
+% find the available methods
+look_here = mfilename('fullpath');
+look_here=look_here(1:max(strfind(look_here,oss))); % this is where we should look for methods
+avail_methods=dir(strcat(look_here,'ssdm_*.m'));
+avail_methods={avail_methods.name};
+for oi = 1:length(avail_methods)
+    temp = avail_methods{oi};
+    avail_methods{oi} = temp(6:end-2);
+end
+clear oi
+method_control = uicontrol(dimredpanel,'Style','popupmenu','String',avail_methods,'units','normalized','Position',[.02 .8 .9 .2],'Callback',@reduce_dimensions_callback,'Enable','off');
 cluster_panel = uipanel('Title','Clustering','Position',[.51 .92 .21 .07]);
 cluster_control = uicontrol(cluster_panel,'Style','popupmenu','String',{'Gaussian Fit','Manual','Density Peaks'},'units','normalized','Position',[.02 .8 .9 .2],'Callback',@find_cluster);
 
@@ -114,7 +130,7 @@ redo_control = uicontrol(fig,'units','normalized','Position',[.035 .60 .1 .05],'
 autosort_control = uicontrol(fig,'units','normalized','Position',[.135 .60 .1 .05],'Style','togglebutton','String','Autosort','Value',0);
 
 
-    function scroll(src,~)
+    function scroll(src,event)
         xlimits = get(ax,'XLim');
         xrange = (xlimits(2) - xlimits(1));
         if src == scroll_back
@@ -131,7 +147,25 @@ autosort_control = uicontrol(fig,'units','normalized','Position',[.135 .60 .1 .0
                 newlim(2) = min([max(time) (xlimits(2)+.8*xrange)]);
                 newlim(1) = newlim(2)-xrange;
             end
+        else
+            scroll_amount = event.VerticalScrollCount;
+            if scroll_amount < 0
+                if xlimits(1) <= min(time)
+                    return
+                else
+                    newlim(1) = max([min(time) (xlimits(1)-.2*xrange)]);
+                    newlim(2) = newlim(1)+xrange;
+                end
+            else
+                if xlimits(2) >= max(time)
+                    return
+                else
+                    newlim(2) = min([max(time) (xlimits(2)+.2*xrange)]);
+                    newlim(1) = newlim(2)-xrange;
+                end
+            end
         end
+
         set(ax,'Xlim',newlim)
     end
 
@@ -558,30 +592,19 @@ autosort_control = uicontrol(fig,'units','normalized','Position',[.135 .60 .1 .0
 
 
         % now do different things based on the method chosen
-        switch method
-        case 1
-            % find total spike amplitude for each
-            spike_amplitude = zeros*loc;
-            for i = 1:length(loc)
-                spike_amplitude(i) = max(V_snippets(1:20,i)) - V(loc(i));
-            end
-            R = spike_amplitude;
-            % only allow certain clustering 
-            set(cluster_control,'String',{'Gaussian Fit'})
-
-        
-
-        case 2
-            % find total spike amplitude for each
-            spike_amplitude = zeros*loc;
-            for i = 1:length(loc)
-                spike_amplitude(i) = max(V_snippets(1:20,i)) - V(loc(i));
-            end
-            R = [spike_amplitude; Vf(loc)];
-            save('R.mat','R','V_snippets')
-            % only allow certain clustering 
-            set(cluster_control,'String',{'Manual'})
+        methodname = get(method_control,'String');
+        methodname = strcat('ssdm_',methodname{method});
+        req_arg = arginnames(methodname); % find out what arguments the external method needs
+        % start constructing the eval string
+        es = strcat('R=',methodname,'(');
+        for ri =  1:length(req_arg)
+            es = strcat(es,req_arg{ri},',');
         end
+        clear ri
+        es = es(1:end-1);
+        es = strcat(es,');');
+        eval(es);
+        clear es
     end
 
     function [A,B] = find_cluster(~,~)
