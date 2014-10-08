@@ -84,10 +84,10 @@ resp_channel = uicontrol(datapanel,'units','normalized','Position',[.01 .01 .910
 
 
 % file I/O
-loadfile = uicontrol(fig,'units','normalized','Position',[.03 .9 .08 .07],'Style', 'pushbutton', 'String', 'Load File','FontSize',10,'FontWeight','bold','callback',@loadfilecallback);
+loadfile = uicontrol(fig,'units','normalized','Position',[.03 .92 .08 .07],'Style', 'pushbutton', 'String', 'Load File','FontSize',10,'FontWeight','bold','callback',@loadfilecallback);
 
 % paradigms and trials
-datachooserpanel = uipanel('Title','Paradigms and Trials','Position',[.03 .72 .25 .16]);
+datachooserpanel = uipanel('Title','Paradigms and Trials','Position',[.03 .75 .25 .16]);
 paradigm_chooser = uicontrol(datachooserpanel,'units','normalized','Position',[.25 .75 .5 .20],'Style', 'popupmenu', 'String', 'Choose Paradigm','callback',@choose_paradigm_callback);
 next_paradigm = uicontrol(datachooserpanel,'units','normalized','Position',[.75 .65 .15 .33],'Style', 'pushbutton', 'String', '>','callback',@choose_paradigm_callback);
 prev_paradigm = uicontrol(datachooserpanel,'units','normalized','Position',[.05 .65 .15 .33],'Style', 'pushbutton', 'String', '<','callback',@choose_paradigm_callback);
@@ -133,12 +133,14 @@ mode_B2A = uicontrol(manualpanel,'Position',[5 125 100 20], 'Style', 'radiobutto
 modify_control = uicontrol(fig,'units','normalized','Position',[.29 .60 .1 .05],'Style','pushbutton','String','Modify','Value',0,'Callback',@modify_callback);
 
 
-% filter toggle switch
-filtermode = uicontrol(fig,'units','normalized','Position',[.035 .65 .1 .05],'Style','togglebutton','String','Filter','Value',1,'Callback',@plot_resp);
-findmode = uicontrol(fig,'units','normalized','Position',[.135 .65 .1 .05],'Style','togglebutton','String','Find Spikes','Value',1,'Callback',@plot_resp);
+% various toggle switches and pushbuttons
+filtermode = uicontrol(fig,'units','normalized','Position',[.03 .69 .1 .05],'Style','togglebutton','String','Filter','Value',1,'Callback',@plot_resp);
+findmode = uicontrol(fig,'units','normalized','Position',[.135 .69 .1 .05],'Style','togglebutton','String','Find Spikes','Value',1,'Callback',@plot_resp);
 
-redo_control = uicontrol(fig,'units','normalized','Position',[.035 .60 .1 .05],'Style','pushbutton','String','Redo','Value',0,'Callback',@redo);
-autosort_control = uicontrol(fig,'units','normalized','Position',[.135 .60 .1 .05],'Style','togglebutton','String','Autosort','Value',0);
+redo_control = uicontrol(fig,'units','normalized','Position',[.03 .64 .1 .05],'Style','pushbutton','String','Redo','Value',0,'Callback',@redo);
+autosort_control = uicontrol(fig,'units','normalized','Position',[.135 .64 .1 .05],'Style','togglebutton','String','Autosort','Value',0);
+
+sine_control = uicontrol(fig,'units','normalized','Position',[.03 .59 .1 .05],'Style','togglebutton','String',' Kill Ringing','Value',0,'Callback',@plot_resp);
 
 
     function scroll(src,event)
@@ -196,6 +198,10 @@ autosort_control = uicontrol(fig,'units','normalized','Position',[.135 .60 .1 .0
 
         % update the plot
         plot_resp;
+
+        % save the clear
+        save(strcat(PathName,FileName),'spikes','-append')
+
     end
 
     function loadfilecallback(~,~)
@@ -255,8 +261,8 @@ autosort_control = uicontrol(fig,'units','normalized','Position',[.135 .60 .1 .0
                
             end
         end
-
-        set(valve_channel,'Value',find(digital_channels));
+        digital_channels = find(digital_channels);
+        set(valve_channel,'Value',digital_channels);
 
 
         waitbar(0.5,load_waitbar,'Guessing stimulus and response...')
@@ -271,7 +277,7 @@ autosort_control = uicontrol(fig,'units','normalized','Position',[.135 .60 .1 .0
             n = Kontroller_ntrials(data);
             for i = 1:length(data)
                 if n(i)
-        
+                    
                     % temp = mdot(abs(data(i).voltage));
                     % temp(temp>(mean(temp) + std(temp))) = 1;
                     % temp(temp<1)= 0;
@@ -286,16 +292,19 @@ autosort_control = uicontrol(fig,'units','normalized','Position',[.135 .60 .1 .0
 
                     % data(i).voltage(:,logical(temp)) = 0;
 
-                    % also suppress signals for 25 samples after any valve turns on
+                    % suppress signals for 25 samples after any valve turns on or off
                     % this is a hack
-                    temp = ComputeOnsOffs(ControlParadigm(i).Outputs(5,:));
-                    for j = 1:length(temp)
-                        data(i).voltage(:,temp(j):temp(j)+25) = 0;
+                    
+                    for j = 1:length(digital_channels)
+                        [ons,offs] = ComputeOnsOffs(ControlParadigm(i).Outputs(digital_channels(j),:));
+
+                        for k = 1:length(ons)
+                            data(i).voltage(:,ons(k):ons(k)+35) = 0;
+                            data(i).voltage(:,offs(k):offs(k)+25) = 0;
+                        end
                     end
-                    temp = ComputeOnsOffs(ControlParadigm(i).Outputs(6,:));
-                    for j = 1:length(temp)
-                        data(i).voltage(:,temp(j):temp(j)+25) = 0;
-                    end
+
+
 
 
                 end
@@ -446,6 +455,7 @@ autosort_control = uicontrol(fig,'units','normalized','Position',[.135 .60 .1 .0
 
     function plot_resp(~,~)
         % plot the response
+        clear time V Vf % flush old variables 
         n = Kontroller_ntrials(data); 
         cla(ax)
         hold(ax,'on')
@@ -459,61 +469,59 @@ autosort_control = uicontrol(fig,'units','normalized','Position',[.135 .60 .1 .0
             return    
         end
 
-
         if get(filtermode,'Value') == 1
             %disp('Need to filter data...')
             [V,Vf] = filter_trace(temp);
-            
+        else
+            V = temp;
+        end 
 
-            % do we have to find spikes too?
-            if get(findmode,'Value') == 1
-                %disp('need to find spikes...')
-                loc=find_spikes(V);
-                plot(ax,time,V,'k'); 
-                % do we already have sorted spikes?
-                if length(spikes) < ThisControlParadigm
-                    % no spikes
-                    %disp('no spikes...')
-                    loc = find_spikes(V);
-                    if get(autosort_control,'Value') == 1
-                        % sort spikes and show them
-                        %disp('Autosorting spikes...')
-                        [A,B] = autosort;
+
+        if get(sine_control,'Value') ==1
+            % need to suppress some periodic noise, probably from an electrical fault
+            z = min([length(time) 5e4]); % 5 seconds of data
+            time = time(:); V = V(:);
+            temp = fit(time(1:z),V(1:z),'sin2');
+            V = V - temp(time);
+        end
+
+        plot(ax,time,V,'k'); 
+
+        % do we have to find spikes too?
+        if get(findmode,'Value') == 1
+            %disp('need to find spikes...')
+            loc=find_spikes(V);
+
+            % do we already have sorted spikes?
+            if length(spikes) < ThisControlParadigm
+                % no spikes
+                %disp('no spikes...')
+                loc = find_spikes(V);
+                if get(autosort_control,'Value') == 1
+                    % sort spikes and show them
+                    %disp('Autosorting spikes...')
+                    [A,B] = autosort;
+                    h_scatter1 = scatter(ax,time(A),V(A),'r');
+                    h_scatter2 = scatter(ax,time(B),V(B),'b');
+                else
+                    %disp('Not autosorting spikes')
+                    h_scatter1 = scatter(ax,time(loc),V(loc));
+                end
+            else
+                %disp('spikes is at least this paradigm long')
+                % maybe?
+                if ThisTrial <= width(spikes(ThisControlParadigm).A) 
+                    %disp('spike matrix is suff. wide.')
+                    % check...
+                    if max(spikes(ThisControlParadigm).A(ThisTrial,:))
+                        % yes, have spikes
+                        %disp('Have spikes. showing them. ')
+                        A = find(spikes(ThisControlParadigm).A(ThisTrial,:));
+                        B = find(spikes(ThisControlParadigm).B(ThisTrial,:));
                         h_scatter1 = scatter(ax,time(A),V(A),'r');
                         h_scatter2 = scatter(ax,time(B),V(B),'b');
                     else
-                        %disp('Not autosorting spikes')
-                        h_scatter1 = scatter(ax,time(loc),V(loc));
-                    end
-                else
-                    %disp('spikes is at least this paradigm long')
-                    % maybe?
-                    if ThisTrial <= width(spikes(ThisControlParadigm).A) 
-                        %disp('spike matrix is suff. wide.')
-                        % check...
-                        if max(spikes(ThisControlParadigm).A(ThisTrial,:))
-                            % yes, have spikes
-                            %disp('Have spikes. showing them. ')
-                            A = find(spikes(ThisControlParadigm).A(ThisTrial,:));
-                            B = find(spikes(ThisControlParadigm).B(ThisTrial,:));
-                            h_scatter1 = scatter(ax,time(A),V(A),'r');
-                            h_scatter2 = scatter(ax,time(B),V(B),'b');
-                        else
-                            %disp('no spikes case 397')
-                            if get(autosort_control,'Value') == 1
-                                % sort spikes and show them
-                                [A,B] = autosort;
-                                h_scatter1 = scatter(ax,time(A),V(A),'r');
-                                h_scatter2 = scatter(ax,time(B),V(B),'b');
-                            else
-                                %disp('No need to autosort')
-                                % no need to autosort
-                                h_scatter1 = scatter(ax,time(loc),V(loc));
-                            end
-                        end
-                    else
-                        % no spikes
-                        %disp('spikes exists, but not for this trial')
+                        %disp('no spikes case 397')
                         if get(autosort_control,'Value') == 1
                             % sort spikes and show them
                             [A,B] = autosort;
@@ -525,24 +533,35 @@ autosort_control = uicontrol(fig,'units','normalized','Position',[.135 .60 .1 .0
                             h_scatter1 = scatter(ax,time(loc),V(loc));
                         end
                     end
+                else
+                    % no spikes
+                    %disp('spikes exists, but not for this trial')
+                    if get(autosort_control,'Value') == 1
+                        % sort spikes and show them
+                        [A,B] = autosort;
+                        h_scatter1 = scatter(ax,time(A),V(A),'r');
+                        h_scatter2 = scatter(ax,time(B),V(B),'b');
+                    else
+                        %disp('No need to autosort')
+                        % no need to autosort
+                        h_scatter1 = scatter(ax,time(loc),V(loc));
+                    end
                 end
-
-
-                % now rescale the Y axes so that only the interesting bit is retained
-                if ~isempty(loc)
-                    set(ax,'YLim',[1.1*min(V(loc)) -min(V(loc))]);
-                end
-
-
-            else
-                %disp('No need to find spikes...')
-                set(method_control,'Enable','off')
-                plot(ax,time,V,'k'); 
             end
+
+
+            % now rescale the Y axes so that only the interesting bit is retained
+            if ~isempty(loc)
+                set(ax,'YLim',[1.1*min(V(loc)) -min(V(loc))]);
+            end
+
+
         else
-            %disp('Plotting data as is...')
-            plot(ax,time,temp,'k');
+            %disp('No need to find spikes...')
+            set(method_control,'Enable','off')
         end
+
+        
 
         
     end
@@ -569,7 +588,9 @@ autosort_control = uicontrol(fig,'units','normalized','Position',[.135 .60 .1 .0
 
     function loc = find_spikes(V)
         % find local minima 
-        [~,loc] = findpeaks(-V,'MinPeakProminence',.03,'MinPeakDistance',10);
+        [~,loc] = findpeaks(-V,'MinPeakProminence',.04,'MinPeakDistance',10,'MaxPeakWidth',60,'MinPeakWidth',10);
+
+
 
         set(method_control,'Enable','on')
 
@@ -684,15 +705,17 @@ autosort_control = uicontrol(fig,'units','normalized','Position',[.135 .60 .1 .0
         p(1) = p(1)/deltat;
         xrange = (xlimits(2) - xlimits(1))/deltat;
         yrange = ylimits(2) - ylimits(1);
-
+        % get the width over which to search for spikes dynamically from the zoom factor
+        s = floor((.02*yrange)/1e-4);
         if get(mode_new_A,'Value')==1
             % snip out a small waveform around the point
-            [~,loc] = min(V(floor(p(1)-75:p(1)+75)));
-            spikes(ThisControlParadigm).A(ThisTrial,-75+loc+floor(p(1))) = 1;
+            
+            [~,loc] = min(V(floor(p(1)-s:p(1)+s)));
+            spikes(ThisControlParadigm).A(ThisTrial,-s+loc+floor(p(1))) = 1;
         elseif get(mode_new_B,'Value')==1
             % snip out a small waveform around the point
-            [~,loc] = min(V(floor(p(1)-75:p(1)+75)));
-            spikes(ThisControlParadigm).B(ThisTrial,-75+loc+floor(p(1))) = 1;
+            [~,loc] = min(V(floor(p(1)-s:p(1)+s)));
+            spikes(ThisControlParadigm).B(ThisTrial,-s+loc+floor(p(1))) = 1;
         elseif get(mode_delete,'Value')==1
             % find the closest spike
             Aspiketimes = find(spikes(ThisControlParadigm).A(ThisTrial,:));
