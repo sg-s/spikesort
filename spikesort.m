@@ -65,8 +65,8 @@ h_scatter3 = [];
 % make the master figure, and the axes to plot the voltage traces
 fig = figure('position',[50 50 1200 700], 'Toolbar','figure','Menubar','none','Name',versionname,'NumberTitle','off','IntegerHandle','off','WindowButtonDownFcn',@mousecallback,'WindowScrollWheelFcn',@scroll);
 ax = axes('parent',fig,'Position',[0.07 0.05 0.87 0.29]);
-scroll_back = uicontrol(fig,'units','normalized','Position',[0 .04 .04 .50],'Style', 'pushbutton', 'String', '<','callback',@scroll);
-scroll_fwd = uicontrol(fig,'units','normalized','Position',[.96 .04 .04 .50],'Style', 'pushbutton', 'String', '>','callback',@scroll);
+jump_back = uicontrol(fig,'units','normalized','Position',[0 .04 .04 .50],'Style', 'pushbutton', 'String', '<','callback',@jump);
+jump_fwd = uicontrol(fig,'units','normalized','Position',[.96 .04 .04 .50],'Style', 'pushbutton', 'String', '>','callback',@jump);
 ax2 = axes('parent',fig,'Position',[0.07 0.37 0.87 0.18]);
 linkaxes([ax2,ax],'x')
 
@@ -144,41 +144,65 @@ sine_control = uicontrol(fig,'units','normalized','Position',[.03 .59 .1 .05],'S
 discard_control = uicontrol(fig,'units','normalized','Position',[.135 .59 .1 .05],'Style','togglebutton','String',' Discard','Value',0,'Callback',@discard,'Enable','off');
 
 
-    function scroll(src,event)
+    function jump(src,~)
+        % get the digital channels
+        digital_channels = get(valve_channel,'Value');
+
+        % find out where we are
+        xl= floor(get(ax,'XLim')/deltat);
+        
+
+        if src == jump_fwd
+            next_on = Inf;
+
+            % find the next digital channel switch in any channel
+            for i = 1:length(digital_channels)
+                this_channel = ControlParadigm(ThisControlParadigm).Outputs(digital_channels(i),:);
+                [ons] = ComputeOnsOffs(this_channel);
+                ons(ons<xl(2)) = [];
+                next_on = min([next_on(:); ons(:)]);
+            end
+            if ~isinf(next_on)
+                set(ax,'Xlim',[time(next_on) time(next_on+diff(xl))]);
+            end
+        elseif src == jump_back
+            prev_on = -Inf;
+
+            % find the prev digital channel switch in any channel
+            for i = 1:length(digital_channels)
+                this_channel = ControlParadigm(ThisControlParadigm).Outputs(digital_channels(i),:);
+                [ons] = ComputeOnsOffs(this_channel);
+                ons(ons>xl(1)-1) = [];
+                prev_on = max([prev_on(:); ons(:)]);
+            end
+            if ~isinf(-prev_on)
+                set(ax,'Xlim',[time(prev_on) time(prev_on+diff(xl))]);
+            end
+        else
+            error('Unknown source of call to jump');
+        end
+    end
+
+    function scroll(~,event)
         xlimits = get(ax,'XLim');
         xrange = (xlimits(2) - xlimits(1));
-        if src == scroll_back
+        scroll_amount = event.VerticalScrollCount;
+        if scroll_amount < 0
             if xlimits(1) <= min(time)
                 return
             else
-                newlim(1) = max([min(time) (xlimits(1)-.8*xrange)]);
+                newlim(1) = max([min(time) (xlimits(1)-.2*xrange)]);
                 newlim(2) = newlim(1)+xrange;
             end
-        elseif src == scroll_fwd
+        else
             if xlimits(2) >= max(time)
                 return
             else
-                newlim(2) = min([max(time) (xlimits(2)+.8*xrange)]);
+                newlim(2) = min([max(time) (xlimits(2)+.2*xrange)]);
                 newlim(1) = newlim(2)-xrange;
             end
-        else
-            scroll_amount = event.VerticalScrollCount;
-            if scroll_amount < 0
-                if xlimits(1) <= min(time)
-                    return
-                else
-                    newlim(1) = max([min(time) (xlimits(1)-.2*xrange)]);
-                    newlim(2) = newlim(1)+xrange;
-                end
-            else
-                if xlimits(2) >= max(time)
-                    return
-                else
-                    newlim(2) = min([max(time) (xlimits(2)+.2*xrange)]);
-                    newlim(1) = newlim(2)-xrange;
-                end
-            end
         end
+        
 
         set(ax,'Xlim',newlim)
     end
@@ -553,7 +577,6 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.135 .59 .1 .05
             time = time(:); V = V(:);
             temp = fit(time(1:z),V(1:z),'sin1');
             [num,den] = iirnotch(temp.b1/length(time),.01*(temp.b1/length(time)));
-            keyboard
             V = V - temp(time);
         end
 
@@ -634,7 +657,6 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.135 .59 .1 .05
         end
 
 
-
         
     end
 
@@ -667,10 +689,7 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.135 .59 .1 .05
 
     function loc = find_spikes(V)
         % find local minima 
-        [~,loc] = findpeaks(-V,'MinPeakProminence',.04,'MinPeakDistance',10,'MaxPeakWidth',60,'MinPeakWidth',10);
-
-
-
+        [~,loc] = findpeaks(-V,'MinPeakProminence',.03,'MinPeakDistance',10,'MinPeakWidth',15);
         set(method_control,'Enable','on')
 
     end
@@ -785,7 +804,7 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.135 .59 .1 .05
         xrange = (xlimits(2) - xlimits(1))/deltat;
         yrange = ylimits(2) - ylimits(1);
         % get the width over which to search for spikes dynamically from the zoom factor
-        s = floor((.01*xrange));
+        s = floor((.005*xrange));
         if get(mode_new_A,'Value')==1
             % snip out a small waveform around the point
             [~,loc] = min(V(floor(p(1)-s:p(1)+s)));
