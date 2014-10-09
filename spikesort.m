@@ -88,13 +88,13 @@ loadfile = uicontrol(fig,'units','normalized','Position',[.03 .92 .08 .07],'Styl
 
 % paradigms and trials
 datachooserpanel = uipanel('Title','Paradigms and Trials','Position',[.03 .75 .25 .16]);
-paradigm_chooser = uicontrol(datachooserpanel,'units','normalized','Position',[.25 .75 .5 .20],'Style', 'popupmenu', 'String', 'Choose Paradigm','callback',@choose_paradigm_callback);
-next_paradigm = uicontrol(datachooserpanel,'units','normalized','Position',[.75 .65 .15 .33],'Style', 'pushbutton', 'String', '>','callback',@choose_paradigm_callback);
-prev_paradigm = uicontrol(datachooserpanel,'units','normalized','Position',[.05 .65 .15 .33],'Style', 'pushbutton', 'String', '<','callback',@choose_paradigm_callback);
+paradigm_chooser = uicontrol(datachooserpanel,'units','normalized','Position',[.25 .75 .5 .20],'Style', 'popupmenu', 'String', 'Choose Paradigm','callback',@choose_paradigm_callback,'Enable','off');
+next_paradigm = uicontrol(datachooserpanel,'units','normalized','Position',[.75 .65 .15 .33],'Style', 'pushbutton', 'String', '>','callback',@choose_paradigm_callback,'Enable','off');
+prev_paradigm = uicontrol(datachooserpanel,'units','normalized','Position',[.05 .65 .15 .33],'Style', 'pushbutton', 'String', '<','callback',@choose_paradigm_callback,'Enable','off');
 
-trial_chooser = uicontrol(datachooserpanel,'units','normalized','Position',[.25 .27 .5 .20],'Style', 'popupmenu', 'String', 'Choose Trial','callback',@choose_trial_callback);
-next_trial = uicontrol(datachooserpanel,'units','normalized','Position',[.75 .15 .15 .33],'Style', 'pushbutton', 'String', '>','callback',@choose_trial_callback);
-prev_trial = uicontrol(datachooserpanel,'units','normalized','Position',[.05 .15 .15 .33],'Style', 'pushbutton', 'String', '<','callback',@choose_trial_callback);
+trial_chooser = uicontrol(datachooserpanel,'units','normalized','Position',[.25 .27 .5 .20],'Style', 'popupmenu', 'String', 'Choose Trial','callback',@choose_trial_callback,'Enable','off');
+next_trial = uicontrol(datachooserpanel,'units','normalized','Position',[.75 .15 .15 .33],'Style', 'pushbutton', 'String', '>','callback',@choose_trial_callback,'Enable','off');
+prev_trial = uicontrol(datachooserpanel,'units','normalized','Position',[.05 .15 .15 .33],'Style', 'pushbutton', 'String', '<','callback',@choose_trial_callback,'Enable','off');
 
 % dimension reduction and clustering panels
 dimredpanel = uipanel('Title','Dimensionality Reduction','Position',[.29 .92 .21 .07]);
@@ -121,7 +121,7 @@ for oi = 1:length(avail_methods)
 end
 clear oi
 cluster_panel = uipanel('Title','Clustering','Position',[.51 .92 .21 .07]);
-cluster_control = uicontrol(cluster_panel,'Style','popupmenu','String',avail_methods,'units','normalized','Position',[.02 .8 .9 .2],'Callback',@find_cluster);
+cluster_control = uicontrol(cluster_panel,'Style','popupmenu','String',avail_methods,'units','normalized','Position',[.02 .8 .9 .2],'Callback',@find_cluster,'Enable','off');
 
 % manual override panel
 manualpanel = uibuttongroup(fig,'Title','Manual Override','Position',[.29 .66 .11 .24]);
@@ -130,17 +130,18 @@ mode_new_B = uicontrol(manualpanel,'Position',[5 35 100 20], 'Style', 'radiobutt
 mode_delete = uicontrol(manualpanel,'Position',[5 65 100 20], 'Style', 'radiobutton', 'String', '-X','FontSize',12);
 mode_A2B = uicontrol(manualpanel,'Position',[5 95 100 20], 'Style', 'radiobutton', 'String', 'A->B','FontSize',12);
 mode_B2A = uicontrol(manualpanel,'Position',[5 125 100 20], 'Style', 'radiobutton', 'String', 'B->A','FontSize',12);
-modify_control = uicontrol(fig,'units','normalized','Position',[.29 .60 .1 .05],'Style','pushbutton','String','Modify','Value',0,'Callback',@modify_callback);
+modify_control = uicontrol(fig,'units','normalized','Position',[.29 .60 .1 .05],'Style','pushbutton','String','Modify','Value',0,'Callback',@modify_callback,'Enable','off');
 
 
 % various toggle switches and pushbuttons
-filtermode = uicontrol(fig,'units','normalized','Position',[.03 .69 .1 .05],'Style','togglebutton','String','Filter','Value',1,'Callback',@plot_resp);
-findmode = uicontrol(fig,'units','normalized','Position',[.135 .69 .1 .05],'Style','togglebutton','String','Find Spikes','Value',1,'Callback',@plot_resp);
+filtermode = uicontrol(fig,'units','normalized','Position',[.03 .69 .1 .05],'Style','togglebutton','String','Filter','Value',1,'Callback',@plot_resp,'Enable','off');
+findmode = uicontrol(fig,'units','normalized','Position',[.135 .69 .1 .05],'Style','togglebutton','String','Find Spikes','Value',1,'Callback',@plot_resp,'Enable','off');
 
-redo_control = uicontrol(fig,'units','normalized','Position',[.03 .64 .1 .05],'Style','pushbutton','String','Redo','Value',0,'Callback',@redo);
-autosort_control = uicontrol(fig,'units','normalized','Position',[.135 .64 .1 .05],'Style','togglebutton','String','Autosort','Value',0);
+redo_control = uicontrol(fig,'units','normalized','Position',[.03 .64 .1 .05],'Style','pushbutton','String','Redo','Value',0,'Callback',@redo,'Enable','off');
+autosort_control = uicontrol(fig,'units','normalized','Position',[.135 .64 .1 .05],'Style','togglebutton','String','Autosort','Value',0,'Enable','off');
 
-sine_control = uicontrol(fig,'units','normalized','Position',[.03 .59 .1 .05],'Style','togglebutton','String',' Kill Ringing','Value',0,'Callback',@plot_resp);
+sine_control = uicontrol(fig,'units','normalized','Position',[.03 .59 .1 .05],'Style','togglebutton','String',' Kill Ringing','Value',0,'Callback',@plot_resp,'Enable','off');
+discard_control = uicontrol(fig,'units','normalized','Position',[.135 .59 .1 .05],'Style','togglebutton','String',' Discard','Value',0,'Callback',@discard,'Enable','off');
 
 
     function scroll(src,event)
@@ -182,6 +183,36 @@ sine_control = uicontrol(fig,'units','normalized','Position',[.03 .59 .1 .05],'S
         set(ax,'Xlim',newlim)
     end
 
+    function discard(~,~)
+        if get(discard_control,'Value') == 0
+            % reset discard
+            if isfield(spikes,'discard')
+                spikes(ThisControlParadigm).discard(ThisTrial) = 0;
+            end
+        else
+            % need to reset spikes
+            if length(spikes) >= ThisControlParadigm
+                if width(spikes(ThisControlParadigm).A) >= ThisTrial
+                    spikes(ThisControlParadigm).A(ThisTrial,:) = 0;
+                    spikes(ThisControlParadigm).B(ThisTrial,:) = 0;
+
+                else
+                    % all cool
+                end
+            else
+                % should have no problem
+            end   
+
+            % mark as discarded
+            spikes(ThisControlParadigm).discard(ThisTrial) = 1;
+            save(strcat(PathName,FileName),'spikes','-append')
+            
+        end
+        
+
+        % update screen
+        plot_resp;
+    end
 
     function redo(~,~)
         % need to reset spikes
@@ -314,7 +345,22 @@ sine_control = uicontrol(fig,'units','normalized','Position',[.03 .59 .1 .05],'S
 
         set(fig,'Name',strcat(versionname,'--',FileName))
 
-    
+        % enable all controls
+        waitbar(.7,load_waitbar,'Enabling UI...')
+        set(sine_control,'Enable','on');
+        set(autosort_control,'Enable','on');
+        set(redo_control,'Enable','on');
+        set(findmode,'Enable','on');
+        set(filtermode,'Enable','on');
+        set(modify_control,'Enable','on');
+        set(cluster_control,'Enable','on');
+        set(prev_trial,'Enable','on');
+        set(next_trial,'Enable','on');
+        set(prev_paradigm,'Enable','on');
+        set(next_paradigm,'Enable','on');
+        set(trial_chooser,'Enable','on');
+        set(paradigm_chooser,'Enable','on');
+        set(discard_control,'Enable','on');
 
         % clean up
         close(load_waitbar)
@@ -364,11 +410,17 @@ sine_control = uicontrol(fig,'units','normalized','Position',[.03 .59 .1 .05],'S
             ThisTrial = get(trial_chooser,'Value');
             %disp('Moving directly to trial:')
             %disp(ThisTrial)
+            % update the plots
+            plot_stim;
+            plot_resp;
         elseif src== next_trial
             if ThisTrial < n
                 ThisTrial = ThisTrial +1;
                 set(trial_chooser,'Value',ThisTrial);
                 %disp('Next trial')
+                % update the plots
+                plot_stim;
+                plot_resp;
             else
                 % fake a call
                 choose_paradigm_callback(next_paradigm);
@@ -378,6 +430,9 @@ sine_control = uicontrol(fig,'units','normalized','Position',[.03 .59 .1 .05],'S
                 ThisTrial = ThisTrial  - 1;
                 set(trial_chooser,'Value',ThisTrial);
                 %disp('Previous trial')
+                % update the plots
+                plot_stim;
+                plot_resp;
             else
                 % fake a call
                 choose_paradigm_callback(prev_paradigm);
@@ -387,9 +442,7 @@ sine_control = uicontrol(fig,'units','normalized','Position',[.03 .59 .1 .05],'S
         end
 
 
-        % update the plots
-        plot_stim;
-        plot_resp;
+        
                
     end
 
@@ -469,6 +522,23 @@ sine_control = uicontrol(fig,'units','normalized','Position',[.03 .59 .1 .05],'S
             return    
         end
 
+        % check if we have chosen to discard this
+        if isfield(spikes,'discard')
+            try spikes(ThisControlParadigm).discard(ThisTrial);
+                if spikes(ThisControlParadigm).discard(ThisTrial) == 1
+                    % set the control
+                    set(discard_control,'Value',1);
+                    plot(ax,time,temp,'k')
+                    return
+                else
+
+                    set(discard_control,'Value',0);
+                end
+            catch
+                set(discard_control,'Value',0);
+            end
+        end
+
         if get(filtermode,'Value') == 1
             %disp('Need to filter data...')
             [V,Vf] = filter_trace(temp);
@@ -481,7 +551,9 @@ sine_control = uicontrol(fig,'units','normalized','Position',[.03 .59 .1 .05],'S
             % need to suppress some periodic noise, probably from an electrical fault
             z = min([length(time) 5e4]); % 5 seconds of data
             time = time(:); V = V(:);
-            temp = fit(time(1:z),V(1:z),'sin2');
+            temp = fit(time(1:z),V(1:z),'sin1');
+            [num,den] = iirnotch(temp.b1/length(time),.01*(temp.b1/length(time)));
+            keyboard
             V = V - temp(time);
         end
 
@@ -713,7 +785,7 @@ sine_control = uicontrol(fig,'units','normalized','Position',[.03 .59 .1 .05],'S
         xrange = (xlimits(2) - xlimits(1))/deltat;
         yrange = ylimits(2) - ylimits(1);
         % get the width over which to search for spikes dynamically from the zoom factor
-        s = floor((.02*xrange));
+        s = floor((.01*xrange));
         if get(mode_new_A,'Value')==1
             % snip out a small waveform around the point
             [~,loc] = min(V(floor(p(1)-s:p(1)+s)));
