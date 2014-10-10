@@ -8,6 +8,9 @@
 function [A,B] = sscm_1DGaussianFit(R,loc)
 
 [y,x] = hist(R,floor(length(R)/30));
+if length(x) < 6
+	[y,x] = hist(R,floor(length(R)/(floor(length(R)/6))));
+end
 temp = fit(x(:),y(:),'gauss2'); % split into two groups
 g1=temp.a1.*exp(-((x-temp.b1)./temp.c1).^2);
 g2=temp.a2.*exp(-((x-temp.b2)./temp.c2).^2);
@@ -21,5 +24,11 @@ else
 end
 
 % mark as A or B
-B = loc(R<cutoff);
-A = loc(R>=cutoff);
+if isempty(cutoff)
+	% something wrong, fall back to labelling everything as A
+	A = loc;
+	B = [];
+else
+	B = loc(R<cutoff);
+	A = loc(R>=cutoff);
+end
