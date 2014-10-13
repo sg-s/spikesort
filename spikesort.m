@@ -394,6 +394,7 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.135 .59 .1 .05
 
 
     function choose_paradigm_callback(src,~)
+        cla(ax); cla(ax2)
         n = Kontroller_ntrials(data); 
         if src == paradigm_chooser
             ThisControlParadigm = get(paradigm_chooser,'Value');
@@ -410,7 +411,11 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.135 .59 .1 .05
         else
             error('unknown source of callback 109. probably being incorrectly being called by something.')
         end
-        n = n(ThisControlParadigm);
+        if length(n) < ThisControlParadigm
+            return
+        else
+            n = n(ThisControlParadigm);
+        end
         if n
             temp  ={};
             for i = 1:n
@@ -430,8 +435,13 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.135 .59 .1 .05
     end
 
     function choose_trial_callback(src,~)
+        cla(ax); cla(ax2)
         n = Kontroller_ntrials(data); 
-        n = n(ThisControlParadigm);
+        if length(n) < ThisControlParadigm
+            return
+        else
+            n = n(ThisControlParadigm);
+        end
         if src == trial_chooser
             ThisTrial = get(trial_chooser,'Value');
             %disp('Moving directly to trial:')

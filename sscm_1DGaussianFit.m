@@ -33,12 +33,26 @@ if (cutoff-temp.b1)*(cutoff-temp.b2) > 0
 	[~,my] = max(y);
 	f=fit(x(1:my),y(1:my),'power1');
 
-	% find where it deviates most
-	[~,p]=max(y(:)-f(x));
+	% then fit a gaussian to the small residuals
+	xx = x(x<.5);
+	yy = y(x<.5);
+	f2=fit(xx,yy,'gauss1');
 
-	% find the minimum after this
-	[~,cutoff]=min(y(p:my));
-	cutoff = x(cutoff+p);
+	% evaluate the gaussian and the power
+	g = f2(x);
+	p = f(x);
+
+	% find the transitions point
+	cutoff=x(find(g>p,1,'last'));
+
+	% % find where it deviates most
+	% temp = y(1:my)-f(x(1:my));
+	% temp  =temp./y(1:my);
+	% [~,p]=max(temp);
+
+	% % find the minimum after this
+	% [~,cutoff]=min(y(p:my));
+	% cutoff = x(cutoff+p);
 
 	B = loc(R<cutoff);
 	A = loc(R>=cutoff);
@@ -78,3 +92,4 @@ else
 		A = loc(R>=cutoff);
 	end
 end
+

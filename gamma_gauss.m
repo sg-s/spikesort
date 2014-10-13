@@ -4,9 +4,9 @@
 % 
 % This work is licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License. 
 % To view a copy of this license, visit http://creativecommons.org/licenses/by-nc-sa/4.0/.
-function y = gamma_gauss(x,a,b,c,tau,n,A)
+function y = gamma_gauss(x,a1,b1,c1,a2,b2,c2)
 
 % compute the gamma function
-y = filter_gamma(tau,n,A,x);
-%y = a*exp(-((x-b)./c).^2);
-
+y1 = a1*(x-c1).^b1;
+y2 = a2*exp(-((x-b2)./c2).^2);
+y = y1+y2;

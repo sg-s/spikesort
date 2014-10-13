@@ -43,8 +43,8 @@ upper_envelope((find(~isnan(upper_envelope),1,'last')):end) = upper_envelope(fin
 lower_envelope = interp1(time(loc),V(loc),time);
 lower_envelope(1:find(~isnan(lower_envelope),1,'first')) = lower_envelope(find(~isnan(lower_envelope),1,'first'));
 lower_envelope((find(~isnan(lower_envelope),1,'last')):end) = lower_envelope(find(~isnan(lower_envelope),1,'last')-1);
-plot(ax,time,lower_envelope,'g')
-plot(ax,time,upper_envelope,'r')
+% plot(ax,time,lower_envelope,'g')
+% plot(ax,time,upper_envelope,'r')
 
 waitbar(0.6,wb,'Estimating spike density...');
 % build a time-varying estimate of ISI

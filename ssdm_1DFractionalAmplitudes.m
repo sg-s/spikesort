@@ -77,6 +77,6 @@ R = R./envelope_amplitude(loc);
 close(wb)
 
 
-cla(ax2)
-plot(ax2,time(loc),R)
+% cla(ax2)
+% plot(ax2,time(loc),R)
 
