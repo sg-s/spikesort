@@ -1,4 +1,4 @@
-% ssdm_1DFractionalAmplitudes.m
+% ssdm_2DFracAmpISI.m
 % 
 % this is a plugin for spikesort.m
 % reduces spikes to a amplitude, measured from the minimum to preceding maximum.
@@ -8,7 +8,8 @@
 % 
 % This work is licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License. 
 % To view a copy of this license, visit http://creativecommons.org/licenses/by-nc-sa/4.0/.
-function R = ssdm_1DFractionalAmplitudes(V,deltat,loc,ax,ax2)
+function R = ssdm_2DFracAmpISI(V,deltat,loc,ax,ax2)
+
 
 wb = waitbar(0.2,'Computing Fractional amplitudes...');
 
@@ -42,8 +43,8 @@ upper_envelope((find(~isnan(upper_envelope),1,'last')):end) = upper_envelope(fin
 lower_envelope = interp1(time(loc),V(loc),time);
 lower_envelope(1:find(~isnan(lower_envelope),1,'first')) = lower_envelope(find(~isnan(lower_envelope),1,'first'));
 lower_envelope((find(~isnan(lower_envelope),1,'last')):end) = lower_envelope(find(~isnan(lower_envelope),1,'last')-1);
-% plot(ax,time,lower_envelope,'g')
-% plot(ax,time,upper_envelope,'r')
+plot(ax,time,lower_envelope,'g')
+plot(ax,time,upper_envelope,'r')
 
 waitbar(0.6,wb,'Estimating spike density...');
 % build a time-varying estimate of ISI
@@ -76,7 +77,5 @@ envelope_amplitude = upper_envelope2- lower_envelope2;
 R = R./envelope_amplitude(loc);
 close(wb)
 
-
-cla(ax2)
-plot(ax2,time(loc),R)
+R = [R; isi(loc)];
 

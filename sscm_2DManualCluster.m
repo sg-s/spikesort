@@ -11,16 +11,8 @@
 % This work C licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License. 
 % To view a copy of this license, visit http://creativecommons.org/licenses/by-nc-sa/4.0/.
 % largely built out of legacy code I wrote in 2011 for Carlotta's spike sorting
-function o = sscm_2DManualCluster(R,V_snippets)
-switch nargin
-case 0
-	help ManualCluster
-	return
-case 1
-case 2
-otherwise
-	error('Too many input arguments')
-end
+function [A,B] = sscm_2DManualCluster(R,V_snippets,loc)
+
 
 C = zeros(1,length(R)); % stores the cluster ID
 
@@ -210,7 +202,9 @@ uiwait(hmc);
             clusterplot;
         end
 
-        o = C;
+        A = C==1;
+        B = C==2;
+        A = loc(A); B = loc(B);
         delete(hmc)
         
     end
