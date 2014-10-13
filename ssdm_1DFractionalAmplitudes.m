@@ -16,8 +16,10 @@ h = (40*1e-4)/deltat; % deltat in seconds
 % 1D - find total spike amplitude for each
 R = zeros*loc;
 loc_max = 0*loc;
-for i = 1:length(loc)
-    [R(i),loc_max(i)] = max(V(loc(i)-h:loc(i)) - V(loc(i)));
+[R(1),loc_max(1)] = max(V(loc(1)-h:loc(1)) - V(loc(1)));
+for i = 2:length(loc)
+	before = max([loc(i)-h loc(i-1)]);
+    [R(i),loc_max(i)] = max(V(loc(i)-before:loc(i)) - V(loc(i)));
 end
 loc_max = loc + loc_max - h; % stores the location of the preceding maximum of each spike
 
@@ -28,12 +30,14 @@ time = deltat:deltat:(deltat*length(V));
 
 waitbar(0.4,wb,'Building spike envelopes...');
 % build an upper and lower envelope
+
 upper_envelope = interp1(time(loc_max),V(loc_max),time);
 upper_envelope(1:find(~isnan(upper_envelope),1,'first')) = upper_envelope(find(~isnan(upper_envelope),1,'first'));
 upper_envelope((find(~isnan(upper_envelope),1,'last')):end) = upper_envelope(find(~isnan(upper_envelope),1,'last')-1);
 lower_envelope = interp1(time(loc),V(loc),time);
 lower_envelope(1:find(~isnan(lower_envelope),1,'first')) = lower_envelope(find(~isnan(lower_envelope),1,'first'));
 lower_envelope((find(~isnan(lower_envelope),1,'last')):end) = lower_envelope(find(~isnan(lower_envelope),1,'last')-1);
+
 
 waitbar(0.6,wb,'Estimating spike density...');
 % build a time-varying estimate of ISI
