@@ -1,6 +1,8 @@
 % spikesort.m
 % Allows you to view, manipulate and sort spikes from experiments conducted by Kontroller. specifically meant to sort spikes from Drosophila ORNs
 % spikesort was written by Srinivas Gorur-Shandilya at 10:20 , 09 April 2014. Contact me at http://srinivas.gs/contact/
+% part of the spikesort package
+% https://github.com/sg-s/spikesort
 % 
 % This work is licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License. 
 % To view a copy of this license, visit http://creativecommons.org/licenses/by-nc-sa/4.0/.
