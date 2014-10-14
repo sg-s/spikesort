@@ -8,7 +8,7 @@
 % 
 % This work is licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License. 
 % To view a copy of this license, visit http://creativecommons.org/licenses/by-nc-sa/4.0/.
-function R = ssdm_1DRelativeAmplitudes(V,Vf,deltat,loc,ax,ax2)
+function R = ssdm_1DRelativeAmplitudes(V,deltat,loc,ax,ax2)
 
 wb = waitbar(0.2,'Computing Fractional amplitudes...');
 
@@ -33,95 +33,56 @@ t_closest_spike = (t_next_spike + t_prev_spike)/2;
 t_closest_spike(1) = t_next_spike(1);
 t_closest_spike(end) = t_prev_spike(end);
 mean_isi = mean(t_closest_spike); std_isi = std(t_closest_spike);
-isi = t_closest_spike; f = 1./isi;
+isi = t_closest_spike; f = 1./isi; f = f/deltat;
 
 
-keyboard
+waitbar(0.4,wb,'Calculating relative heights...');
+time = deltat:deltat:(deltat*length(V));
 R2=R;
 for i = loc
-	[~,idx]=sort(abs(loc-i)); idx(1) = []; % remove itself
-	amp_scale = [0 0 0]; j = 0;
-	while max(amp_scale(2:3)) < 5
-		j = j + 1;
-		this_amp = R(idx(j));
-		[~,category]=min(abs(((R(loc==i)/this_amp)) - [1 .5 2]));
-		amp_scale(category) = amp_scale(category) + 1;
-		
-	end
-	R2(loc==i) = (amp_scale(3)-amp_scale(2))/(sum(amp_scale(2:3)));
 
-
-end
-
-
-
-time = deltat:deltat:(deltat*length(V));
-% figure, hold on
-% plot(time,V)
-% scatter(time(loc),V(loc))
-% scatter(time(loc_max),V(loc_max))
-
-
-
-waitbar(0.4,wb,'Building spike envelopes...');
-% build an upper and lower envelope
-
-upper_envelope = interp1(time(loc_max),V(loc_max),time);
-upper_envelope(1:find(~isnan(upper_envelope),1,'first')) = upper_envelope(find(~isnan(upper_envelope),1,'first'));
-upper_envelope((find(~isnan(upper_envelope),1,'last')):end) = upper_envelope(find(~isnan(upper_envelope),1,'last')-1);
-lower_envelope = interp1(time(loc),V(loc),time);
-lower_envelope(1:find(~isnan(lower_envelope),1,'first')) = lower_envelope(find(~isnan(lower_envelope),1,'first'));
-lower_envelope((find(~isnan(lower_envelope),1,'last')):end) = lower_envelope(find(~isnan(lower_envelope),1,'last')-1);
-% plot(ax,time,lower_envelope,'g')
-% plot(ax,time,upper_envelope,'r')
-
-
-
-
-waitbar(0.8,wb,'Filtering...');
-% filter the envelopes in a time-dependant manner
-upper_envelope2 = upper_envelope;
-lower_envelope2 = lower_envelope;
-scaling_factor = 2;
-for i = loc
-	if isi(i) < mean_isi
-		before = floor(max([1 i-isi(i)*scaling_factor]));
-		after = floor(min([length(isi) i+isi(i)*scaling_factor]));
-		upper_envelope2(i) = max(upper_envelope(before:after));
-		lower_envelope2(i) = min(lower_envelope(before:after));
-	else
-		% when firing is low, look far enough to see at least two different types of spikes
+	if f(loc==i) < 100
+		% moderate spiking
 		[~,idx]=sort(abs(loc-i)); idx(1) = []; % remove itself
-		amp_scale = [0 0 0]; j = 1;
-		while max(amp_scale(2:3)) == 0 
+		amp_scale = [0 0 0]; j = 0;
+		while max(amp_scale) < 5
+			j = j + 1; 
 			this_amp = R(idx(j));
 			[~,category]=min(abs(((R(loc==i)/this_amp)) - [1 .5 2]));
 			amp_scale(category) = amp_scale(category) + 1;
-			j = j + 1;
+			
 		end
-		if find(amp_scale(2:3))
-			% there exists a nearby spike that is twice as big as this
-			% set the envelope to that spike's envelope
-			upper_envelope2(i) = upper_envelope(loc(idx(j-1)));
-			lower_envelope2(i) = lower_envelope(loc(idx(j-1)));
+		if max(amp_scale(2:3))
+			% we see some spike of a different height
+			R2(loc==i) = (amp_scale(3)-amp_scale(2))/(sum(amp_scale(2:3)));
 		else
-			% there exists a nearby spike that is half as big
-			% so we do nothing
+			% all the spikes we see are the same height
+			% default to assigning it to the last seen
+			if find(loc==i) > 1
+				R2(loc==i)=R2(find(loc==i)-1);
+			else
+				% no idea what to do.
+				error('first spike unclassifiable'); 
+			end
 		end
+	else
+		% intense spiking. assume A spike, and only check if it is B
+		R2(loc==i) = 1;
 		
+		% find the up to 3 closest spikes that are in the same regime
+		[~,idx]=sort(abs(loc-i)); idx(1) = []; % remove itself
+
+		compare_to_these = find(f(idx)>.8*f(loc==i));
+		m = min([5 length(compare_to_these)]);
+		comparable_r = R(idx(compare_to_these(1:m)));
+
+		if  mean(abs(R(loc==i)./comparable_r-1)) >  mean(abs(R(loc==i)./comparable_r-2))
+			% it's a B
+			R2(loc==i) = -1;
+		end
+
 	end
-
+	
 end
-clear upper_envelope lower_envelope
-envelope_amplitude = upper_envelope2- lower_envelope2;
-
-%R = R./envelope_amplitude(loc);
 close(wb)
-
-
-% cla(ax2)
-% plot(time(loc),R)
-
-% cla(ax2)
-% plot(ax2,time(loc),R)
-
+R = R2;
