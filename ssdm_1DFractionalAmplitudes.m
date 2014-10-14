@@ -59,6 +59,7 @@ isi((find(~isnan(isi),1,'last')):end) = isi(find(~isnan(isi),1,'last')-1);
 isi = filtfilt(ones(1,h)/h,1,isi); clear t_closest_spike t_prev_spike t_next_spike
 
 
+
 waitbar(0.8,wb,'Filtering...');
 % filter the envelopes in a time-dependant manner
 upper_envelope2 = upper_envelope;
@@ -71,17 +72,37 @@ for i = loc
 		upper_envelope2(i) = max(upper_envelope(before:after));
 		lower_envelope2(i) = min(lower_envelope(before:after));
 	else
-		upper_envelope2(i) = max(upper_envelope);
-		lower_envelope2(i) = min(lower_envelope);
+		% when firing is low, look far enough to see at least two different types of spikes
+		[~,idx]=sort(abs(loc-i)); idx(1) = []; % remove itself
+		amp_scale = [0 0 0]; j = 1;
+		while max(amp_scale(2:3)) == 0 
+			this_amp = R(idx(j));
+			[~,category]=min(abs(((R(loc==i)/this_amp)) - [1 .5 2]));
+			amp_scale(category) = amp_scale(category) + 1;
+			j = j + 1;
+		end
+		if find(amp_scale(2:3))
+			% there exists a nearby spike that is twice as big as this
+			% set the envelope to that spike's envelope
+			upper_envelope2(i) = upper_envelope(loc(idx(j-1)));
+			lower_envelope2(i) = lower_envelope(loc(idx(j-1)));
+		else
+			% there exists a nearby spike that is half as big
+			% so we do nothing
+		end
+		
 	end
 
 end
 clear upper_envelope lower_envelope
 envelope_amplitude = upper_envelope2- lower_envelope2;
 
-R = R./envelope_amplitude(loc);
+%R = R./envelope_amplitude(loc);
 close(wb)
 
+
+% cla(ax2)
+% plot(time(loc),R)
 
 % cla(ax2)
 % plot(ax2,time(loc),R)
