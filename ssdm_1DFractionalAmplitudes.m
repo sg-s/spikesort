@@ -8,7 +8,7 @@
 % 
 % This work is licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License. 
 % To view a copy of this license, visit http://creativecommons.org/licenses/by-nc-sa/4.0/.
-function R = ssdm_1DFractionalAmplitudes(V,deltat,loc,ax,ax2)
+function R = ssdm_1DFractionalAmplitudes(V,Vf,deltat,loc,ax,ax2)
 
 wb = waitbar(0.2,'Computing Fractional amplitudes...');
 
@@ -52,6 +52,7 @@ t_next_spike = [diff(loc) 0];
 t_closest_spike = (t_next_spike + t_prev_spike)/2;
 t_closest_spike(1) = t_next_spike(1);
 t_closest_spike(end) = t_prev_spike(end);
+mean_isi = mean(t_closest_spike); std_isi = std(t_closest_spike);
 isi = interp1(time(loc),t_closest_spike,time);
 isi(1:find(~isnan(isi),1,'first')) = isi(find(~isnan(isi),1,'first'));
 isi((find(~isnan(isi),1,'last')):end) = isi(find(~isnan(isi),1,'last')-1);
@@ -64,10 +65,15 @@ upper_envelope2 = upper_envelope;
 lower_envelope2 = lower_envelope;
 scaling_factor = 2;
 for i = loc
-	before = floor(max([1 i-isi(i)*scaling_factor]));
-	after = floor(min([length(isi) i+isi(i)*scaling_factor]));
-	upper_envelope2(i) = max(upper_envelope(before:after));
-	lower_envelope2(i) = min(lower_envelope(before:after));
+	if isi(i) < mean_isi
+		before = floor(max([1 i-isi(i)*scaling_factor]));
+		after = floor(min([length(isi) i+isi(i)*scaling_factor]));
+		upper_envelope2(i) = max(upper_envelope(before:after));
+		lower_envelope2(i) = min(lower_envelope(before:after));
+	else
+		upper_envelope2(i) = max(upper_envelope);
+		lower_envelope2(i) = min(lower_envelope);
+	end
 
 end
 clear upper_envelope lower_envelope
