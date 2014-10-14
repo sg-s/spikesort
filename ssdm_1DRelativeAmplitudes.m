@@ -1,4 +1,4 @@
-% ssdm_1DFractionalAmplitudes.m
+% ssdm_1DRelativeAmplitudes.m
 % 
 % this is a plugin for spikesort.m
 % reduces spikes to a amplitude, measured from the minimum to preceding maximum.
@@ -8,7 +8,7 @@
 % 
 % This work is licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License. 
 % To view a copy of this license, visit http://creativecommons.org/licenses/by-nc-sa/4.0/.
-function R = ssdm_1DFractionalAmplitudes(V,Vf,deltat,loc,ax,ax2)
+function R = ssdm_1DRelativeAmplitudes(V,Vf,deltat,loc,ax,ax2)
 
 wb = waitbar(0.2,'Computing Fractional amplitudes...');
 
@@ -23,6 +23,36 @@ for i = 2:length(loc)
     [R(i),loc_max(i)] = max(V(before:loc(i)) - V(loc(i)));
     loc_max(i) = loc_max(i) + before;
 end
+
+
+waitbar(0.4,wb,'Estimating spike density...');
+% build a time-varying estimate of ISI
+t_prev_spike = [0 diff(loc)];
+t_next_spike = [diff(loc) 0];
+t_closest_spike = (t_next_spike + t_prev_spike)/2;
+t_closest_spike(1) = t_next_spike(1);
+t_closest_spike(end) = t_prev_spike(end);
+mean_isi = mean(t_closest_spike); std_isi = std(t_closest_spike);
+isi = t_closest_spike; f = 1./isi;
+
+
+keyboard
+R2=R;
+for i = loc
+	[~,idx]=sort(abs(loc-i)); idx(1) = []; % remove itself
+	amp_scale = [0 0 0]; j = 0;
+	while max(amp_scale(2:3)) < 5
+		j = j + 1;
+		this_amp = R(idx(j));
+		[~,category]=min(abs(((R(loc==i)/this_amp)) - [1 .5 2]));
+		amp_scale(category) = amp_scale(category) + 1;
+		
+	end
+	R2(loc==i) = (amp_scale(3)-amp_scale(2))/(sum(amp_scale(2:3)));
+
+
+end
+
 
 
 time = deltat:deltat:(deltat*length(V));
@@ -45,18 +75,6 @@ lower_envelope((find(~isnan(lower_envelope),1,'last')):end) = lower_envelope(fin
 % plot(ax,time,lower_envelope,'g')
 % plot(ax,time,upper_envelope,'r')
 
-waitbar(0.6,wb,'Estimating spike density...');
-% build a time-varying estimate of ISI
-t_prev_spike = [0 diff(loc)];
-t_next_spike = [diff(loc) 0];
-t_closest_spike = (t_next_spike + t_prev_spike)/2;
-t_closest_spike(1) = t_next_spike(1);
-t_closest_spike(end) = t_prev_spike(end);
-mean_isi = mean(t_closest_spike); std_isi = std(t_closest_spike);
-isi = interp1(time(loc),t_closest_spike,time);
-isi(1:find(~isnan(isi),1,'first')) = isi(find(~isnan(isi),1,'first'));
-isi((find(~isnan(isi),1,'last')):end) = isi(find(~isnan(isi),1,'last')-1);
-isi = filtfilt(ones(1,h)/h,1,isi); clear t_closest_spike t_prev_spike t_next_spike
 
 
 
@@ -81,12 +99,12 @@ for i = loc
 			amp_scale(category) = amp_scale(category) + 1;
 			j = j + 1;
 		end
-		if amp_scale(2)
+		if find(amp_scale(2:3))
 			% there exists a nearby spike that is twice as big as this
 			% set the envelope to that spike's envelope
 			upper_envelope2(i) = upper_envelope(loc(idx(j-1)));
 			lower_envelope2(i) = lower_envelope(loc(idx(j-1)));
-		elseif amp_scale(3)
+		else
 			% there exists a nearby spike that is half as big
 			% so we do nothing
 		end

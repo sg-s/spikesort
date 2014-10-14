@@ -12,7 +12,7 @@ if length(x) < 6
 	[y,x] = hist(R,floor(length(R)/(floor(length(R)/6))));
 end
 y = y(:); x = x(:);
-temp = fit(x(:),y(:),'gauss2'); % split into two groups
+temp = fit(x,y,'gauss2'); % split into two groups
 g1=temp.a1.*exp(-((x-temp.b1)./temp.c1).^2);
 g2=temp.a2.*exp(-((x-temp.b2)./temp.c2).^2);
 if temp.b1 > temp.b2
