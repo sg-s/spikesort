@@ -134,7 +134,6 @@ mode_new_B = uicontrol(manualpanel,'Position',[5 35 100 20], 'Style', 'radiobutt
 mode_delete = uicontrol(manualpanel,'Position',[5 65 100 20], 'Style', 'radiobutton', 'String', '-X','FontSize',fs);
 mode_A2B = uicontrol(manualpanel,'Position',[5 95 100 20], 'Style', 'radiobutton', 'String', 'A->B','FontSize',fs);
 mode_B2A = uicontrol(manualpanel,'Position',[5 125 100 20], 'Style', 'radiobutton', 'String', 'B->A','FontSize',fs);
-modify_control = uicontrol(fig,'units','normalized','Position',[.29 .60 .1 .05],'Style','pushbutton','String','Modify','Value',0,'Callback',@modify_callback,'Enable','off');
 
 
 % various toggle switches and pushbuttons
@@ -380,7 +379,6 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.135 .59 .1 .05
         set(redo_control,'Enable','on');
         set(findmode,'Enable','on');
         set(filtermode,'Enable','on');
-        set(modify_control,'Enable','on');
         set(cluster_control,'Enable','on');
         set(prev_trial,'Enable','on');
         set(next_trial,'Enable','on');
@@ -747,7 +745,13 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.135 .59 .1 .05
         clear ri
         es = es(1:end-1);
         es = strcat(es,');');
-        eval(es);
+        try
+            eval(es);
+        catch exc
+            ms = strkat(methodname, ' ran into an error: ', exc.message);
+            msgbox(ms,'spikesort');
+            return
+        end
         clear es
     end
 
@@ -765,7 +769,13 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.135 .59 .1 .05
         clear ri
         es = es(1:end-1);
         es = strcat(es,');');
-        eval(es);
+        try
+            eval(es);
+        catch exc
+            ms = strkat(methodname, ' ran into an error: ', exc.message);
+            msgbox(ms,'spikesort');
+            return
+        end
         clear es
         
         
@@ -787,13 +797,6 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.135 .59 .1 .05
 
     end
 
-    function modify_callback(~,~)
-        % get a point from the plot
-        axis(ax);
-        p = ginput(1);
-        modify(p);
-        
-    end
 
     function mousecallback(~,~)
         p=get(ax,'CurrentPoint');
