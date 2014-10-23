@@ -67,7 +67,7 @@ h_scatter2 = [];
 h_scatter3 = [];
 
 % make the master figure, and the axes to plot the voltage traces
-fig = figure('position',[50 50 1200 700], 'Toolbar','figure','Menubar','none','Name',versionname,'NumberTitle','off','IntegerHandle','off','WindowButtonDownFcn',@mousecallback,'WindowScrollWheelFcn',@scroll);
+fig = figure('position',[50 50 1200 700], 'Toolbar','figure','Menubar','none','Name',versionname,'NumberTitle','off','IntegerHandle','off','WindowButtonDownFcn',@mousecallback,'WindowScrollWheelFcn',@scroll,'CloseRequestFcn',@closess);
 ax = axes('parent',fig,'Position',[0.07 0.05 0.87 0.29]);
 jump_back = uicontrol(fig,'units','normalized','Position',[0 .04 .04 .50],'Style', 'pushbutton', 'String', '<','callback',@jump);
 jump_fwd = uicontrol(fig,'units','normalized','Position',[.96 .04 .04 .50],'Style', 'pushbutton', 'String', '>','callback',@jump);
@@ -146,6 +146,15 @@ autosort_control = uicontrol(fig,'units','normalized','Position',[.135 .64 .1 .0
 sine_control = uicontrol(fig,'units','normalized','Position',[.03 .59 .1 .05],'Style','togglebutton','String',' Kill Ringing','Value',0,'Callback',@plot_resp,'Enable','off');
 discard_control = uicontrol(fig,'units','normalized','Position',[.135 .59 .1 .05],'Style','togglebutton','String',' Discard','Value',0,'Callback',@discard,'Enable','off');
 
+
+    function closess(~,~)
+        % save everything
+        if ~isempty(PathName)
+            save(strcat(PathName,FileName),'spikes','-append')
+        end
+        delete(fig)
+
+    end
 
     function jump(src,~)
         % get the digital channels
@@ -870,8 +879,7 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.135 .59 .1 .05
         % update plot
         plot_resp;
 
-        % save them
-        save(strcat(PathName,FileName),'spikes','-append')
+ 
     end
 
 
