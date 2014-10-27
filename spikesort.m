@@ -149,8 +149,11 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.135 .59 .1 .05
 
     function closess(~,~)
         % save everything
-        if ~isempty(PathName)
-            save(strcat(PathName,FileName),'spikes','-append')
+        try
+            if ~isempty(PathName)
+                save(strcat(PathName,FileName),'spikes','-append')
+            end
+        catch
         end
         delete(fig)
 
@@ -273,6 +276,9 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.135 .59 .1 .05
 
     function loadfilecallback(~,~)
         [FileName,PathName] = uigetfile('.mat');
+        if ~FileName
+            return
+        end
         load_waitbar = waitbar(0.2, 'Loading data...');
         temp=load(strcat(PathName,FileName));
         ControlParadigm = temp.ControlParadigm;
