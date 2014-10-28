@@ -234,6 +234,8 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.135 .59 .1 .05
                 if width(spikes(ThisControlParadigm).A) >= ThisTrial
                     spikes(ThisControlParadigm).A(ThisTrial,:) = 0;
                     spikes(ThisControlParadigm).B(ThisTrial,:) = 0;
+                    spikes(ThisControlParadigm).amplitudes_A(ThisTrial,:) = 0;
+                    spikes(ThisControlParadigm).amplitudes_B(ThisTrial,:) = 0;
 
                 else
                     % all cool
@@ -259,6 +261,8 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.135 .59 .1 .05
             if width(spikes(ThisControlParadigm).A) >= ThisTrial
                 spikes(ThisControlParadigm).A(ThisTrial,:) = 0;
                 spikes(ThisControlParadigm).B(ThisTrial,:) = 0;
+                spikes(ThisControlParadigm).amplitudes_A(ThisTrial,:) = 0;
+                spikes(ThisControlParadigm).amplitudes_B(ThisTrial,:) = 0;
             else
                 % all cool
             end
@@ -807,6 +811,10 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.135 .59 .1 .05
         spikes(ThisControlParadigm).B(ThisTrial,:) = sparse(1,length(time));
         spikes(ThisControlParadigm).B(ThisTrial,B) = 1;
 
+        % also save spike amplitudes
+        spikes(ThisControlParadigm).amplitudes_A =  ssdm_1DAmplitudes(V,deltat,A);
+        spikes(ThisControlParadigm).amplitudes_B =  ssdm_1DAmplitudes(V,deltat,B);
+
         % save them
         save(strcat(PathName,FileName),'spikes','-append')
 
@@ -841,10 +849,14 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.135 .59 .1 .05
             % snip out a small waveform around the point
             [~,loc] = min(V(floor(p(1)-s:p(1)+s)));
             spikes(ThisControlParadigm).A(ThisTrial,-s+loc+floor(p(1))) = 1;
+            A = find(spikes(ThisControlParadigm).A(ThisTrial,:));
+            spikes(ThisControlParadigm).amplitudes_A =  ssdm_1DAmplitudes(V,deltat,A);
         elseif get(mode_new_B,'Value')==1
             % snip out a small waveform around the point
             [~,loc] = min(V(floor(p(1)-s:p(1)+s)));
             spikes(ThisControlParadigm).B(ThisTrial,-s+loc+floor(p(1))) = 1;
+            B = find(spikes(ThisControlParadigm).B(ThisTrial,:));
+            spikes(ThisControlParadigm).amplitudes_B =  ssdm_1DAmplitudes(V,deltat,B);
         elseif get(mode_delete,'Value')==1
             % find the closest spike
             Aspiketimes = find(spikes(ThisControlParadigm).A(ThisTrial,:));
@@ -854,16 +866,16 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.135 .59 .1 .05
             dB= (((Bspiketimes-p(1))/(xrange)).^2  + ((V(Bspiketimes) - p(2))/(5*yrange)).^2);
             dist_to_A = min(dA);
             dist_to_B = min(dB);
-            % dist_to_B = min(abs(find(spikes(ThisControlParadigm).B(ThisTrial,:)) - p(1)/deltat));
-            % dist_to_A = min(abs(find(spikes(ThisControlParadigm).A(ThisTrial,:)) - p(1)/deltat));
             if dist_to_A < dist_to_B
                 [~,closest_spike] = min(dA);
                 spikes(ThisControlParadigm).A(ThisTrial,Aspiketimes(closest_spike)) = 0;
+                A = find(spikes(ThisControlParadigm).A(ThisTrial,:));
+                spikes(ThisControlParadigm).amplitudes_A =  ssdm_1DAmplitudes(V,deltat,A);
             else
-                % closest_spike = find(abs(Bspiketimes - p(1)/deltat) == dist_to_B);
-                % closest_spike = Bspiketimes(closest_spike);
                 [~,closest_spike] = min(dB);
                 spikes(ThisControlParadigm).B(ThisTrial,Bspiketimes(closest_spike)) = 0;
+                B = find(spikes(ThisControlParadigm).B(ThisTrial,:));
+                spikes(ThisControlParadigm).amplitudes_B =  ssdm_1DAmplitudes(V,deltat,B);
             end
         elseif get(mode_A2B,'Value')==1 
             % find the closest A spike
@@ -872,6 +884,10 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.135 .59 .1 .05
             [~,closest_spike] = min(dA);
             spikes(ThisControlParadigm).A(ThisTrial,Aspiketimes(closest_spike)) = 0;
             spikes(ThisControlParadigm).B(ThisTrial,Aspiketimes(closest_spike)) = 1;
+            A = find(spikes(ThisControlParadigm).A(ThisTrial,:));
+            spikes(ThisControlParadigm).amplitudes_A =  ssdm_1DAmplitudes(V,deltat,A);
+            B = find(spikes(ThisControlParadigm).B(ThisTrial,:));
+            spikes(ThisControlParadigm).amplitudes_B =  ssdm_1DAmplitudes(V,deltat,B);
 
         elseif get(mode_B2A,'Value')==1
             % find the closest B spike
@@ -880,6 +896,10 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.135 .59 .1 .05
             [~,closest_spike] = min(dB);
             spikes(ThisControlParadigm).A(ThisTrial,Bspiketimes(closest_spike)) = 1;
             spikes(ThisControlParadigm).B(ThisTrial,Bspiketimes(closest_spike)) = 0;
+            A = find(spikes(ThisControlParadigm).A(ThisTrial,:));
+            spikes(ThisControlParadigm).amplitudes_A =  ssdm_1DAmplitudes(V,deltat,A);
+            B = find(spikes(ThisControlParadigm).B(ThisTrial,:));
+            spikes(ThisControlParadigm).amplitudes_B =  ssdm_1DAmplitudes(V,deltat,B);
         end
 
         % update plot
