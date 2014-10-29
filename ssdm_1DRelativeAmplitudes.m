@@ -62,7 +62,12 @@ for i = loc
 				R2(loc==i)=R2(find(loc==i)-1);
 			else
 				% no idea what to do.
-				error('first spike unclassifiable'); 
+				% randomly pick one
+				if rand > .5
+					R2(loc==i) = 1; 
+				else
+					R2(loc==i) = -1; 
+				end
 			end
 		end
 	else

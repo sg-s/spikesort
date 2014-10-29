@@ -112,7 +112,7 @@ for oi = 1:length(avail_methods)
     avail_methods{oi} = temp(6:end-2);
 end
 clear oi
-method_control = uicontrol(dimredpanel,'Style','popupmenu','String',avail_methods,'units','normalized','Position',[.02 .8 .9 .2],'Callback',@reduce_dimensions_callback,'Enable','off');
+method_control = uicontrol(dimredpanel,'Style','popupmenu','String',avail_methods,'units','normalized','Position',[.02 .6 .9 .2],'Callback',@reduce_dimensions_callback,'Enable','off');
 
 % find the available methods for clustering
 look_here = mfilename('fullpath');
@@ -125,10 +125,10 @@ for oi = 1:length(avail_methods)
 end
 clear oi
 cluster_panel = uipanel('Title','Clustering','Position',[.51 .92 .21 .07]);
-cluster_control = uicontrol(cluster_panel,'Style','popupmenu','String',avail_methods,'units','normalized','Position',[.02 .8 .9 .2],'Callback',@find_cluster,'Enable','off');
+cluster_control = uicontrol(cluster_panel,'Style','popupmenu','String',avail_methods,'units','normalized','Position',[.02 .6 .9 .2],'Callback',@find_cluster,'Enable','off');
 
 % manual override panel
-manualpanel = uibuttongroup(fig,'Title','Manual Override','Position',[.29 .66 .11 .24]);
+manualpanel = uibuttongroup(fig,'Title','Manual Override','Position',[.68 .57 .11 .24]);
 mode_new_A = uicontrol(manualpanel,'Position',[5 5 100 20], 'Style', 'radiobutton', 'String', '+A','FontSize',fs);
 mode_new_B = uicontrol(manualpanel,'Position',[5 35 100 20], 'Style', 'radiobutton', 'String', '+B','FontSize',fs);
 mode_delete = uicontrol(manualpanel,'Position',[5 65 100 20], 'Style', 'radiobutton', 'String', '-X','FontSize',fs);
@@ -150,8 +150,10 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.135 .59 .1 .05
     function closess(~,~)
         % save everything
         try
-            if ~isempty(PathName)
-                save(strcat(PathName,FileName),'spikes','-append')
+            if ~isempty(PathName) && ~isempty(FileName) 
+                if ischar(PathName) && ischar(FileName)
+                    save(strcat(PathName,FileName),'spikes','-append')
+                end
             end
         catch
         end
