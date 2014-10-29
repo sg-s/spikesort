@@ -69,6 +69,10 @@ h_scatter3 = [];
 
 % make the master figure, and the axes to plot the voltage traces
 fig = figure('position',[50 50 1200 700], 'Toolbar','figure','Menubar','none','Name',versionname,'NumberTitle','off','IntegerHandle','off','WindowButtonDownFcn',@mousecallback,'WindowScrollWheelFcn',@scroll,'CloseRequestFcn',@closess);
+temp =  findall(gcf,'Type','uitoggletool','-or','Type','uipushtool');
+delete(temp([1:7 11 12 14:15]))
+clear temp
+
 ax = axes('parent',fig,'Position',[0.07 0.05 0.87 0.29]);
 jump_back = uicontrol(fig,'units','normalized','Position',[0 .04 .04 .50],'Style', 'pushbutton', 'String', '<','callback',@jump);
 jump_fwd = uicontrol(fig,'units','normalized','Position',[.96 .04 .04 .50],'Style', 'pushbutton', 'String', '>','callback',@jump);
