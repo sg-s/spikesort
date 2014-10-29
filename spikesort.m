@@ -9,13 +9,14 @@
 function [] = spikesort()
 Opt.Input = 'file';
 dh = '';
-try
-    dh=(DataHash(strcat(mfilename,'.m'),Opt));
-    dh=dh(1:4);
-catch
-end
-versionname = strcat('spikesort for Kontroller (Build-',dh,')'); clear dh
+h = GitHash(mfilename('fullpath'));
+versionname = strcat('spikesort for Kontroller (Build-',h(1:6),')');
 
+% check for update
+hl = GetLatestHash('https://github.com/sg-s/spikesort');
+if ~strcmp(h,hl)
+    disp('A new version of spikesort is available.')
+end
 
 % check dependencies 
 p=path;
@@ -529,7 +530,7 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.135 .59 .1 .05
             end
         end
 
-        % rescale the Y axis approproately
+        % rescale the Y axis appropriately
         if ~isinf(sum(abs([maxy miny])))
             set(ax2,'YLim',[miny maxy+.1*(maxy-miny)]);
         end
@@ -545,11 +546,14 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.135 .59 .1 .05
             end
 
             ymax = get(ax2,'YLim');
-            ymin = ymax(1); ymax = ymax(2); dy = (ymax- .9*(ymax-ymin))/nchannels;
+            ymin = ymax(1); ymax = ymax(2); 
+            y0 = (ymax- .1*(ymax-ymin));
+            dy = (ymax-y0)/nchannels;
             thisy = ymax;
 
             for i = 1:nchannels
                 temp=ControlParadigm(ThisControlParadigm).Outputs(plot_these(i),:);
+                temp(temp>0)=1;
                 time = deltat*(1:length(temp));
                 thisy = thisy - dy;
                 temp = temp*thisy;
