@@ -13,9 +13,14 @@ h = GitHash(mfilename('fullpath'));
 versionname = strcat('spikesort for Kontroller (Build-',h(1:6),')');
 
 % check for update
-hl = GetLatestHash('https://github.com/sg-s/spikesort');
-if ~strcmp(h,hl)
-    disp('A new version of spikesort is available.')
+if ~strcmp(h,'000000')
+    hl = GetLatestHash('https://github.com/sg-s/spikesort');
+    if ~strcmp(h,hl)
+        disp('A different version of spikesort is available:')
+        disp(hl(1:6))
+        disp('You are on version:')
+        disp(h(1:6))
+    end
 end
 
 % check dependencies 
@@ -133,12 +138,13 @@ cluster_panel = uipanel('Title','Clustering','Position',[.51 .92 .21 .07]);
 cluster_control = uicontrol(cluster_panel,'Style','popupmenu','String',avail_methods,'units','normalized','Position',[.02 .6 .9 .2],'Callback',@find_cluster,'Enable','off');
 
 % manual override panel
-manualpanel = uibuttongroup(fig,'Title','Manual Override','Position',[.68 .57 .11 .24]);
+manualpanel = uibuttongroup(fig,'Title','Manual Override','Position',[.68 .60 .11 .28]);
 mode_new_A = uicontrol(manualpanel,'Position',[5 5 100 20], 'Style', 'radiobutton', 'String', '+A','FontSize',fs);
 mode_new_B = uicontrol(manualpanel,'Position',[5 35 100 20], 'Style', 'radiobutton', 'String', '+B','FontSize',fs);
 mode_delete = uicontrol(manualpanel,'Position',[5 65 100 20], 'Style', 'radiobutton', 'String', '-X','FontSize',fs);
 mode_A2B = uicontrol(manualpanel,'Position',[5 95 100 20], 'Style', 'radiobutton', 'String', 'A->B','FontSize',fs);
 mode_B2A = uicontrol(manualpanel,'Position',[5 125 100 20], 'Style', 'radiobutton', 'String', 'B->A','FontSize',fs);
+mark_all = uicontrol(manualpanel,'Position',[15 150 100 30],'Style','pushbutton','String','Mark All in View','Callback',@mark_all_callback);
 
 
 % various toggle switches and pushbuttons
@@ -150,6 +156,35 @@ autosort_control = uicontrol(fig,'units','normalized','Position',[.135 .64 .1 .0
 
 sine_control = uicontrol(fig,'units','normalized','Position',[.03 .59 .1 .05],'Style','togglebutton','String',' Kill Ringing','Value',0,'Callback',@plot_resp,'Enable','off');
 discard_control = uicontrol(fig,'units','normalized','Position',[.135 .59 .1 .05],'Style','togglebutton','String',' Discard','Value',0,'Callback',@discard,'Enable','off');
+
+
+    function mark_all_callback(~,~)
+        % get view
+        xmin = get(ax,'XLim');
+        xmin = xmin/deltat;
+        xmax = xmin(2); xmin=xmin(1);
+
+        % get mode
+        if get(mode_B2A,'Value')
+            % add to A spikes
+            spikes(ThisControlParadigm).A(ThisTrial,loc(loc>xmin & loc<xmax))  = 1;
+            % remove b spikes
+            spikes(ThisControlParadigm).B(ThisTrial,loc(loc>xmin & loc<xmax))  = 0;
+
+        elseif get(mode_A2B,'Value')
+            % add to B spikes
+            spikes(ThisControlParadigm).B(ThisTrial,loc(loc>xmin & loc<xmax))  = 1;
+            % remove A spikes
+            spikes(ThisControlParadigm).A(ThisTrial,loc(loc>xmin & loc<xmax))  = 0;
+        elseif get(mode_delete,'Value')
+            spikes(ThisControlParadigm).A(ThisTrial,loc(loc>xmin & loc<xmax))  = 0;
+            spikes(ThisControlParadigm).B(ThisTrial,loc(loc>xmin & loc<xmax))  = 0;
+        end
+
+        % update plot
+        plot_resp;
+
+    end
 
 
     function closess(~,~)
