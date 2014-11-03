@@ -6,22 +6,34 @@
 % 
 % This work is licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License. 
 % To view a copy of this license, visit http://creativecommons.org/licenses/by-nc-sa/4.0/.
-function [] = spikesort()
+function [] = spikesort(varargin)
 Opt.Input = 'file';
 dh = '';
 h = GitHash(mfilename('fullpath'));
 versionname = strcat('spikesort for Kontroller (Build-',h(1:6),')');
 
-% check for update
-if ~strcmp(h,'000000')
-    hl = GetLatestHash('https://github.com/sg-s/spikesort');
-    if ~strcmp(h,hl) && ~strcmp('000000',hl)
-        disp('A different version of spikesort is available:')
-        disp(hl(1:6))
-        disp('You are on version:')
-        disp(h(1:6))
-    end
-end
+switch nargin
+    case 0
+    case 1
+        a = varargin;
+        if strcmp('u',a)
+
+
+            % check for update
+            if ~strcmp(h,'000000')
+                hl = GetLatestHash('https://github.com/sg-s/spikesort');
+                if ~strcmp(h,hl) && ~strcmp('000000',hl)
+                    disp('A different version of spikesort is available:')
+                    disp(hl(1:6))
+                    disp('You are on version:')
+                    disp(h(1:6))
+                else
+                    disp('spikesort is up-to-date with master')
+                end
+            end
+        end
+end    
+
 
 % check dependencies 
 p=path;
@@ -77,6 +89,9 @@ fig = figure('position',[50 50 1200 700], 'Toolbar','figure','Menubar','none','N
 temp =  findall(gcf,'Type','uitoggletool','-or','Type','uipushtool');
 delete(temp([1:7 11 12 14:15]))
 clear temp
+% callback for export figs
+menubuttons = findall(gcf,'Type','uitoggletool','-or','Type','uipushtool');
+set(menubuttons(4),'ClickedCallback',@ExportFigs,'Enable','off')
 
 ax = axes('parent',fig,'Position',[0.07 0.05 0.87 0.29]);
 jump_back = uicontrol(fig,'units','normalized','Position',[0 .04 .04 .50],'Style', 'pushbutton', 'String', '<','callback',@jump);
@@ -448,11 +463,55 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.135 .59 .1 .05
         set(trial_chooser,'Enable','on');
         set(paradigm_chooser,'Enable','on');
         set(discard_control,'Enable','on');
+        set(menubuttons(4),'Enable','on')
 
         % clean up
         close(load_waitbar)
     end
 
+    function ExportFigs(~,~)
+        % cache current state
+        c.ax2 = ax2;
+        c.ax = ax;
+        c.ThisControlParadigm = ThisControlParadigm;
+        c.ThisTrial = ThisTrial;
+
+        % export all figs
+        for i = 1:length(spikes)
+            for j = 1:width(spikes(i).A)
+                if length(spikes(i).A(j,:)) > 1
+                    % haz data
+                    figure('outerposition',[0 0 1200 700],'PaperUnits','points','PaperSize',[1200 700]); hold on
+                    ax2 = subplot(2,1,1); hold on
+                    ax = subplot(2,1,2); hold on
+                    ThisControlParadigm = i;
+                    ThisTrial = j;
+                    plot_stim;
+                    plot_resp;
+                    title(ax2,strrep(FileName,'_','-'));
+                    tstr = strcat(ControlParadigm(ThisControlParadigm).Name,'_Trial:',mat2str(ThisTrial));
+                    tstr = strrep(tstr,'_','-');
+                    title(ax,tstr)
+                    xlabel(ax,'Time (s)')
+
+                    PrettyFig;
+                    %set(gcf,'renderer','painters')
+                    tstr = strcat(FileName,'_',tstr,'.eps');
+                    tstr = strrep(tstr,'_','-');
+                    print(gcf,tstr,'-depsc2','-opengl')
+                    delete(gcf);
+
+
+                end
+            end
+        end
+        % return to state
+        ax2 = c.ax2;
+        ax = c.ax;
+        ThisControlParadigm = c.ThisControlParadigm;
+        ThisTrial = c.ThisTrial;
+        clear c
+    end
 
     function choose_paradigm_callback(src,~)
         cla(ax); cla(ax2)
@@ -751,17 +810,7 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.135 .59 .1 .05
     	end
 	end
 
-    function [V, Vf] = filter_trace(V)
-        if any(isnan(V))
-            % filter ignoring NaNs
-            Vf = V;
-            Vf(~isnan(V)) = filtfilt(ones(1,100)/100,1,V(~isnan(V)));
-        else
-            Vf = filtfilt(ones(1,100)/100,1,V);
-        end
-        
-        V = V - Vf;
-    end
+
 
     function loc = find_spikes(V)
         % find local minima 
