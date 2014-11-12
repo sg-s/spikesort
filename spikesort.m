@@ -84,6 +84,13 @@ h_scatter1 = [];
 h_scatter2 = [];
 h_scatter3 = [];
 
+
+if isunix
+    % add support for xattr-based tagging
+    PATH = getenv('PATH');
+    setenv('PATH', [PATH strcat(':',fileparts(which('spikesort')))]);
+end
+
 % make the master figure, and the axes to plot the voltage traces
 fig = figure('position',[50 50 1200 700], 'Toolbar','figure','Menubar','none','Name',versionname,'NumberTitle','off','IntegerHandle','off','WindowButtonDownFcn',@mousecallback,'WindowScrollWheelFcn',@scroll,'CloseRequestFcn',@closess);
 temp =  findall(gcf,'Type','uitoggletool','-or','Type','uipushtool');
@@ -211,6 +218,13 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.135 .59 .1 .05
                 end
             end
         catch
+        end
+
+        if isunix
+            % tag the file as done
+            es=strcat('unix(',char(39),'tagfile.py "Complete" ', PathName,FileName,char(39),');');
+            es = strrep(es,'"/','" /');
+            eval(es);
         end
         delete(fig)
 
@@ -519,9 +533,6 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.135 .59 .1 .05
 
         plot_stim;
         plot_resp;
-
-        % show the full trace
-        set(ax,'XLim',[min(time) max(time)]);
     end
 
     function ExportFigs(~,~)
@@ -842,6 +853,11 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.135 .59 .1 .05
         else
             %disp('No need to find spikes...')
             set(method_control,'Enable','off')
+        end
+
+        xl = get(ax,'XLim');
+        if xl(1) ==0 && xl(2) ==1
+            set(ax,'XLim',[min(time) max(time)]);
         end
         
     end
