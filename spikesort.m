@@ -93,10 +93,10 @@ clear temp
 menubuttons = findall(gcf,'Type','uitoggletool','-or','Type','uipushtool');
 set(menubuttons(4),'ClickedCallback',@ExportFigs,'Enable','off')
 
-ax = axes('parent',fig,'Position',[0.07 0.05 0.87 0.29]);
+ax = axes('parent',fig,'Position',[0.07 0.05 0.87 0.29]); hold on
 jump_back = uicontrol(fig,'units','normalized','Position',[0 .04 .04 .50],'Style', 'pushbutton', 'String', '<','callback',@jump);
 jump_fwd = uicontrol(fig,'units','normalized','Position',[.96 .04 .04 .50],'Style', 'pushbutton', 'String', '>','callback',@jump);
-ax2 = axes('parent',fig,'Position',[0.07 0.37 0.87 0.18]);
+ax2 = axes('parent',fig,'Position',[0.07 0.37 0.87 0.18]); hold on
 linkaxes([ax2,ax],'x')
 
 % make all the panels
@@ -376,8 +376,6 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.135 .59 .1 .05
             set(trial_chooser,'String',temp);
             ThisTrial = 1;
 		    set(trial_chooser,'String',temp);
-            plot_stim;
-            plot_resp;
         else
             set(trial_chooser,'String','No data');
             ThisTrial = NaN;
@@ -518,6 +516,12 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.135 .59 .1 .05
 
         % clean up
         close(load_waitbar)
+
+        plot_stim;
+        plot_resp;
+
+        % show the full trace
+        set(ax,'XLim',[min(time) max(time)]);
     end
 
     function ExportFigs(~,~)
@@ -711,8 +715,6 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.135 .59 .1 .05
             end
         end
 
-        
-
     end
 
 
@@ -841,8 +843,6 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.135 .59 .1 .05
             %disp('No need to find spikes...')
             set(method_control,'Enable','off')
         end
-
-
         
     end
 
