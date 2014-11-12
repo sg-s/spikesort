@@ -487,15 +487,17 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.135 .59 .1 .05
                     end
                     if haz_data
                         recompute = 0;
-                        if width(spikes(i).amplitudes_A) < j
-                            recompute = 1;
-                            spikes(i).amplitudes_A = [];
-                            spikes(i).amplitudes_B = [];
-                        elseif length(spikes(i).amplitudes_A(j,:)) < length(spikes(i).A(j,:))
-                            spikes(i).amplitudes_A = [];
-                            spikes(i).amplitudes_B = [];
-                            recompute = 1;
-                            
+                        if isfield(spikes,'amplitudes_A')
+                            if width(spikes(i).amplitudes_A) < j
+                                recompute = 1;
+                                spikes(i).amplitudes_A = [];
+                                spikes(i).amplitudes_B = [];
+                            elseif length(spikes(i).amplitudes_A(j,:)) < length(spikes(i).A(j,:))
+                                spikes(i).amplitudes_A = [];
+                                spikes(i).amplitudes_B = [];
+                                recompute = 1;
+                                
+                            end
                         end
                         if recompute
                             A = spikes(i).A(j,:);
@@ -949,11 +951,20 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.135 .59 .1 .05
         h_scatter2 = scatter(ax,time(B),V(B),'b');
 
         % save them
-        spikes(ThisControlParadigm).A(ThisTrial,:) = sparse(1,length(time));
-        spikes(ThisControlParadigm).amplitudes_A(ThisTrial,:) = sparse(1,length(time));
+        try
+            spikes(ThisControlParadigm).A(ThisTrial,:) = sparse(1,length(time));
+            spikes(ThisControlParadigm).amplitudes_A(ThisTrial,:) = sparse(1,length(time));
+            spikes(ThisControlParadigm).B(ThisTrial,:) = sparse(1,length(time));
+            spikes(ThisControlParadigm).amplitudes_B(ThisTrial,:) = sparse(1,length(time));
+        catch
+            spikes(ThisControlParadigm).A= sparse(ThisTrial,length(time));
+            spikes(ThisControlParadigm).B= sparse(ThisTrial,length(time));
+            spikes(ThisControlParadigm).amplitudes_A = sparse(ThisTrial,length(time));
+            spikes(ThisControlParadigm).amplitudes_B = sparse(ThisTrial,length(time));
+
+        end
         spikes(ThisControlParadigm).A(ThisTrial,A) = 1;
-        spikes(ThisControlParadigm).B(ThisTrial,:) = sparse(1,length(time));
-        spikes(ThisControlParadigm).amplitudes_B(ThisTrial,:) = sparse(1,length(time));
+        
         spikes(ThisControlParadigm).B(ThisTrial,B) = 1;
 
         % also save spike amplitudes

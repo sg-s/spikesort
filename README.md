@@ -10,9 +10,23 @@ Spike sorting for Kontroller
 
 ### Fast Filter and Find Spikes in trace
 
-### 
+
+
+### Several algorithms for dimensional reduction
+
+### Several algorithms for data clustering
+
+### Native support for [Kontroller](https://github.com/sg-s/kontroller)-generated data
+
+### export all traces to EPS figures
+
+## Limitations 
+
+* for various reasons, sorting into only two groups (A and B) is supported. spikesort will not support more than 2 groups
 
 ## Installation
+
+spikesort is written in MATLAB.
 
 If you have `git` installed:
 
@@ -35,6 +49,7 @@ or use [this link](https://github.com/sg-s/spikesort/archive/master.zip).
 
 1. (1D) spike amplitudes
 2. (1D) fractional spike amplitudes
+3. (1D) relative spike amplitudes
 3. (2D) Principal Components 
 
 and the following default plugins for clustering:
