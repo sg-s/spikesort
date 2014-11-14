@@ -194,10 +194,16 @@ uiwait(hmc);
             dothese = find(C == 0);
             for i = 1:length(dothese)
                 p = R(1:2,dothese(i))';
-                cdist(1) = min((xA-p(1)).^2+(yA-p(2)).^2);
-                cdist(2) = min((xB-p(1)).^2+(yB-p(2)).^2);
-                cdist(3) = min((xN-p(1)).^2+(yN-p(2)).^2);
-                C(dothese(i)) = find(cdist == min(cdist));
+                if any(isnan(p))
+                    C(dothese(i)) = 3; % why are there NaNs? weird.
+                else
+                    cdist(1) = min((xA-p(1)).^2+(yA-p(2)).^2);
+                    cdist(2) = min((xB-p(1)).^2+(yB-p(2)).^2);
+                    cdist(3) = min((xN-p(1)).^2+(yN-p(2)).^2);
+                    C(dothese(i)) = find(cdist == min(cdist));
+                end
+               
+
             end
             clusterplot;
         end

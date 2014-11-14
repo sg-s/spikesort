@@ -220,7 +220,7 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.135 .59 .1 .05
         catch
         end
 
-        if isunix
+        if isunix && ~isempty(FileName)
             % tag the file as done
             es=strcat('unix(',char(39),'tagfile.py "Complete" ', PathName,FileName,char(39),');');
             es = strrep(es,'"/','" /');
@@ -856,7 +856,7 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.135 .59 .1 .05
         end
 
         xl = get(ax,'XLim');
-        if xl(1) ==0 && xl(2) ==1
+        if xl(2) ==1
             set(ax,'XLim',[min(time) max(time)]);
         end
         
