@@ -220,7 +220,8 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.135 .59 .1 .05
         catch
         end
 
-        if isunix && ~isempty(FileName)
+        temp = whos('FileName');
+        if isunix && ~isempty(FileName) && strcmp(temp.class,'char')
             % tag the file as done
             es=strcat('unix(',char(39),'tagfile.py "Complete" ', PathName,FileName,char(39),');');
             es = strrep(es,'"/','" /');
@@ -560,11 +561,16 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.135 .59 .1 .05
                     title(ax,tstr)
                     xlabel(ax,'Time (s)')
 
-                    PrettyFig;
+                    
                     %set(gcf,'renderer','painters')
-                    tstr = strcat(FileName,'_',tstr,'.eps');
+                    tstr = strcat(FileName,'_',tstr,'.fig');
                     tstr = strrep(tstr,'_','-');
-                    print(gcf,tstr,'-depsc2','-opengl')
+                    set(ax,'XLim',[0 15])
+                    set(ax2,'XLim',[0 15])
+                    % print(gcf,tstr,'-depsc2','-opengl')
+                   
+
+                    savefig(gcf,tstr);
                     delete(gcf);
 
 

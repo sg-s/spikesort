@@ -14,11 +14,15 @@ Spike sorting for Kontroller
 
 ### Several algorithms for dimensional reduction
 
+Every problem is differnet. To deal with unknown unknowns, spikesort ships with a number of methods for dimensionality reduction. All these methods are built around a plugin architecture, making inclusion of new methods a breeze.  
+
 ### Several algorithms for data clustering
 
 ### Native support for [Kontroller](https://github.com/sg-s/kontroller)-generated data
 
-### export all traces to EPS figures
+### export all traces to EPS figures.
+
+### BSD xattr-based file tagging. 
 
 ## Limitations 
 
