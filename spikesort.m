@@ -159,6 +159,19 @@ clear oi
 cluster_panel = uipanel('Title','Clustering','Position',[.51 .92 .21 .07]);
 cluster_control = uicontrol(cluster_panel,'Style','popupmenu','String',avail_methods,'units','normalized','Position',[.02 .6 .9 .2],'Callback',@find_cluster,'Enable','off');
 
+% spike find parameters
+find_spike_panel = uipanel('Title','Spike Detection','Position',[.29 .73 .21 .17]);
+uicontrol(find_spike_panel,'Style','text','String','MinPeakProminence','units','normalized','Position',[0 .73 .8 .2])
+mpp_control = uicontrol(find_spike_panel,'Style','edit','String','.03','units','normalized','Position',[.77 .75 .2 .2]);
+uicontrol(find_spike_panel,'Style','text','String','MinPeakWidth','units','normalized','Position',[0 .53 .8 .2])
+mpw_control = uicontrol(find_spike_panel,'Style','edit','String','15','units','normalized','Position',[.77 .55 .2 .2]);
+uicontrol(find_spike_panel,'Style','text','String','MinPeakDistance','units','normalized','Position',[0 .33 .8 .2])
+mpd_control = uicontrol(find_spike_panel,'Style','edit','String','10','units','normalized','Position',[.77 .35 .2 .2]);
+uicontrol(find_spike_panel,'Style','text','String','-V Cutoff','units','normalized','Position',[0 .13 .8 .2])
+minV_control = uicontrol(find_spike_panel,'Style','edit','String','-1','units','normalized','Position',[.77 .15 .2 .2]);
+
+
+
 % manual override panel
 manualpanel = uibuttongroup(fig,'Title','Manual Override','Position',[.68 .60 .11 .28]);
 mode_new_A = uicontrol(manualpanel,'Position',[5 5 100 20], 'Style', 'radiobutton', 'String', '+A','FontSize',fs);
@@ -886,8 +899,16 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.135 .59 .1 .05
 
 
     function loc = find_spikes(V)
+        % get param
+        mpp = str2double(get(mpp_control,'String'));
+        mpd = str2double(get(mpd_control,'String'));
+        mpw = str2double(get(mpw_control,'String'));
+        minV = str2double(get(minV_control,'String'));
         % find local minima 
-        [~,loc] = findpeaks(-V,'MinPeakProminence',.03,'MinPeakDistance',10,'MinPeakWidth',15);
+        [~,loc] = findpeaks(-V,'MinPeakProminence',mpp,'MinPeakDistance',mpd,'MinPeakWidth',mpw);
+
+        % remove spikes below min V
+        loc(V(loc) < minV) = [];
         set(method_control,'Enable','on')
 
     end
