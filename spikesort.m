@@ -161,14 +161,14 @@ cluster_control = uicontrol(cluster_panel,'Style','popupmenu','String',avail_met
 
 % spike find parameters
 find_spike_panel = uipanel('Title','Spike Detection','Position',[.29 .73 .21 .17]);
-uicontrol(find_spike_panel,'Style','text','String','MinPeakProminence','units','normalized','Position',[0 .73 .8 .2])
+uicontrol(find_spike_panel,'Style','text','String','MinPeakProminence','units','normalized','Position',[0 .73 .8 .2],'Callback',@plot_resp)
 mpp_control = uicontrol(find_spike_panel,'Style','edit','String','.03','units','normalized','Position',[.77 .75 .2 .2]);
 uicontrol(find_spike_panel,'Style','text','String','MinPeakWidth','units','normalized','Position',[0 .53 .8 .2])
-mpw_control = uicontrol(find_spike_panel,'Style','edit','String','15','units','normalized','Position',[.77 .55 .2 .2]);
+mpw_control = uicontrol(find_spike_panel,'Style','edit','String','15','units','normalized','Position',[.77 .55 .2 .2],'Callback',@plot_resp);
 uicontrol(find_spike_panel,'Style','text','String','MinPeakDistance','units','normalized','Position',[0 .33 .8 .2])
-mpd_control = uicontrol(find_spike_panel,'Style','edit','String','10','units','normalized','Position',[.77 .35 .2 .2]);
+mpd_control = uicontrol(find_spike_panel,'Style','edit','String','10','units','normalized','Position',[.77 .35 .2 .2],'Callback',@plot_resp);
 uicontrol(find_spike_panel,'Style','text','String','-V Cutoff','units','normalized','Position',[0 .13 .8 .2])
-minV_control = uicontrol(find_spike_panel,'Style','edit','String','-1','units','normalized','Position',[.77 .15 .2 .2]);
+minV_control = uicontrol(find_spike_panel,'Style','edit','String','-1','units','normalized','Position',[.77 .15 .2 .2],'Callback',@plot_resp);
 
 
 
@@ -578,8 +578,6 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.135 .59 .1 .05
                     %set(gcf,'renderer','painters')
                     tstr = strcat(FileName,'_',tstr,'.fig');
                     tstr = strrep(tstr,'_','-');
-                    set(ax,'XLim',[0 15])
-                    set(ax2,'XLim',[0 15])
                     % print(gcf,tstr,'-depsc2','-opengl')
                    
 
@@ -874,11 +872,24 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.135 .59 .1 .05
             set(method_control,'Enable','off')
         end
 
+
         xl = get(ax,'XLim');
         if xl(2) ==1
             set(ax,'XLim',[min(time) max(time)]);
+            % we spoof this because we want to distinguish this case from when the user zooms
+            set(ax,'XLimMode','auto')
+
+        end
+
+        % unless the X-limits have been manually changed, fix them
+        if strcmp(get(ax,'XLimMode'),'auto')
+            set(ax,'XLim',[min(time) max(time)]);
+            % we spoof this because we want to distinguish this case from when the user zooms
+            set(ax,'XLimMode','auto')
         end
         
+
+
     end
 
     function [A,B] = autosort()
@@ -895,8 +906,6 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.135 .59 .1 .05
     		this_valve = ControlParadigm(ThisControlParadigm).Outputs(valve_channels(i),:);
     	end
 	end
-
-
 
     function loc = find_spikes(V)
         % get param
