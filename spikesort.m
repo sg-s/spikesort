@@ -217,6 +217,42 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.135 .59 .1 .05
         
     end
 
+    function firing_rate_plot(~,~)
+        figure('outerposition',[0 0 1000 800],'PaperUnits','points','PaperSize',[1000 800]); hold on
+        sp(1)=subplot(2,1,1); hold on
+        ylabel('Firing Rate (Hz)')
+        title('A neuron')
+        sp(2)=subplot(2,1,2); hold on
+        title('B neuron')
+        ylabel('Firing Rate (Hz)')
+        xlabel('Time (s)')
+        c = parula(length(spikes));
+        L = {};
+        f_waitbar = waitbar(0.1, 'Computing Firing rates...');
+        for i = 1:length(spikes)
+            waitbar(i/length(spikes),f_waitbar);
+            if length(spikes(i).A) > 1
+                % do A
+                time = (1:length(spikes(i).A))/SamplingRate;
+                [fA,tA] = spiketimes2f(spikes(i).A,time);
+                plot(sp(1),tA,mean2(fA),'Color',c(i,:))
+
+                % do B    
+                time = (1:length(spikes(i).B))/SamplingRate;
+                [fB,tB] = spiketimes2f(spikes(i).B,time);
+                plot(sp(2),tB,mean2(fB),'Color',c(i,:))
+
+
+                L = [L strrep(ControlParadigm(i).Name,'_','-')];
+                
+            end
+        end
+        legend(sp(1),L)
+        close(f_waitbar)
+        linkaxes(sp)
+        PrettyFig;
+    end
+
 
     function mark_all_callback(~,~)
         % get view
