@@ -122,6 +122,10 @@ resp_channel = uicontrol(datapanel,'units','normalized','Position',[.01 .01 .910
 % file I/O
 loadfile = uicontrol(fig,'units','normalized','Position',[.03 .92 .08 .07],'Style', 'pushbutton', 'String', 'Load File','FontSize',fs,'FontWeight','bold','callback',@loadfilecallback);
 
+% raster and firing rate plots
+raster_control=uicontrol(fig,'units','normalized','Position',[.12 .92 .07 .05],'Style', 'pushbutton', 'String', 'Raster','FontSize',fs,'callback',@raster_plot);
+firing_rate_control=uicontrol(fig,'units','normalized','Position',[.20 .92 .07 .05],'Style', 'pushbutton', 'String', 'Firing Rate','FontSize',fs,'callback',@firing_rate_plot);
+
 % paradigms and trials
 datachooserpanel = uipanel('Title','Paradigms and Trials','Position',[.03 .75 .25 .16]);
 paradigm_chooser = uicontrol(datachooserpanel,'units','normalized','Position',[.25 .75 .5 .20],'Style', 'popupmenu', 'String', 'Choose Paradigm','callback',@choose_paradigm_callback,'Enable','off');
@@ -162,7 +166,7 @@ cluster_control = uicontrol(cluster_panel,'Style','popupmenu','String',avail_met
 % spike find parameters
 find_spike_panel = uipanel('Title','Spike Detection','Position',[.29 .73 .21 .17]);
 uicontrol(find_spike_panel,'Style','text','String','MinPeakProminence','units','normalized','Position',[0 .73 .8 .2],'Callback',@plot_resp)
-mpp_control = uicontrol(find_spike_panel,'Style','edit','String','.03','units','normalized','Position',[.77 .75 .2 .2]);
+mpp_control = uicontrol(find_spike_panel,'Style','edit','String','.03','units','normalized','Position',[.77 .75 .2 .2],'Callback',@plot_resp);
 uicontrol(find_spike_panel,'Style','text','String','MinPeakWidth','units','normalized','Position',[0 .53 .8 .2])
 mpw_control = uicontrol(find_spike_panel,'Style','edit','String','15','units','normalized','Position',[.77 .55 .2 .2],'Callback',@plot_resp);
 uicontrol(find_spike_panel,'Style','text','String','MinPeakDistance','units','normalized','Position',[0 .33 .8 .2])
@@ -191,6 +195,27 @@ autosort_control = uicontrol(fig,'units','normalized','Position',[.135 .64 .1 .0
 
 sine_control = uicontrol(fig,'units','normalized','Position',[.03 .59 .1 .05],'Style','togglebutton','String',' Kill Ringing','Value',0,'Callback',@plot_resp,'Enable','off');
 discard_control = uicontrol(fig,'units','normalized','Position',[.135 .59 .1 .05],'Style','togglebutton','String',' Discard','Value',0,'Callback',@discard,'Enable','off');
+
+    
+    function raster_plot(~,~)
+        figure('outerposition',[0 0 1000 500],'PaperUnits','points','PaperSize',[1000 500]); hold on
+        yoffset = 0;
+        ytick=0;
+        L ={};
+        for i = 1:length(spikes)
+            if length(spikes(i).A) > 1
+                raster2(full(spikes(i).A),spikes(i).B,yoffset);
+                yoffset = yoffset + width(spikes(i).A)*2 + 1;
+                ytick = [ytick yoffset];
+                L = [L strrep(ControlParadigm(i).Name,'_','-')];
+                
+            end
+        end
+        set(gca,'YTick',ytick(1:end-1)+diff(ytick)/2,'YTickLabel',L,'box','on')
+        xlabel('Time (s)')
+    
+        
+    end
 
 
     function mark_all_callback(~,~)
