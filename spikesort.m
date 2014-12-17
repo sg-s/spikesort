@@ -6,33 +6,32 @@
 % 
 % This work is licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License. 
 % To view a copy of this license, visit http://creativecommons.org/licenses/by-nc-sa/4.0/.
-function [] = spikesort(varargin)
+function [] = spikesort()
+console('Starting...');
 Opt.Input = 'file';
 dh = '';
 h = GitHash(mfilename('fullpath'));
 versionname = strcat('spikesort for Kontroller (Build-',h(1:6),')');
 
-switch nargin
-    case 0
-    case 1
-        a = varargin;
-        if strcmp('u',a)
 
 
-            % check for update
-            if ~strcmp(h,'000000')
-                hl = GetLatestHash('https://github.com/sg-s/spikesort');
-                if ~strcmp(h,hl) && ~strcmp('000000',hl)
-                    disp('A different version of spikesort is available:')
-                    disp(hl(1:6))
-                    disp('You are on version:')
-                    disp(h(1:6))
-                else
-                    disp('spikesort is up-to-date with master')
-                end
-            end
+if online
+    % check for update
+    if ~strcmp(h,'000000')
+        hl = GetLatestHash('https://github.com/sg-s/spikesort');
+        if ~strcmp(h,hl) && ~strcmp('000000',hl)
+            disp('A different version of spikesort is available:')
+            disp(hl(1:6))
+            disp('You are on version:')
+            disp(h(1:6))
+        else
+            disp('spikesort is up-to-date with master')
         end
-end    
+    end
+else
+    console('Could not connect to update server.');
+end
+
 
 
 % check dependencies 
@@ -213,6 +212,7 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.135 .59 .1 .05
         end
         set(gca,'YTick',ytick(1:end-1)+diff(ytick)/2,'YTickLabel',L,'box','on')
         xlabel('Time (s)')
+        console('Made a raster plot.')
     
         
     end
@@ -251,6 +251,7 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.135 .59 .1 .05
         close(f_waitbar)
         linkaxes(sp)
         PrettyFig;
+        console('Made a firing rate plot.')
     end
 
 
@@ -266,15 +267,18 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.135 .59 .1 .05
             spikes(ThisControlParadigm).A(ThisTrial,loc(loc>xmin & loc<xmax))  = 1;
             % remove b spikes
             spikes(ThisControlParadigm).B(ThisTrial,loc(loc>xmin & loc<xmax))  = 0;
+            console('Marked all in view as A');
 
         elseif get(mode_A2B,'Value')
             % add to B spikes
             spikes(ThisControlParadigm).B(ThisTrial,loc(loc>xmin & loc<xmax))  = 1;
             % remove A spikes
             spikes(ThisControlParadigm).A(ThisTrial,loc(loc>xmin & loc<xmax))  = 0;
+            console('Marked all in view as B');
         elseif get(mode_delete,'Value')
             spikes(ThisControlParadigm).A(ThisTrial,loc(loc>xmin & loc<xmax))  = 0;
             spikes(ThisControlParadigm).B(ThisTrial,loc(loc>xmin & loc<xmax))  = 0;
+            console('Removed all spikes in view');
         end
 
         % update plot
@@ -289,6 +293,7 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.135 .59 .1 .05
             if ~isempty(PathName) && ~isempty(FileName) 
                 if ischar(PathName) && ischar(FileName)
                     save(strcat(PathName,FileName),'spikes','-append')
+                    console('Saving file...');
                 end
             end
         catch
@@ -300,6 +305,7 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.135 .59 .1 .05
             es=strcat('unix(',char(39),'tagfile.py "Complete" ', PathName,FileName,char(39),');');
             es = strrep(es,'"/','" /');
             eval(es);
+            console('Tagging file with XATTR.');
         end
         delete(fig)
 
@@ -429,6 +435,7 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.135 .59 .1 .05
         if ~FileName
             return
         end
+        console(strcat('Loading file:',PathName,'/',FileName))
         load_waitbar = waitbar(0.2, 'Loading data...');
         temp=load(strcat(PathName,FileName));
         ControlParadigm = temp.ControlParadigm;
@@ -708,8 +715,7 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.135 .59 .1 .05
         end
         if src == trial_chooser
             ThisTrial = get(trial_chooser,'Value');
-            %disp('Moving directly to trial:')
-            %disp(ThisTrial)
+            console(strcat('Moving directly to trial:',mat2str(ThisTrial)))
             % update the plots
             plot_stim;
             plot_resp;
@@ -717,7 +723,7 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.135 .59 .1 .05
             if ThisTrial < n
                 ThisTrial = ThisTrial +1;
                 set(trial_chooser,'Value',ThisTrial);
-                %disp('Next trial')
+                console('Next trial')
                 % update the plots
                 plot_stim;
                 plot_resp;
@@ -729,7 +735,7 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.135 .59 .1 .05
             if ThisTrial > 1
                 ThisTrial = ThisTrial  - 1;
                 set(trial_chooser,'Value',ThisTrial);
-                %disp('Previous trial')
+                console('Previous trial')
                 % update the plots
                 plot_stim;
                 plot_resp;
@@ -841,7 +847,7 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.135 .59 .1 .05
         end
 
         if get(filtermode,'Value') == 1
-            %disp('Need to filter data...')
+            console('Need to filter data...')
             [V,Vf] = filter_trace(temp);
         else
             V = temp;
@@ -861,60 +867,60 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.135 .59 .1 .05
 
         % do we have to find spikes too?
         if get(findmode,'Value') == 1
-            %disp('need to find spikes...')
+            console('need to find spikes...')
             loc=find_spikes(V);
 
             % do we already have sorted spikes?
             if length(spikes) < ThisControlParadigm
                 % no spikes
-                %disp('no spikes...')
+                console('no spikes...')
                 loc = find_spikes(V);
                 if get(autosort_control,'Value') == 1
                     % sort spikes and show them
-                    %disp('Autosorting spikes...')
+                    console('Autosorting spikes...')
                     [A,B] = autosort;
                     h_scatter1 = scatter(ax,time(A),V(A),'r');
                     h_scatter2 = scatter(ax,time(B),V(B),'b');
                 else
-                    %disp('Not autosorting spikes')
+                    console('Not autosorting spikes')
                     h_scatter1 = scatter(ax,time(loc),V(loc));
                 end
             else
-                %disp('spikes is at least this paradigm long')
+                console('spikes is at least this paradigm long')
                 % maybe?
                 if ThisTrial <= width(spikes(ThisControlParadigm).A) 
-                    %disp('spike matrix is suff. wide.')
+                    console('spike matrix is suff. wide.')
                     % check...
                     if max(spikes(ThisControlParadigm).A(ThisTrial,:))
                         % yes, have spikes
-                        %disp('Have spikes. showing them. ')
+                        console('Have spikes. showing them. ')
                         A = find(spikes(ThisControlParadigm).A(ThisTrial,:));
                         B = find(spikes(ThisControlParadigm).B(ThisTrial,:));
                         h_scatter1 = scatter(ax,time(A),V(A),'r');
                         h_scatter2 = scatter(ax,time(B),V(B),'b');
                     else
-                        %disp('no spikes case 397')
+                        console('no spikes case 397')
                         if get(autosort_control,'Value') == 1
                             % sort spikes and show them
                             [A,B] = autosort;
                             h_scatter1 = scatter(ax,time(A),V(A),'r');
                             h_scatter2 = scatter(ax,time(B),V(B),'b');
                         else
-                            %disp('No need to autosort')
+                            console('No need to autosort')
                             % no need to autosort
                             h_scatter1 = scatter(ax,time(loc),V(loc));
                         end
                     end
                 else
                     % no spikes
-                    %disp('spikes exists, but not for this trial')
+                    console('spikes exists, but not for this trial')
                     if get(autosort_control,'Value') == 1
                         % sort spikes and show them
                         [A,B] = autosort;
                         h_scatter1 = scatter(ax,time(A),V(A),'r');
                         h_scatter2 = scatter(ax,time(B),V(B),'b');
                     else
-                        %disp('No need to autosort')
+                        console('No need to autosort')
                         % no need to autosort
                         h_scatter1 = scatter(ax,time(loc),V(loc));
                     end
@@ -929,7 +935,7 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.135 .59 .1 .05
 
 
         else
-            %disp('No need to find spikes...')
+            console('No need to find spikes...')
             set(method_control,'Enable','off')
         end
 
@@ -1100,12 +1106,12 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.135 .59 .1 .05
         % check that the point is within the axes
         ylimits = get(ax,'YLim');
         if p(2) > ylimits(2) || p(2) < ylimits(1)
-            %disp('Rejecting point: Y exceeded')
+            console('Rejecting point: Y exceeded')
             return
         end
         xlimits = get(ax,'XLim');
         if p(1) > xlimits(2) || p(1) < xlimits(1)
-            %disp('Rejecting point: X exceeded')
+            console('Rejecting point: X exceeded')
             return
         end
 
