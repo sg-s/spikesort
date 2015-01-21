@@ -15,22 +15,22 @@ versionname = strcat('spikesort for Kontroller (Build-',h(1:6),')');
 
 
 
-if online
-    % check for update
-    if ~strcmp(h,'000000')
-        hl = GetLatestHash('https://github.com/sg-s/spikesort');
-        if ~strcmp(h,hl) && ~strcmp('000000',hl)
-            disp('A different version of spikesort is available:')
-            disp(hl(1:6))
-            disp('You are on version:')
-            disp(h(1:6))
-        else
-            disp('spikesort is up-to-date with master')
-        end
-    end
-else
-    console('Could not connect to update server.');
-end
+% if online
+%     % check for update
+%     if ~strcmp(h,'000000')
+%         hl = GetLatestHash('https://github.com/sg-s/spikesort');
+%         if ~strcmp(h,hl) && ~strcmp('000000',hl)
+%             disp('A different version of spikesort is available:')
+%             disp(hl(1:6))
+%             disp('You are on version:')
+%             disp(h(1:6))
+%         else
+%             disp('spikesort is up-to-date with master')
+%         end
+%     end
+% else
+%     console('Could not connect to update server.');
+% end
 
 
 
