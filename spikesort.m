@@ -780,7 +780,9 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.135 .59 .1 .05
 
         % rescale the Y axis appropriately
         if ~isinf(sum(abs([maxy miny])))
-            set(ax2,'YLim',[miny maxy+.1*(maxy-miny)]);
+            if maxy > miny
+                set(ax2,'YLim',[miny maxy+.1*(maxy-miny)]);
+            end
         end
 
         % plot the control signals using thick lines
