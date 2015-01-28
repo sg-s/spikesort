@@ -230,24 +230,32 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.135 .59 .1 .05
         L = {};
         f_waitbar = waitbar(0.1, 'Computing Firing rates...');
         for i = 1:length(spikes)
-            waitbar(i/length(spikes),f_waitbar);
+            waitbar((i-1)/length(spikes),f_waitbar);
             if length(spikes(i).A) > 1
                 % do A
                 time = (1:length(spikes(i).A))/SamplingRate;
                 [fA,tA] = spiketimes2f(spikes(i).A,time);
-                plot(sp(1),tA,mean2(fA),'Color',c(i,:))
+                if width(fA) > 1
+                	plot(sp(1),tA,mean2(fA),'Color',c(i,:))
+                else
+                	plot(sp(1),tA,(fA),'Color',c(i,:))
+                end
 
                 % do B    
                 time = (1:length(spikes(i).B))/SamplingRate;
                 [fB,tB] = spiketimes2f(spikes(i).B,time);
-                plot(sp(2),tB,mean2(fB),'Color',c(i,:))
+                if width(fB) > 1
+                	plot(sp(2),tB,mean2(fB),'Color',c(i,:))
+                else
+                	plot(sp(2),tB,(fB),'Color',c(i,:))
+                end
 
 
                 L = [L strrep(ControlParadigm(i).Name,'_','-')];
                 
             end
         end
-        legend(sp(1),L)
+        %legend(sp(1),L)
         close(f_waitbar)
         linkaxes(sp)
         PrettyFig;
