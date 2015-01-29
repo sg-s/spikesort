@@ -247,7 +247,15 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.135 .59 .1 .05
             if length(spikes(i).A) > 1
                 % do A
                 time = (1:length(spikes(i).A))/SamplingRate;
-                [fA,tA] = spiketimes2f(spikes(i).A,time);
+                % cache data to speed up
+                hash = DataHash(full(spikes(i).A));
+                if isempty(cache(hash))
+                    [fA,tA] = spiketimes2f(spikes(i).A,time);
+                    cache(hash,fA);
+                else
+                    fA = cache(hash);
+                    tA = (1:length(fA))*1e-3;
+                end
                 if width(fA) > 1
                     if get(firing_rate_trial_control,'Value')
                         for j = 1:width(fA)
@@ -272,7 +280,15 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.135 .59 .1 .05
 
                 % do B    
                 time = (1:length(spikes(i).B))/SamplingRate;
-                [fB,tB] = spiketimes2f(spikes(i).B,time);
+                % cache data to speed up
+                hash = DataHash(full(spikes(i).B));
+                if isempty(cache(hash))
+                    [fB,tB] = spiketimes2f(spikes(i).B,time);
+                    cache(hash,fB);
+                else
+                    fB = cache(hash);
+                    tB = (1:length(fB))*1e-3;
+                end
                 if width(fB) > 1
                     if get(firing_rate_trial_control,'Value')
                         for j = 1:width(fB)
