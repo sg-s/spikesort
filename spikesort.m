@@ -265,7 +265,14 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.135 .59 .1 .05
                 	   plot(sp(1),tA,mean2(fA),'Color',c(i,:))
                     end
                     if get(r2_plot_control,'Value')
-                        r2 = rsquare(fA);
+                        hash = DataHash(fA);
+                        cached_data = (cache(hash));
+                        if isempty(cached_data)
+                            r2 = rsquare(fA);
+                        else
+                            r2 = cached_data;
+                            cache(hash,r2);
+                        end
                         axes(sp(3))
                         imagescnan(r2)
                         caxis([0 1])
@@ -298,7 +305,14 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.135 .59 .1 .05
                 	   plot(sp(2),tB,mean2(fB),'Color',c(i,:))
                     end
                     if get(r2_plot_control,'Value')
-                        r2 = rsquare(fB);
+                        hash = DataHash(fB);
+                        cached_data = (cache(hash));
+                        if isempty(cached_data)
+                            r2 = rsquare(fB);
+                        else
+                            r2 = cached_data;
+                            cache(hash,r2);
+                        end
                         axes(sp(4))
                         imagescnan(r2)
                         caxis([0 1])
