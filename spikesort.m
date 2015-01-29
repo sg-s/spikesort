@@ -173,6 +173,11 @@ mpd_control = uicontrol(find_spike_panel,'Style','edit','String','10','units','n
 uicontrol(find_spike_panel,'Style','text','String','-V Cutoff','units','normalized','Position',[0 .13 .8 .2])
 minV_control = uicontrol(find_spike_panel,'Style','edit','String','-1','units','normalized','Position',[.77 .15 .2 .2],'Callback',@plot_resp);
 
+% other options
+options_panel = uipanel('Title','Options','Position',[.51 .73 .16 .17]);
+firing_rate_trial_control = uicontrol(options_panel,'Style','checkbox','String','per-trial firing rate','units','normalized','Position',[.01 .8 .8 .2]);
+r2_plot_control = uicontrol(options_panel,'Style','checkbox','String','Show reproducibility','units','normalized','Position',[.01 .6 .8 .2]);
+
 
 
 % manual override panel
@@ -218,14 +223,22 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.135 .59 .1 .05
     end
 
     function firing_rate_plot(~,~)
-        figure('outerposition',[0 0 1000 800],'PaperUnits','points','PaperSize',[1000 800]); hold on
-        sp(1)=subplot(2,1,1); hold on
-        ylabel('Firing Rate (Hz)')
-        title('A neuron')
-        sp(2)=subplot(2,1,2); hold on
-        title('B neuron')
-        ylabel('Firing Rate (Hz)')
-        xlabel('Time (s)')
+        if get(r2_plot_control,'Value')
+            figure('outerposition',[0 0 1200 800],'PaperUnits','points','PaperSize',[1200 800]); hold on
+            sp(1)=subplot(2,4,1:3); hold on
+            sp(2)=subplot(2,4,5:7); hold on
+            sp(3)=subplot(2,4,4); hold on
+            sp(4)=subplot(2,4,8); hold on
+        else
+            figure('outerposition',[0 0 1000 800],'PaperUnits','points','PaperSize',[1000 800]); hold on
+            sp(1)=subplot(2,1,1); hold on
+            sp(2)=subplot(2,1,2); hold on
+        end
+        ylabel(sp(1),'Firing Rate (Hz)')
+        title(sp(1),'A neuron')
+        title(sp(2),'B neuron')
+        ylabel(sp(2),'Firing Rate (Hz)')
+        xlabel(sp(2),'Time (s)')
         c = parula(length(spikes));
         L = {};
         f_waitbar = waitbar(0.1, 'Computing Firing rates...');
@@ -236,7 +249,23 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.135 .59 .1 .05
                 time = (1:length(spikes(i).A))/SamplingRate;
                 [fA,tA] = spiketimes2f(spikes(i).A,time);
                 if width(fA) > 1
-                	plot(sp(1),tA,mean2(fA),'Color',c(i,:))
+                    if get(firing_rate_trial_control,'Value')
+                        for j = 1:width(fA)
+                            plot(sp(1),tA,fA(:,j),'Color',c(i,:))
+                        end
+                    else
+                	   plot(sp(1),tA,mean2(fA),'Color',c(i,:))
+                    end
+                    if get(r2_plot_control,'Value')
+                        r2 = rsquare(fA);
+                        axes(sp(3))
+                        imagescnan(r2)
+                        caxis([0 1])
+                        colorbar
+                        axis image
+                        axis off
+                        
+                    end
                 else
                 	plot(sp(1),tA,(fA),'Color',c(i,:))
                 end
@@ -245,7 +274,22 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.135 .59 .1 .05
                 time = (1:length(spikes(i).B))/SamplingRate;
                 [fB,tB] = spiketimes2f(spikes(i).B,time);
                 if width(fB) > 1
-                	plot(sp(2),tB,mean2(fB),'Color',c(i,:))
+                    if get(firing_rate_trial_control,'Value')
+                        for j = 1:width(fB)
+                            plot(sp(1),tA,fB(:,j),'Color',c(i,:))
+                        end
+                    else
+                	   plot(sp(2),tB,mean2(fB),'Color',c(i,:))
+                    end
+                    if get(r2_plot_control,'Value')
+                        r2 = rsquare(fB);
+                        axes(sp(4))
+                        imagescnan(r2)
+                        caxis([0 1])
+                        colorbar
+                        axis image
+                        axis off
+                    end
                 else
                 	plot(sp(2),tB,(fB),'Color',c(i,:))
                 end
@@ -255,9 +299,9 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.135 .59 .1 .05
                 
             end
         end
-        %legend(sp(1),L)
+        legend(sp(1),L)
         close(f_waitbar)
-        linkaxes(sp)
+        linkaxes(sp(1:2))
         PrettyFig;
         console('Made a firing rate plot.')
     end
