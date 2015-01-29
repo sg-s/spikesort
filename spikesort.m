@@ -239,18 +239,29 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.135 .59 .1 .05
         title(sp(2),'B neuron')
         ylabel(sp(2),'Firing Rate (Hz)')
         xlabel(sp(2),'Time (s)')
-        c = parula(length(spikes));
+        
+        haz_data = [];
+        for i = 1:length(spikes)
+            if length(spikes(i).A) > 1
+                haz_data = [haz_data i];
+            end
+        end
+        if length(haz_data) == 1
+            c = [0 0 0];
+        else
+            c = parula(length(haz_data));
+        end
         L = {};
         f_waitbar = waitbar(0.1, 'Computing Firing rates...');
-        for i = 1:length(spikes)
+        for i = 1:length(haz_data)
             waitbar((i-1)/length(spikes),f_waitbar);
-            if length(spikes(i).A) > 1
+            if length(spikes(haz_data(i)).A) > 1
                 % do A
-                time = (1:length(spikes(i).A))/SamplingRate;
+                time = (1:length(spikes(haz_data(i)).A))/SamplingRate;
                 % cache data to speed up
-                hash = DataHash(full(spikes(i).A));
+                hash = DataHash(full(spikes(haz_data(i)).A));
                 if isempty(cache(hash))
-                    [fA,tA] = spiketimes2f(spikes(i).A,time);
+                    [fA,tA] = spiketimes2f(spikes(haz_data(i)).A,time);
                     cache(hash,fA);
                 else
                     fA = cache(hash);
@@ -286,11 +297,11 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.135 .59 .1 .05
                 end
 
                 % do B    
-                time = (1:length(spikes(i).B))/SamplingRate;
+                time = (1:length(spikes(haz_data(i)).B))/SamplingRate;
                 % cache data to speed up
-                hash = DataHash(full(spikes(i).B));
+                hash = DataHash(full(spikes(haz_data(i)).B));
                 if isempty(cache(hash))
-                    [fB,tB] = spiketimes2f(spikes(i).B,time);
+                    [fB,tB] = spiketimes2f(spikes(haz_data(i)).B,time);
                     cache(hash,fB);
                 else
                     fB = cache(hash);
@@ -325,7 +336,7 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.135 .59 .1 .05
                 end
 
 
-                L = [L strrep(ControlParadigm(i).Name,'_','-')];
+                L = [L strrep(ControlParadigm(haz_data(i)).Name,'_','-')];
                 
             end
         end
