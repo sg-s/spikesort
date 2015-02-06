@@ -177,6 +177,7 @@ minV_control = uicontrol(find_spike_panel,'Style','edit','String','-1','units','
 options_panel = uipanel('Title','Options','Position',[.51 .73 .16 .17]);
 firing_rate_trial_control = uicontrol(options_panel,'Style','checkbox','String','per-trial firing rate','units','normalized','Position',[.01 .8 .8 .2]);
 r2_plot_control = uicontrol(options_panel,'Style','checkbox','String','Show reproducibility','units','normalized','Position',[.01 .6 .8 .2]);
+kill_valve_noise_control = uicontrol(options_panel,'Style','checkbox','String','Kill Valve Noise','units','normalized','Position',[.01 .4 .8 .2],'Value',1);
 
 
 
@@ -616,12 +617,14 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.135 .59 .1 .05
                     % suppress signals for 25 samples after any valve turns on or off
                     % this is a hack
                     
-                    for j = 1:length(digital_channels)
-                        [ons,offs] = ComputeOnsOffs(ControlParadigm(i).Outputs(digital_channels(j),:));
+                    if get(kill_valve_noise_control,'Value')
+                        for j = 1:length(digital_channels)
+                            [ons,offs] = ComputeOnsOffs(ControlParadigm(i).Outputs(digital_channels(j),:));
 
-                        for k = 1:length(ons)
-                            data(i).voltage(:,ons(k):ons(k)+35) = NaN;
-                            data(i).voltage(:,offs(k):offs(k)+25) = NaN;
+                            for k = 1:length(ons)
+                                data(i).voltage(:,ons(k):ons(k)+35) = NaN;
+                                data(i).voltage(:,offs(k):offs(k)+25) = NaN;
+                            end
                         end
                     end
 
