@@ -536,8 +536,11 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.135 .59 .1 .05
 		data = temp.data;
 		SamplingRate = temp.SamplingRate;
 		OutputChannelNames = temp.OutputChannelNames;
-		metadata = temp.metadata;
-		timestamps = temp.timestamps;
+        try
+		  metadata = temp.metadata;
+		  timestamps = temp.timestamps;
+        catch
+        end
         if isfield(temp,'spikes')
             spikes = temp.spikes;
         end
@@ -626,7 +629,7 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.135 .59 .1 .05
                                 data(i).voltage(:,offs(k):offs(k)+25) = NaN;
                             end
                         end
-                    end
+                    end 
 
 
 
