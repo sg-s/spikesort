@@ -7,32 +7,8 @@
 % This work is licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License. 
 % To view a copy of this license, visit http://creativecommons.org/licenses/by-nc-sa/4.0/.
 function [] = spikesort()
-console('Starting...');
-Opt.Input = 'file';
-dh = '';
 h = GitHash(mfilename('fullpath'));
 versionname = strcat('spikesort for Kontroller (Build-',h(1:6),')');
-
-
-
-% if online
-%     % check for update
-%     if ~strcmp(h,'000000')
-%         hl = GetLatestHash('https://github.com/sg-s/spikesort');
-%         if ~strcmp(h,hl) && ~strcmp('000000',hl)
-%             disp('A different version of spikesort is available:')
-%             disp(hl(1:6))
-%             disp('You are on version:')
-%             disp(h(1:6))
-%         else
-%             disp('spikesort is up-to-date with master')
-%         end
-%     end
-% else
-%     console('Could not connect to update server.');
-% end
-
-
 
 % check dependencies 
 p=path;
@@ -81,8 +57,6 @@ valve_channel = [];
 load_waitbar = [];
 h_scatter1 = [];
 h_scatter2 = [];
-h_scatter3 = [];
-
 
 if isunix
     % add support for xattr-based tagging
@@ -119,11 +93,11 @@ resp_channel = uicontrol(datapanel,'units','normalized','Position',[.01 .01 .910
 
 
 % file I/O
-loadfile = uicontrol(fig,'units','normalized','Position',[.03 .92 .08 .07],'Style', 'pushbutton', 'String', 'Load File','FontSize',fs,'FontWeight','bold','callback',@loadfilecallback);
+uicontrol(fig,'units','normalized','Position',[.03 .92 .08 .07],'Style', 'pushbutton', 'String', 'Load File','FontSize',fs,'FontWeight','bold','callback',@loadfilecallback);
 
 % raster and firing rate plots
-raster_control=uicontrol(fig,'units','normalized','Position',[.12 .92 .07 .05],'Style', 'pushbutton', 'String', 'Raster','FontSize',fs,'callback',@raster_plot);
-firing_rate_control=uicontrol(fig,'units','normalized','Position',[.20 .92 .07 .05],'Style', 'pushbutton', 'String', 'Firing Rate','FontSize',fs,'callback',@firing_rate_plot);
+uicontrol(fig,'units','normalized','Position',[.12 .92 .07 .05],'Style', 'pushbutton', 'String', 'Raster','FontSize',fs,'callback',@raster_plot);
+uicontrol(fig,'units','normalized','Position',[.20 .92 .07 .05],'Style', 'pushbutton', 'String', 'Firing Rate','FontSize',fs,'callback',@firing_rate_plot);
 
 % paradigms and trials
 datachooserpanel = uipanel('Title','Paradigms and Trials','Position',[.03 .75 .25 .16]);
@@ -178,6 +152,7 @@ options_panel = uipanel('Title','Options','Position',[.51 .73 .16 .17]);
 firing_rate_trial_control = uicontrol(options_panel,'Style','checkbox','String','per-trial firing rate','units','normalized','Position',[.01 .8 .8 .2]);
 r2_plot_control = uicontrol(options_panel,'Style','checkbox','String','Show reproducibility','units','normalized','Position',[.01 .6 .8 .2]);
 kill_valve_noise_control = uicontrol(options_panel,'Style','checkbox','String','Kill Valve Noise','units','normalized','Position',[.01 .4 .8 .2],'Value',1);
+smart_scroll_control = uicontrol(options_panel,'Style','checkbox','String','Smart Scroll','units','normalized','Position',[.01 .2 .8 .2],'Value',0);
 
 
 
@@ -188,7 +163,7 @@ mode_new_B = uicontrol(manualpanel,'Position',[5 35 100 20], 'Style', 'radiobutt
 mode_delete = uicontrol(manualpanel,'Position',[5 65 100 20], 'Style', 'radiobutton', 'String', '-X','FontSize',fs);
 mode_A2B = uicontrol(manualpanel,'Position',[5 95 100 20], 'Style', 'radiobutton', 'String', 'A->B','FontSize',fs);
 mode_B2A = uicontrol(manualpanel,'Position',[5 125 100 20], 'Style', 'radiobutton', 'String', 'B->A','FontSize',fs);
-mark_all = uicontrol(manualpanel,'Position',[15 150 100 30],'Style','pushbutton','String','Mark All in View','Callback',@mark_all_callback);
+uicontrol(manualpanel,'Position',[15 150 100 30],'Style','pushbutton','String','Mark All in View','Callback',@mark_all_callback);
 
 
 % various toggle switches and pushbuttons
@@ -448,20 +423,24 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.135 .59 .1 .05
         xlimits = get(ax,'XLim');
         xrange = (xlimits(2) - xlimits(1));
         scroll_amount = event.VerticalScrollCount;
-        if scroll_amount < 0
-            if xlimits(1) <= min(time)
-                return
+        if ~get(smart_scroll_control,'Value')
+            if scroll_amount < 0
+                if xlimits(1) <= min(time)
+                    return
+                else
+                    newlim(1) = max([min(time) (xlimits(1)-.2*xrange)]);
+                    newlim(2) = newlim(1)+xrange;
+                end
             else
-                newlim(1) = max([min(time) (xlimits(1)-.2*xrange)]);
-                newlim(2) = newlim(1)+xrange;
+                if xlimits(2) >= max(time)
+                    return
+                else
+                    newlim(2) = min([max(time) (xlimits(2)+.2*xrange)]);
+                    newlim(1) = newlim(2)-xrange;
+                end
             end
         else
-            if xlimits(2) >= max(time)
-                return
-            else
-                newlim(2) = min([max(time) (xlimits(2)+.2*xrange)]);
-                newlim(1) = newlim(2)-xrange;
-            end
+            keyboard
         end
         
 
@@ -814,7 +793,6 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.135 .59 .1 .05
         end
         if src == trial_chooser
             ThisTrial = get(trial_chooser,'Value');
-            console(strcat('Moving directly to trial:',mat2str(ThisTrial)))
             % update the plots
             plot_stim;
             plot_resp;
@@ -822,7 +800,6 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.135 .59 .1 .05
             if ThisTrial < n
                 ThisTrial = ThisTrial +1;
                 set(trial_chooser,'Value',ThisTrial);
-                console('Next trial')
                 % update the plots
                 plot_stim;
                 plot_resp;
@@ -834,13 +811,17 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.135 .59 .1 .05
             if ThisTrial > 1
                 ThisTrial = ThisTrial  - 1;
                 set(trial_chooser,'Value',ThisTrial);
-                console('Previous trial')
                 % update the plots
                 plot_stim;
                 plot_resp;
             else
                 % fake a call
                 choose_paradigm_callback(prev_paradigm);
+                % go to the last trial--fake another call
+                n = Kontroller_ntrials(data); 
+                n = n(ThisControlParadigm);
+                set(trial_chooser,'Value',n);
+                choose_trial_callback(trial_chooser);
             end
         else
             error('unknown source of callback 173. probably being incorrectly being called by something.')
