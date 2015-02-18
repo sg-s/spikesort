@@ -440,7 +440,15 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.135 .59 .1 .05
                 end
             end
         else
-            keyboard
+            % find number of spikes in view
+            n_spikes_in_view = length(loc(loc>(xlimits(1)/deltat) & loc<(xlimits(2)/deltat)));
+            if scroll_amount > 0
+                newlim(1) = min([max(time) (xlimits(1)+.2*xrange)]);
+                newlim(2) = loc(find(loc > newlim(1)/deltat,1,'first') + n_spikes_in_view)*deltat;
+            else
+                newlim(2) = max([min(time)+xrange (xlimits(2)-.2*xrange)]);
+                newlim(1) = loc(find(loc < newlim(2)/deltat,1,'last') - n_spikes_in_view)*deltat;
+            end
         end
         
 
