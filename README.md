@@ -38,7 +38,17 @@ Limited support for the [extended file attribute](http://en.wikipedia.org/wiki/E
 
 spikesort is written in MATLAB.
 
-If you have `git` installed:
+The best way to install spikesort is through my package manager: 
+
+```
+>> urlwrite('http://srinivas.gs/install.m','install.m'); 
+>> install spikesort
+>> install srinivas.gs_mtools # spikesort needs this package to run
+```
+
+This script grabs the code and fixes your path. 
+
+Or, if you have `git` installed:
 
 ````
 git clone git@github.com:sg-s/spikesort.git
@@ -75,7 +85,7 @@ and the following default plugins for clustering:
 Writing your own plugins is really easy: `spikesort` does the heavy lifting in figuring out how to talk to it, and all you have to is write a function that conforms to a few standards:
 
 #### Naming.
-Dimensionality reduction plugins have to be called `ssdm_foo.m` and clusttering method plugins have to be called `sscm_bar.m`. Put them in the same folder as 	`spikesort` and it will automatically include them. 
+Dimensionality reduction plugins have to be called `ssdm_foo.m` and clustering method plugins have to be called `sscm_bar.m`. Put them in the same folder as 	`spikesort` and it will automatically include them. 
 
 #### Outputs
 A dimensionality reduction plugin is a function must return a variable called `R`, that is usually a vector or a matrix (but can be whatever you want)
@@ -85,9 +95,13 @@ A clustering plugin is a function that must return two variables `A` and `B` tha
 #### Inputs
 Both types of plugins are functions that can have any inputs whatsoever -- provided you reference the correct variable names in spikesort. Since `V` is a variable used to denote the filtered voltage in `spikesort`, you can ask for `V` in your function definition as follows:
 
-````matlab
+```
 function R = ssdm_my_awesome_plugin(V,foo,bar)
-````	
+```
 
-and `spikesort` will intelligently give your function the correct variables in the correct order (spikesort reads your function and figures this out).
+and `spikesort` will intelligently give your function the correct variables in the correct order (spikesort reads your function and figures this out). So you can write plugins that work with any variable in the main `spikesort` codebase without altering it in any way.
+
+# License 
+
+[GPL v2](http://choosealicense.com/licenses/gpl-2.0/#)
 
