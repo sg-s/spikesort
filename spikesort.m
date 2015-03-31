@@ -15,7 +15,7 @@ p=path;
 if isempty(strfind(p,'srinivas.gs_mtools'))
     error('Needs srinivas.gs_mtools, available here: https://github.com/sg-s/srinivas.gs_mtools')
 end
-if ~strcmp(version('-release'),'2014b')
+if verLessThan('matlab', '8.0.1')
     error('Need MATLAB 2014b to run')
 end
 
@@ -443,16 +443,24 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.135 .59 .1 .05
             % find number of spikes in view
             n_spikes_in_view = length(loc(loc>(xlimits(1)/deltat) & loc<(xlimits(2)/deltat)));
             if scroll_amount > 0
-                newlim(1) = min([max(time) (xlimits(1)+.2*xrange)]);
-                newlim(2) = loc(find(loc > newlim(1)/deltat,1,'first') + n_spikes_in_view)*deltat;
+                try
+                    newlim(1) = min([max(time) (xlimits(1)+.2*xrange)]);
+                    newlim(2) = loc(find(loc > newlim(1)/deltat,1,'first') + n_spikes_in_view)*deltat;
+                catch
+                end
             else
-                newlim(2) = max([min(time)+xrange (xlimits(2)-.2*xrange)]);
-                newlim(1) = loc(find(loc < newlim(2)/deltat,1,'last') - n_spikes_in_view)*deltat;
+                try
+                    newlim(2) = max([min(time)+xrange (xlimits(2)-.2*xrange)]);
+                    newlim(1) = loc(find(loc < newlim(2)/deltat,1,'last') - n_spikes_in_view)*deltat;
+                catch
+                end
             end
         end
         
-
-        set(ax,'Xlim',newlim)
+        try
+            set(ax,'Xlim',newlim)
+        catch
+        end
     end
 
     function discard(~,~)
