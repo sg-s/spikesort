@@ -10,7 +10,7 @@ Spike sorting for Kontroller
 
 ### Fast Filter and Find Spikes in trace
 
-![images/spikes.gif]
+![](images/spikes.gif)
 
 ### Several algorithms for dimensional reduction
 
@@ -22,7 +22,7 @@ Likewise, data clustering is achieved through plugins, allowing you to customise
 
 ### Native support for [Kontroller](https://github.com/sg-s/kontroller)-generated data
 
-![images/kontroller.png]
+![](images/kontroller.png)
 
 ### export all traces to EPS figures.
 
