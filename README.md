@@ -10,19 +10,25 @@ Spike sorting for Kontroller
 
 ### Fast Filter and Find Spikes in trace
 
-
+![images/spikes.gif]
 
 ### Several algorithms for dimensional reduction
 
-Every problem is differnet. To deal with unknown unknowns, spikesort ships with a number of methods for dimensionality reduction. All these methods are built around a plugin architecture, making inclusion of new methods a breeze.  
+Every problem is different. To deal with unknown unknowns, `spikesort` ships with a number of methods for dimensionality reduction. All these methods are built around an awesome [plugin](#plugin-architecture) architecture, making inclusion of new methods a breeze.  
 
 ### Several algorithms for data clustering
 
+Likewise, data clustering is achieved through plugins, allowing you to customise `spikesort` for any task. 
+
 ### Native support for [Kontroller](https://github.com/sg-s/kontroller)-generated data
+
+![images/kontroller.png]
 
 ### export all traces to EPS figures.
 
 ### BSD xattr-based file tagging. 
+
+Limited support for the [extended file attribute](http://en.wikipedia.org/wiki/Extended_file_attributes) system on *nix-like systems. `spikesort` automatically tags files it touches so it makes working with lots of files easier. 
 
 ## Limitations 
 
@@ -39,6 +45,8 @@ git clone git@github.com:sg-s/spikesort.git
 ````
 
 or use [this link](https://github.com/sg-s/spikesort/archive/master.zip).
+
+# Hacking
 
 ## Plugin architecture
 

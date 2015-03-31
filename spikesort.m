@@ -21,7 +21,7 @@ end
 
 % check the signal processing toolbox version
 if verLessThan('signal','6.22')
-    error('Need Signal Processing toolbox version 6.22')
+    error('Need Signal Processing toolbox version 6.22 or higher')
 end
 
 % support for Kontroller
