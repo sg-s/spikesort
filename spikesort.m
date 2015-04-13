@@ -838,8 +838,10 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.135 .59 .1 .05
                 % go to the last trial--fake another call
                 n = Kontroller_ntrials(data); 
                 n = n(ThisControlParadigm);
-                set(trial_chooser,'Value',n);
-                choose_trial_callback(trial_chooser);
+                if n
+                    set(trial_chooser,'Value',n);
+                    choose_trial_callback(trial_chooser);
+                end
             end
         else
             error('unknown source of callback 173. probably being incorrectly being called by something.')
