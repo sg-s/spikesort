@@ -554,6 +554,8 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.135 .59 .1 .05
 
 		% update paradigm chooser with the first paradigm
 		set(paradigm_chooser,'String',{ControlParadigm.Name},'Value',1);
+
+
 		ThisControlParadigm = 1;
 		n = Kontroller_ntrials(data); n = n(ThisControlParadigm);
         if n
@@ -790,7 +792,7 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.135 .59 .1 .05
             set(trial_chooser,'Value',1);
             ThisTrial = 1;
         else
-            set(trial_chooser,'String','No data');
+            set(trial_chooser,'String','No data','Value',1);
             ThisTrial = NaN;
         end
         % update the plots
