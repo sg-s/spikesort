@@ -620,10 +620,11 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.135 .59 .1 .05
                     if get(kill_valve_noise_control,'Value')
                         for j = 1:length(digital_channels)
                             [ons,offs] = ComputeOnsOffs(ControlParadigm(i).Outputs(digital_channels(j),:));
-
-                            for k = 1:length(ons)
-                                data(i).voltage(:,ons(k):ons(k)+35) = NaN;
-                                data(i).voltage(:,offs(k):offs(k)+25) = NaN;
+                            if length(ons) == length(offs)
+                                for k = 1:length(ons)
+                                    data(i).voltage(:,ons(k):ons(k)+35) = NaN;
+                                    data(i).voltage(:,offs(k):offs(k)+25) = NaN;
+                                end
                             end
                         end
                     end 
