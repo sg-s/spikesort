@@ -101,6 +101,16 @@ function R = ssdm_my_awesome_plugin(V,foo,bar)
 
 and `spikesort` will intelligently give your function the correct variables in the correct order (spikesort reads your function and figures this out). So you can write plugins that work with any variable in the main `spikesort` codebase without altering it in any way.
 
+#### Variable Names
+
+Here is a non-exhaustive list of some useful internal variables that `spikesort` uses that you might want to use in your plugin:
+
+* `V` a vector, contains the raw voltage trace
+* `Vf` a vector, contains the filtered voltage trace
+* `loc` a vector, contains the vector indices of putative spikes
+* `ax`, `ax2` handles to the two main axes. Useful if your plugin does some fancy plotting.  
+* `V_snippets` a matrix containing snippets around `loc` from `Vf`. Useful if you just want to work with the spike shapes, and don't really care where they are. 
+
 # License 
 
 [GPL v2](http://choosealicense.com/licenses/gpl-2.0/#)
