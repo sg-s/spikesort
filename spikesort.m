@@ -153,6 +153,7 @@ firing_rate_trial_control = uicontrol(options_panel,'Style','checkbox','String',
 r2_plot_control = uicontrol(options_panel,'Style','checkbox','String','Show reproducibility','units','normalized','Position',[.01 .6 .8 .2]);
 kill_valve_noise_control = uicontrol(options_panel,'Style','checkbox','String','Kill Valve Noise','units','normalized','Position',[.01 .4 .8 .2],'Value',1);
 smart_scroll_control = uicontrol(options_panel,'Style','checkbox','String','Smart Scroll','units','normalized','Position',[.01 .2 .8 .2],'Value',0);
+plot_control_control = uicontrol(options_panel,'Style','checkbox','String','Plot Control','units','normalized','Position',[.01 0 .8 .2],'Value',0);
 
 
 
@@ -904,12 +905,20 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.135 .59 .1 .05
 
             for i = 1:nchannels
                 temp=ControlParadigm(ThisControlParadigm).Outputs(plot_these(i),:);
-                temp(temp>0)=1;
-                time = deltat*(1:length(temp));
-                thisy = thisy - dy;
-                temp = temp*thisy;
-                temp(temp==0) = NaN;
-                plot(ax2,time,temp,'Color',c(i,:),'LineWidth',5); hold on;
+                if get(plot_control_control,'Value')
+                	% plot the control signal directly
+                	time = deltat*(1:length(temp));
+                	cla(ax2);
+                	plot(ax2,time,temp,'LineWidth',1); hold on;
+                	set(ax2,'YLim',[min(temp) max(temp)]);
+                else
+	                temp(temp>0)=1;
+	                time = deltat*(1:length(temp));
+	                thisy = thisy - dy;
+	                temp = temp*thisy;
+	                temp(temp==0) = NaN;
+	                plot(ax2,time,temp,'Color',c(i,:),'LineWidth',5); hold on;
+	            end
             end
         end
 
