@@ -239,6 +239,8 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.135 .59 .1 .05
                 hash = DataHash(full(spikes(haz_data(i)).A));
                 if isempty(cache(hash))
                     [fA,tA] = spiketimes2f(spikes(haz_data(i)).A,time);
+                    % remove trials with no spikes
+                    fA(:,sum(fA) == 0) = [];
                     cache(hash,fA);
                 else
                     fA = cache(hash);
@@ -279,6 +281,8 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.135 .59 .1 .05
                 hash = DataHash(full(spikes(haz_data(i)).B));
                 if isempty(cache(hash))
                     [fB,tB] = spiketimes2f(spikes(haz_data(i)).B,time);
+                    % remove trials with no spikes
+                    fB(:,sum(fB) == 0) = [];
                     cache(hash,fB);
                 else
                     fB = cache(hash);
