@@ -16,6 +16,15 @@ Spike sorting for Kontroller
 
 Every problem is different. To deal with unknown unknowns, `spikesort` ships with a number of methods for dimensionality reduction. All these methods are built around an awesome [plugin](#plugin-architecture) architecture, making inclusion of new methods a breeze.  
 
+Here is an example where the `relative amplitudes` method dealt easily with an error in recording that causes all spike amplitudes to change over time:
+
+![](images/relative-amplitudes.png)
+
+And here is another example showing how the `normalised PCA` method deals with an even more complex problem:
+
+![](images/2D-norm-pca.png)
+
+
 ### Several algorithms for data clustering
 
 Likewise, data clustering is achieved through plugins, allowing you to customise `spikesort` for any task. 
