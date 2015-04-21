@@ -272,7 +272,11 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.135 .59 .1 .05
                         
                     end
                 else
-                	plot(sp(1),tA,(fA),'Color',c(i,:))
+                    try
+                	   plot(sp(1),tA,(fA),'Color',c(i,:))
+                    catch
+                        % no data, ignore.
+                    end
                 end
 
                 % do B    
@@ -313,7 +317,10 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.135 .59 .1 .05
                         axis off
                     end
                 else
-                	plot(sp(2),tB,(fB),'Color',c(i,:))
+                    try
+                	   plot(sp(2),tB,(fB),'Color',c(i,:))
+                    catch
+                    end
                 end
 
 
