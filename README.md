@@ -22,7 +22,7 @@ Here is an example where the `relative amplitudes` method dealt easily with an e
 
 And here is another example showing how the `normalised PCA` method deals with an even more complex problem:
 
-![](images/2D-norm-pca.png)
+![](images/2d-norm-pca.png)
 
 
 ### Several algorithms for data clustering
