@@ -20,6 +20,10 @@ Every problem is different. To deal with unknown unknowns, `spikesort` ships wit
 
 Likewise, data clustering is achieved through plugins, allowing you to customise `spikesort` for any task. 
 
+### SmartScroll
+
+When SmartScroll is enabled, `spikesort` will keep a constant number of spikes in view. This is perfect for closely examining a time series with fluctuating firing rates, and displaying spikes in an optimal manner. 
+
 ### Native support for [Kontroller](https://github.com/sg-s/kontroller)-generated data
 
 ![](images/kontroller.png)
