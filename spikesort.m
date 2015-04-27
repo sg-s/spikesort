@@ -148,12 +148,13 @@ uicontrol(find_spike_panel,'Style','text','String','-V Cutoff','units','normaliz
 minV_control = uicontrol(find_spike_panel,'Style','edit','String','-1','units','normalized','Position',[.77 .15 .2 .2],'Callback',@plot_resp);
 
 % other options
-options_panel = uipanel('Title','Options','Position',[.51 .73 .16 .17]);
-firing_rate_trial_control = uicontrol(options_panel,'Style','checkbox','String','per-trial firing rate','units','normalized','Position',[.01 .8 .8 .2]);
-r2_plot_control = uicontrol(options_panel,'Style','checkbox','String','Show reproducibility','units','normalized','Position',[.01 .6 .8 .2]);
-kill_valve_noise_control = uicontrol(options_panel,'Style','checkbox','String','Kill Valve Noise','units','normalized','Position',[.01 .4 .8 .2],'Value',1);
-smart_scroll_control = uicontrol(options_panel,'Style','checkbox','String','Smart Scroll','units','normalized','Position',[.01 .2 .8 .2],'Value',0);
-plot_control_control = uicontrol(options_panel,'Style','checkbox','String','Plot Control','units','normalized','Position',[.01 0 .8 .2],'Value',0);
+options_panel = uipanel('Title','Options','Position',[.51 .67 .16 .23]);
+template_match_control = uicontrol(options_panel,'Style','checkbox','String','Template match','units','normalized','Position',[.01 .833 .8 1/6],'Callback',@TemplateMatch);
+firing_rate_trial_control = uicontrol(options_panel,'Style','checkbox','String','per-trial firing rate','units','normalized','Position',[.01 .667 .8 1/6]);
+r2_plot_control = uicontrol(options_panel,'Style','checkbox','String','Show reproducibility','units','normalized','Position',[.01 .5 .8 1/6]);
+kill_valve_noise_control = uicontrol(options_panel,'Style','checkbox','String','Kill Valve Noise','units','normalized','Position',[.01 .333 .8 1/6],'Value',1);
+smart_scroll_control = uicontrol(options_panel,'Style','checkbox','String','Smart Scroll','units','normalized','Position',[.01 .1667 .8 1/6],'Value',0);
+plot_control_control = uicontrol(options_panel,'Style','checkbox','String','Plot Control','units','normalized','Position',[.01 0 .8 1/6],'Value',0);
 
 
 
@@ -176,6 +177,10 @@ autosort_control = uicontrol(fig,'units','normalized','Position',[.135 .64 .1 .0
 
 sine_control = uicontrol(fig,'units','normalized','Position',[.03 .59 .1 .05],'Style','togglebutton','String',' Kill Ringing','Value',0,'Callback',@plot_resp,'Enable','off');
 discard_control = uicontrol(fig,'units','normalized','Position',[.135 .59 .1 .05],'Style','togglebutton','String',' Discard','Value',0,'Callback',@discard,'Enable','off');
+
+function TemplateMatch(src,event)
+    plot_resp;
+end
 
     
     function raster_plot(~,~)
@@ -984,6 +989,37 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.135 .59 .1 .05
             temp = fit(time(1:z),V(1:z),'sin1');
             [num,den] = iirnotch(temp.b1/length(time),.01*(temp.b1/length(time)));
             V = V - temp(time);
+        end
+
+
+        if get(template_match_control,'Value')
+            % template match
+            plotwhat = get(valve_channel,'String');
+            nchannels = length(get(valve_channel,'Value'));
+            plot_these = get(valve_channel,'Value');
+            control_signal = ControlParadigm(ThisControlParadigm).Outputs(plot_these,:);
+
+            % find ons and offs and build templates
+            [ons, offs] = ComputeOnsOffs(control_signal);
+            before = 30;
+            after = 30;
+            OnTemplate = zeros(before+after+1,1);
+            OffTemplate = zeros(before+after+1,1);
+            for i = 1:length(ons)
+                snippet = V(ons(i)-before:ons(i)+after);
+                OnTemplate = OnTemplate + snippet(:);
+                snippet = V(offs(i)-before:offs(i)+after);
+                OffTemplate = OffTemplate + snippet(:);   
+            end
+            OnTemplate = OnTemplate/length(ons);
+            OffTemplate = OffTemplate/length(offs);
+
+
+            % subtract templates from trace
+            for i = 1:length(ons)
+                V(ons(i)-before:ons(i)+after) = V(ons(i)-before:ons(i)+after) - OnTemplate';
+                V(offs(i)-before:offs(i)+after) = V(offs(i)-before:offs(i)+after) - OffTemplate';
+            end
         end
 
         plot(ax,time,V,'k'); 
