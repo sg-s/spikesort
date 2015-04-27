@@ -149,10 +149,10 @@ minV_control = uicontrol(find_spike_panel,'Style','edit','String','-1','units','
 
 % other options
 options_panel = uipanel('Title','Options','Position',[.51 .67 .16 .23]);
-template_match_control = uicontrol(options_panel,'Style','checkbox','String','Template match','units','normalized','Position',[.01 .833 .8 1/6],'Callback',@TemplateMatch);
+template_match_control = uicontrol(options_panel,'Style','checkbox','String','Template match','units','normalized','Position',[.01 .833 .8 1/6],'Callback',@TemplateMatch,'Value',1);
 firing_rate_trial_control = uicontrol(options_panel,'Style','checkbox','String','per-trial firing rate','units','normalized','Position',[.01 .667 .8 1/6]);
 r2_plot_control = uicontrol(options_panel,'Style','checkbox','String','Show reproducibility','units','normalized','Position',[.01 .5 .8 1/6]);
-kill_valve_noise_control = uicontrol(options_panel,'Style','checkbox','String','Kill Valve Noise','units','normalized','Position',[.01 .333 .8 1/6],'Value',1);
+kill_valve_noise_control = uicontrol(options_panel,'Style','checkbox','String','Kill Valve Noise','units','normalized','Position',[.01 .333 .8 1/6],'Value',0);
 smart_scroll_control = uicontrol(options_panel,'Style','checkbox','String','Smart Scroll','units','normalized','Position',[.01 .1667 .8 1/6],'Value',0);
 plot_control_control = uicontrol(options_panel,'Style','checkbox','String','Plot Control','units','normalized','Position',[.01 0 .8 1/6],'Value',0);
 
