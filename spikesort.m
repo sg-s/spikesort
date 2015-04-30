@@ -254,10 +254,10 @@ end
                 if width(fA) > 1
                     if get(firing_rate_trial_control,'Value')
                         for j = 1:width(fA)
-                            plot(sp(1),tA,fA(:,j),'Color',c(i,:))
+                            l(i) = plot(sp(1),tA,fA(:,j),'Color',c(i,:));
                         end
                     else
-                	   plot(sp(1),tA,mean2(fA),'Color',c(i,:))
+                	   l(i) = plot(sp(1),tA,mean2(fA),'Color',c(i,:));
                     end
                     if get(r2_plot_control,'Value')
                         hash = DataHash(fA);
@@ -278,7 +278,7 @@ end
                     end
                 else
                     try
-                	   plot(sp(1),tA,(fA),'Color',c(i,:))
+                	   l(i) = plot(sp(1),tA,(fA),'Color',c(i,:));
                     catch
                         % no data, ignore.
                     end
@@ -300,10 +300,10 @@ end
                 if width(fB) > 1
                     if get(firing_rate_trial_control,'Value')
                         for j = 1:width(fB)
-                            plot(sp(1),tA,fB(:,j),'Color',c(i,:))
+                            l(i) = plot(sp(2),tA,fB(:,j),'Color',c(i,:));
                         end
                     else
-                	   plot(sp(2),tB,mean2(fB),'Color',c(i,:))
+                	   l(i) = plot(sp(2),tB,mean2(fB),'Color',c(i,:));
                     end
                     if get(r2_plot_control,'Value')
                         hash = DataHash(fB);
@@ -323,7 +323,7 @@ end
                     end
                 else
                     try
-                	   plot(sp(2),tB,(fB),'Color',c(i,:))
+                	   l(i) = plot(sp(2),tB,(fB),'Color',c(i,:));
                     catch
                     end
                 end
@@ -333,7 +333,7 @@ end
                 
             end
         end
-        legend(sp(1),L)
+        legend(l,L)
         close(f_waitbar)
         linkaxes(sp(1:2))
         PrettyFig;
