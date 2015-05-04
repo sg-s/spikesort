@@ -1090,7 +1090,11 @@ end
             % now rescale the Y axes so that only the interesting bit is retained
             if ~isempty(loc)
                 set(ax,'YLim',[1.1*min(V(loc)) -min(V(loc))]);
+            else
+                set(ax,'YLim',[min(V) max(V)]);
             end
+
+            
 
 
         else
