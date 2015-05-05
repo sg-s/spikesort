@@ -148,13 +148,14 @@ uicontrol(find_spike_panel,'Style','text','String','-V Cutoff','units','normaliz
 minV_control = uicontrol(find_spike_panel,'Style','edit','String','-1','units','normalized','Position',[.77 .15 .2 .2],'Callback',@plot_resp);
 
 % other options
-options_panel = uipanel('Title','Options','Position',[.51 .67 .16 .23]);
-template_match_control = uicontrol(options_panel,'Style','checkbox','String','Template match','units','normalized','Position',[.01 .833 .8 1/6],'Callback',@TemplateMatch,'Value',1);
-firing_rate_trial_control = uicontrol(options_panel,'Style','checkbox','String','per-trial firing rate','units','normalized','Position',[.01 .667 .8 1/6]);
-r2_plot_control = uicontrol(options_panel,'Style','checkbox','String','Show reproducibility','units','normalized','Position',[.01 .5 .8 1/6]);
-kill_valve_noise_control = uicontrol(options_panel,'Style','checkbox','String','Kill Valve Noise','units','normalized','Position',[.01 .333 .8 1/6],'Value',0);
-smart_scroll_control = uicontrol(options_panel,'Style','checkbox','String','Smart Scroll','units','normalized','Position',[.01 .1667 .8 1/6],'Value',0);
-plot_control_control = uicontrol(options_panel,'Style','checkbox','String','Plot Control','units','normalized','Position',[.01 0 .8 1/6],'Value',0);
+options_panel = uipanel('Title','Options','Position',[.51 .60 .16 .30]);
+template_match_control = uicontrol(options_panel,'Style','checkbox','String','Template match','units','normalized','Position',[.01 6/7 .8 1/7],'Callback',@TemplateMatch,'Value',1);
+firing_rate_trial_control = uicontrol(options_panel,'Style','checkbox','String','per-trial firing rate','units','normalized','Position',[.01 5/7 .8 1/7]);
+r2_plot_control = uicontrol(options_panel,'Style','checkbox','String','Show reproducibility','units','normalized','Position',[.01 4/7 .8 1/7]);
+kill_valve_noise_control = uicontrol(options_panel,'Style','checkbox','String','Kill Valve Noise','units','normalized','Position',[.01 3/7 .8 1/7],'Value',0);
+smart_scroll_control = uicontrol(options_panel,'Style','checkbox','String','Smart Scroll','units','normalized','Position',[.01 2/7 .8 1/7],'Value',0);
+plot_control_control = uicontrol(options_panel,'Style','checkbox','String','Plot Control','units','normalized','Position',[.01 1/7 .8 1/7],'Value',0);
+flip_V_control = uicontrol(options_panel,'Style','checkbox','String','Find spikes in -V','units','normalized','Position',[.01 0 .8 1/7],'Value',1);
 
 
 
@@ -1094,10 +1095,11 @@ end
                 set(ax,'YLim',[min(V) max(V)]);
             end
 
-            
+
 
 
         else
+            set(ax,'YLim',[min(V) max(V)]);
             console('No need to find spikes...')
             set(method_control,'Enable','off')
         end
@@ -1144,8 +1146,12 @@ end
         mpw = str2double(get(mpw_control,'String'));
         minV = str2double(get(minV_control,'String'));
         % find local minima 
-        [~,loc] = findpeaks(-V,'MinPeakProminence',mpp,'MinPeakDistance',mpd,'MinPeakWidth',mpw);
 
+        if get(flip_V_control,'Value')
+            [~,loc] = findpeaks(-V,'MinPeakProminence',mpp,'MinPeakDistance',mpd,'MinPeakWidth',mpw);
+        else
+            [~,loc] = findpeaks(V,'MinPeakProminence',mpp,'MinPeakDistance',mpd,'MinPeakWidth',mpw);
+        end
         % remove spikes below min V
         loc(V(loc) < minV) = [];
         set(method_control,'Enable','on')
