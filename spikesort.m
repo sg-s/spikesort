@@ -86,7 +86,7 @@ datapanel = uipanel('Title','Data','Position',[.8 .57 .16 .4]);
 uicontrol(datapanel,'units','normalized','Position',[.02 .9 .510 .10],'Style', 'text', 'String', 'Control Signal','FontSize',fs,'FontWeight','bold');
 valve_channel = uicontrol(datapanel,'units','normalized','Position',[.03 .68 .910 .25],'Style', 'listbox', 'String', '','FontSize',fs,'FontWeight','bold','Callback',@plot_valve,'Min',0,'Max',2);
 uicontrol(datapanel,'units','normalized','Position',[.01 .56 .510 .10],'Style', 'text', 'String', 'Stimulus','FontSize',fs,'FontWeight','bold');
-stim_channel = uicontrol(datapanel,'units','normalized','Position',[.03 .38 .910 .20],'Style', 'listbox', 'String', '','FontSize',fs,'FontWeight','bold');
+stim_channel = uicontrol(datapanel,'units','normalized','Position',[.03 .38 .910 .20],'Style', 'listbox', 'String', '','FontSize',fs,'FontWeight','bold','Callback',@plot_stim);
 
 uicontrol(datapanel,'units','normalized','Position',[.01 .25 .610 .10],'Style', 'text', 'String', 'Response','FontSize',fs,'FontWeight','bold');
 resp_channel = uicontrol(datapanel,'units','normalized','Position',[.01 .01 .910 .25],'Style', 'listbox', 'String', '','FontSize',fs,'FontWeight','bold');
@@ -565,7 +565,9 @@ end
 
         % update stimulus listbox with all input channel names
         fl = fieldnames(data);
-        set(stim_channel,'String',fl);
+
+        % also add all the control signals
+        set(stim_channel,'String',[fl(:); OutputChannelNames(:)]);
 
         % update response listbox with all the input channel names
         set(resp_channel,'String',fl);
@@ -887,9 +889,14 @@ end
                 c = [0 0 0];
             end
             for i = 1:nchannels
-                plotthis = plotwhat{plot_these(i)};
-                eval(strcat('temp=data(ThisControlParadigm).',plotthis,';'));
-                temp = temp(ThisTrial,:);
+                
+                if plot_these(i) > length(fieldnames(data))
+                    temp= ControlParadigm(ThisControlParadigm).Outputs(plot_these(i) - length(fieldnames(data)),:);
+                else
+                    plotthis = plotwhat{plot_these(i)};
+                    eval(strcat('temp=data(ThisControlParadigm).',plotthis,';'));
+                    temp = temp(ThisTrial,:);
+                end
                 time = deltat*(1:length(temp));
                 plot(ax2,time,temp,'Color',c(i,:)); hold on;
                 miny  =min([miny min(temp)]);
@@ -998,28 +1005,48 @@ end
             plotwhat = get(valve_channel,'String');
             nchannels = length(get(valve_channel,'Value'));
             plot_these = get(valve_channel,'Value');
+            if length(plot_these) > 1
+                plot_these = plot_these(1);
+            end
             control_signal = ControlParadigm(ThisControlParadigm).Outputs(plot_these,:);
 
             % find ons and offs and build templates
             [ons, offs] = ComputeOnsOffs(control_signal);
+
+
+
             before = 30;
             after = 30;
             OnTemplate = zeros(before+after+1,1);
             OffTemplate = zeros(before+after+1,1);
-            for i = 1:length(ons)
-                snippet = V(ons(i)-before:ons(i)+after);
-                OnTemplate = OnTemplate + snippet(:);
-                snippet = V(offs(i)-before:offs(i)+after);
-                OffTemplate = OffTemplate + snippet(:);   
-            end
-            OnTemplate = OnTemplate/length(ons);
-            OffTemplate = OffTemplate/length(offs);
+
+            
+            if isempty(ons)
+            else
+                % trim some edge cases
+                if offs(end)+after>length(V)
+                    offs(end) = [];
+                    ons(end) = [];
+                end
+                if ons(1)-before<1
+                    ons(1) = [];
+                    offs(1) = [];
+                end
+                for i = 1:length(ons)
+                    snippet = V(ons(i)-before:ons(i)+after);
+                    OnTemplate = OnTemplate + snippet(:);
+                    snippet = V(offs(i)-before:offs(i)+after);
+                    OffTemplate = OffTemplate + snippet(:);   
+                end
+                OnTemplate = OnTemplate/length(ons);
+                OffTemplate = OffTemplate/length(offs);
 
 
-            % subtract templates from trace
-            for i = 1:length(ons)
-                V(ons(i)-before:ons(i)+after) = V(ons(i)-before:ons(i)+after) - OnTemplate';
-                V(offs(i)-before:offs(i)+after) = V(offs(i)-before:offs(i)+after) - OffTemplate';
+                % subtract templates from trace
+                for i = 1:length(ons)
+                    V(ons(i)-before:ons(i)+after) = V(ons(i)-before:ons(i)+after) - OnTemplate';
+                    V(offs(i)-before:offs(i)+after) = V(offs(i)-before:offs(i)+after) - OffTemplate';
+                end
             end
         end
 
@@ -1089,12 +1116,16 @@ end
 
 
             % now rescale the Y axes so that only the interesting bit is retained
-            if ~isempty(loc)
-                set(ax,'YLim',[1.1*min(V(loc)) -min(V(loc))]);
-            else
-                set(ax,'YLim',[min(V) max(V)]);
-            end
-
+            % if ~isempty(loc)
+            %     try
+            %         set(ax,'YLim',[1.1*min(V(loc)) -min(V(loc))]);
+            %     catch
+            %         keyboard
+            %     end
+            % else
+            %     set(ax,'YLim',[min(V) max(V)]);
+            % end
+            
 
 
 
