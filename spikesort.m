@@ -237,8 +237,10 @@ end
         L = {};
         f_waitbar = waitbar(0.1, 'Computing Firing rates...');
         for i = 1:length(haz_data)
+            l(i) = plot(sp(1),NaN,NaN,'Color',c(i,:));
             waitbar((i-1)/length(spikes),f_waitbar);
             if length(spikes(haz_data(i)).A) > 1
+
                 % do A
                 time = (1:length(spikes(haz_data(i)).A))/SamplingRate;
                 % cache data to speed up
@@ -334,6 +336,7 @@ end
                 
             end
         end
+        
         legend(l,L)
         close(f_waitbar)
         linkaxes(sp(1:2))
@@ -479,6 +482,22 @@ end
             set(ax,'Xlim',newlim)
         catch
         end
+
+        xlim = get(ax,'XLim');
+        if xlim(1) < min(time)
+            xlim(1) = min(time);
+        end
+        if xlim(2) > max(time)
+            xlim(2) = max(time);
+        end
+        xlim(2) = (floor(xlim(2)/deltat))*deltat;
+        xlim(1) = (floor(xlim(1)/deltat))*deltat;
+        ylim(2) = max(V(find(time==xlim(1)):find(time==xlim(2))));
+        ylim(1) = min(V(find(time==xlim(1)):find(time==xlim(2))));
+        yr = .1*(ylim(2) - ylim(1));
+        [ylim(1)-yr ylim(2)+yr]
+        set(ax,'YLim',[ylim(1)-yr ylim(2)+yr]);
+
     end
 
     function discard(~,~)
@@ -1126,7 +1145,19 @@ end
             %     set(ax,'YLim',[min(V) max(V)]);
             % end
             
-
+            xlim = get(ax,'XLim');
+            if xlim(1) < min(time)
+                xlim(1) = min(time);
+            end
+            if xlim(2) > max(time)
+                xlim(2) = max(time);
+            end
+            xlim(2) = (floor(xlim(2)/deltat))*deltat;
+            xlim(1) = (floor(xlim(1)/deltat))*deltat;
+            ylim(2) = max(V(find(time==xlim(1)):find(time==xlim(2))));
+            ylim(1) = min(V(find(time==xlim(1)):find(time==xlim(2))));
+            yr = .1*(ylim(2) - ylim(1));
+            set(ax,'YLim',[ylim(1)-yr ylim(2)+yr]);
 
 
         else
@@ -1322,13 +1353,21 @@ end
         s = floor((.005*xrange));
         if get(mode_new_A,'Value')==1
             % snip out a small waveform around the point
-            [~,loc] = min(V(floor(p(1)-s:p(1)+s)));
+            if get(flip_V_control,'Value')
+                [~,loc] = min(V(floor(p(1)-s:p(1)+s)));
+            else
+                [~,loc] = max(V(floor(p(1)-s:p(1)+s)));
+            end
             spikes(ThisControlParadigm).A(ThisTrial,-s+loc+floor(p(1))) = 1;
             A = find(spikes(ThisControlParadigm).A(ThisTrial,:));
             spikes(ThisControlParadigm).amplitudes_A(ThisTrial,A)  =  ssdm_1DAmplitudes(V,deltat,A);
         elseif get(mode_new_B,'Value')==1
             % snip out a small waveform around the point
-            [~,loc] = min(V(floor(p(1)-s:p(1)+s)));
+            if get(flip_V_control,'Value')
+                [~,loc] = min(V(floor(p(1)-s:p(1)+s)));
+            else
+                [~,loc] = max(V(floor(p(1)-s:p(1)+s)));
+            end
             spikes(ThisControlParadigm).B(ThisTrial,-s+loc+floor(p(1))) = 1;
             B = find(spikes(ThisControlParadigm).B(ThisTrial,:));
             spikes(ThisControlParadigm).amplitudes_B(ThisTrial,B)  =  ssdm_1DAmplitudes(V,deltat,B);
