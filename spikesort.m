@@ -67,7 +67,18 @@ end
 % make the master figure, and the axes to plot the voltage traces
 fig = figure('position',[50 50 1200 700], 'Toolbar','figure','Menubar','none','Name',versionname,'NumberTitle','off','IntegerHandle','off','WindowButtonDownFcn',@mousecallback,'WindowScrollWheelFcn',@scroll,'CloseRequestFcn',@closess);
 temp =  findall(gcf,'Type','uitoggletool','-or','Type','uipushtool');
-delete(temp([1:7 11 12 14:15]))
+% modify buttons for raster and firing rate 
+r = load('r.mat');
+f = load('f.mat');
+temp(15).CData = r.r;
+temp(15).ClickedCallback = @raster_plot;
+temp(15).TooltipString = 'Generate Raster Plot';
+
+temp(14).CData = f.f;
+temp(14).ClickedCallback = @firing_rate_plot;
+temp(14).TooltipString = 'Generate Firing Rates';
+clear r f
+delete(temp([1:7 11 12]))
 clear temp
 % callback for export figs
 menubuttons = findall(gcf,'Type','uitoggletool','-or','Type','uipushtool');
@@ -93,11 +104,9 @@ resp_channel = uicontrol(datapanel,'units','normalized','Position',[.01 .01 .910
 
 
 % file I/O
-uicontrol(fig,'units','normalized','Position',[.03 .92 .08 .07],'Style', 'pushbutton', 'String', 'Load File','FontSize',fs,'FontWeight','bold','callback',@loadfilecallback);
-
-% raster and firing rate plots
-uicontrol(fig,'units','normalized','Position',[.12 .92 .07 .05],'Style', 'pushbutton', 'String', 'Raster','FontSize',fs,'callback',@raster_plot);
-uicontrol(fig,'units','normalized','Position',[.20 .92 .07 .05],'Style', 'pushbutton', 'String', 'Firing Rate','FontSize',fs,'callback',@firing_rate_plot);
+uicontrol(fig,'units','normalized','Position',[.10 .92 .07 .07],'Style', 'pushbutton', 'String', 'Load File','FontSize',fs,'FontWeight','bold','callback',@loadfilecallback);
+uicontrol(fig,'units','normalized','Position',[.05 .93 .03 .05],'Style', 'pushbutton', 'String', '<','FontSize',fs,'FontWeight','bold','callback',@loadfilecallback);
+uicontrol(fig,'units','normalized','Position',[.19 .93 .03 .05],'Style', 'pushbutton', 'String', '>','FontSize',fs,'FontWeight','bold','callback',@loadfilecallback);
 
 % paradigms and trials
 datachooserpanel = uipanel('Title','Paradigms and Trials','Position',[.03 .75 .25 .16]);
@@ -569,10 +578,40 @@ end
 
     end
 
-    function loadfilecallback(~,~)
-        [FileName,PathName] = uigetfile('.mat');
-        if ~FileName
-            return
+    function loadfilecallback(src,~)
+        if strcmp(src.String,'Load File')
+            [FileName,PathName] = uigetfile('.mat');
+            if ~FileName
+                return
+            end
+        elseif strcmp(src.String,'<')
+            if isempty(FileName)
+                return
+            else
+                allfiles = dir(strcat(PathName,'*.mat'));
+                if any(find(strcmp('cached.mat',{allfiles.name})))
+                    allfiles(find(strcmp('cached.mat',{allfiles.name}))) = [];
+                end
+                thisfile = find(strcmp(FileName,{allfiles.name}))-1;
+                if thisfile < 1
+                    return
+                end
+                FileName = allfiles(thisfile).name;
+            end
+        else
+            if isempty(FileName)
+                return
+            else
+                allfiles = dir(strcat(PathName,'*.mat'));
+                if any(find(strcmp('cached.mat',{allfiles.name})))
+                    allfiles(find(strcmp('cached.mat',{allfiles.name}))) = [];
+                end
+                thisfile = find(strcmp(FileName,{allfiles.name}))+1;
+                if thisfile > length(allfiles)
+                    return
+                end
+                FileName = allfiles(thisfile).name;
+            end
         end
         console(strcat('Loading file:',PathName,'/',FileName))
         load_waitbar = waitbar(0.2, 'Loading data...');
