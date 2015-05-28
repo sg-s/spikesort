@@ -613,6 +613,24 @@ end
                 FileName = allfiles(thisfile).name;
             end
         end
+
+        % reset some pushbuttons and other things
+        set(discard_control,'Value',0)
+        deltat = 1e-4;
+        ThisControlParadigm = 1;
+        ThisTrial = 1;
+        temp = [];
+        clear spikes
+        spikes.A = 0;
+        spikes.B = 0;
+        spikes.artifacts = 0;
+        R = 0; % this holds the dimensionality reduced data
+        V = 0; % holds the current trace
+        Vf = 0; % filtered V
+        V_snippets = [];
+        time = 0;
+        loc =0; % holds current spike times
+
         console(strcat('Loading file:',PathName,'/',FileName))
         load_waitbar = waitbar(0.2, 'Loading data...');
         temp=load(strcat(PathName,FileName));
@@ -629,6 +647,8 @@ end
             spikes = temp.spikes;
         end
 		clear temp
+
+        
 
         waitbar(0.3,load_waitbar,'Updating listboxes...')
 		% update control signal listboxes with OutputChannelNames
@@ -803,6 +823,7 @@ end
         try
             set(metadata_text_control,'String',metadata.spikesort_comment)
         catch
+            set(metadata_text_control,'String','')
         end
 
         % clean up
