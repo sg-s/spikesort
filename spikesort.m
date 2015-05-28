@@ -1110,41 +1110,40 @@ end
             control_signal = ControlParadigm(ThisControlParadigm).Outputs(plot_these,:);
 
             % find ons and offs and build templates
-            [ons, offs] = ComputeOnsOffs(control_signal);
-
-
-
+            transitions = find(diff(control_signal));
             before = 30;
             after = 30;
-            OnTemplate = zeros(before+after+1,1);
-            OffTemplate = zeros(before+after+1,1);
+            Template = zeros(before+after+1,1);
 
             
-            if isempty(ons)
+            if isempty(transitions)
             else
                 % trim some edge cases
-                if offs(end)+after>length(V)
-                    offs(end) = [];
-                    ons(end) = [];
+                if transitions(end)+after>length(V)
+                    transitions(end) = [];
                 end
-                if ons(1)-before<1
-                    ons(1) = [];
-                    offs(1) = [];
+                if transitions(1)-before<1
+                    transitions(1) = [];
                 end
-                for i = 1:length(ons)
-                    snippet = V(ons(i)-before:ons(i)+after);
-                    OnTemplate = OnTemplate + snippet(:);
-                    snippet = V(offs(i)-before:offs(i)+after);
-                    OffTemplate = OffTemplate + snippet(:);   
-                end
-                OnTemplate = OnTemplate/length(ons);
-                OffTemplate = OffTemplate/length(offs);
 
+                
+                for i = 1:length(transitions)
+                    snippet = V(transitions(i)-before:transitions(i)+after);
+                    % scape snippet
+                    w = control_signal(transitions(i)-1) - control_signal(transitions(i)+1);
+                    snippet = snippet*w;
+                    
+                    Template = Template + snippet(:);
+
+                end
+                Template = Template/length(transitions);
+                
 
                 % subtract templates from trace
-                for i = 1:length(ons)
-                    V(ons(i)-before:ons(i)+after) = V(ons(i)-before:ons(i)+after) - OnTemplate';
-                    V(offs(i)-before:offs(i)+after) = V(offs(i)-before:offs(i)+after) - OffTemplate';
+                for i = 1:length(transitions)
+                    w = control_signal(transitions(i)-1) - control_signal(transitions(i)+1);
+                    V(transitions(i)-before:transitions(i)+after) = V(transitions(i)-before:transitions(i)+after) - Template'*w;
+
                 end
             end
         end
@@ -1234,7 +1233,12 @@ end
             end
             xlim(2) = (floor(xlim(2)/deltat))*deltat;
             xlim(1) = (floor(xlim(1)/deltat))*deltat;
-            ylim(2) = max(V(find(time==xlim(1)):find(time==xlim(2))));
+            try
+                ylim(2) = max(V(find(time==xlim(1)):find(time==xlim(2))));
+            catch
+                beep
+                keyboard
+            end
             ylim(1) = min(V(find(time==xlim(1)):find(time==xlim(2))));
             yr = 2*std(V(find(time==xlim(1)):find(time==xlim(2))));
             if yr==0
