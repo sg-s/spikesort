@@ -147,6 +147,11 @@ mpd_control = uicontrol(find_spike_panel,'Style','edit','String','10','units','n
 uicontrol(find_spike_panel,'Style','text','String','-V Cutoff','units','normalized','Position',[0 .13 .8 .2])
 minV_control = uicontrol(find_spike_panel,'Style','edit','String','-1','units','normalized','Position',[.77 .15 .2 .2],'Callback',@plot_resp);
 
+% metadata panel
+metadata_panel = uipanel('Title','Metadata','Position',[.29 .57 .21 .15]);
+metadata_text_control = uicontrol(metadata_panel,'Style','edit','String','','units','normalized','Position',[.03 .3 .94 .7],'Callback',@update_metadata,'Enable','off');
+metadata_summary_control = uicontrol(metadata_panel,'Style','pushbutton','String','Generate Summary','units','normalized','Position',[.03 .03 .94 .2],'Callback',@generate_summary);
+
 % other options
 options_panel = uipanel('Title','Options','Position',[.51 .60 .16 .30]);
 template_match_control = uicontrol(options_panel,'Style','checkbox','String','Template match','units','normalized','Position',[.01 6/7 .8 1/7],'Callback',@TemplateMatch,'Value',1);
@@ -168,16 +173,21 @@ mode_A2B = uicontrol(manualpanel,'Position',[5 95 100 20], 'Style', 'radiobutton
 mode_B2A = uicontrol(manualpanel,'Position',[5 125 100 20], 'Style', 'radiobutton', 'String', 'B->A','FontSize',fs);
 uicontrol(manualpanel,'Position',[15 150 100 30],'Style','pushbutton','String','Mark All in View','Callback',@mark_all_callback);
 
-
 % various toggle switches and pushbuttons
-filtermode = uicontrol(fig,'units','normalized','Position',[.03 .69 .1 .05],'Style','togglebutton','String','Filter','Value',1,'Callback',@plot_resp,'Enable','off');
-findmode = uicontrol(fig,'units','normalized','Position',[.135 .69 .1 .05],'Style','togglebutton','String','Find Spikes','Value',1,'Callback',@plot_resp,'Enable','off');
+filtermode = uicontrol(fig,'units','normalized','Position',[.03 .69 .12 .05],'Style','togglebutton','String','Filter','Value',1,'Callback',@plot_resp,'Enable','off');
+findmode = uicontrol(fig,'units','normalized','Position',[.16 .69 .12 .05],'Style','togglebutton','String','Find Spikes','Value',1,'Callback',@plot_resp,'Enable','off');
 
-redo_control = uicontrol(fig,'units','normalized','Position',[.03 .64 .1 .05],'Style','pushbutton','String','Redo','Value',0,'Callback',@redo,'Enable','off');
-autosort_control = uicontrol(fig,'units','normalized','Position',[.135 .64 .1 .05],'Style','togglebutton','String','Autosort','Value',0,'Enable','off');
+redo_control = uicontrol(fig,'units','normalized','Position',[.03 .64 .12 .05],'Style','pushbutton','String','Redo','Value',0,'Callback',@redo,'Enable','off');
+autosort_control = uicontrol(fig,'units','normalized','Position',[.16 .64 .12 .05],'Style','togglebutton','String','Autosort','Value',0,'Enable','off');
 
-sine_control = uicontrol(fig,'units','normalized','Position',[.03 .59 .1 .05],'Style','togglebutton','String',' Kill Ringing','Value',0,'Callback',@plot_resp,'Enable','off');
-discard_control = uicontrol(fig,'units','normalized','Position',[.135 .59 .1 .05],'Style','togglebutton','String',' Discard','Value',0,'Callback',@discard,'Enable','off');
+sine_control = uicontrol(fig,'units','normalized','Position',[.03 .59 .12 .05],'Style','togglebutton','String',' Kill Ringing','Value',0,'Callback',@plot_resp,'Enable','off');
+discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05],'Style','togglebutton','String',' Discard','Value',0,'Callback',@discard,'Enable','off');
+
+
+function update_metadata(src,~)
+    metadata.spikesort_comment = get(src,'String');
+    save(strcat(PathName,FileName),'metadata','-append')
+end
 
 function TemplateMatch(src,event)
     plot_resp;
@@ -494,9 +504,12 @@ end
         xlim(1) = (floor(xlim(1)/deltat))*deltat;
         ylim(2) = max(V(find(time==xlim(1)):find(time==xlim(2))));
         ylim(1) = min(V(find(time==xlim(1)):find(time==xlim(2))));
-        yr = .1*(ylim(2) - ylim(1));
-        [ylim(1)-yr ylim(2)+yr]
-        set(ax,'YLim',[ylim(1)-yr ylim(2)+yr]);
+        yr = 2*std(V(find(time==xlim(1)):find(time==xlim(2))));
+        if yr==0
+            set(ax,'YLim',[ylim(1)-1 ylim(2)+1]);
+        else
+            set(ax,'YLim',[ylim(1)-yr ylim(2)+yr]);
+        end
 
     end
 
@@ -694,6 +707,7 @@ end
         set(paradigm_chooser,'Enable','on');
         set(discard_control,'Enable','on');
         set(menubuttons(4),'Enable','on')
+        set(metadata_text_control,'Enable','on')
 
         % check for amplitudes 
         waitbar(.7,load_waitbar,'Checking to see amplitude data exists...')
@@ -744,6 +758,12 @@ end
 
                 end
             end
+        end
+
+        % check to see if metadata exists
+        try
+            set(metadata_text_control,'String',metadata.spikesort_comment)
+        catch
         end
 
         % clean up
@@ -1156,8 +1176,12 @@ end
             xlim(1) = (floor(xlim(1)/deltat))*deltat;
             ylim(2) = max(V(find(time==xlim(1)):find(time==xlim(2))));
             ylim(1) = min(V(find(time==xlim(1)):find(time==xlim(2))));
-            yr = .1*(ylim(2) - ylim(1));
-            set(ax,'YLim',[ylim(1)-yr ylim(2)+yr]);
+            yr = 2*std(V(find(time==xlim(1)):find(time==xlim(2))));
+            if yr==0
+                set(ax,'YLim',[ylim(1)-1 ylim(2)+1]);
+            else
+                set(ax,'YLim',[ylim(1)-yr ylim(2)+yr]);
+            end
 
 
         else
