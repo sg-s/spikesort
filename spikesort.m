@@ -163,7 +163,9 @@ metadata_summary_control = uicontrol(metadata_panel,'Style','pushbutton','String
 
 % other options
 options_panel = uipanel('Title','Options','Position',[.51 .60 .16 .30]);
-template_match_control = uicontrol(options_panel,'Style','checkbox','String','Template match','units','normalized','Position',[.01 6/7 .8 1/7],'Callback',@TemplateMatch,'Value',1);
+template_match_control = uicontrol(options_panel,'Style','checkbox','String','-Template','units','normalized','Position',[.01 6/7 .4 1/7],'Callback',@TemplateMatch,'Value',1);
+template_match_slider = uicontrol(options_panel,'Style','slider','String','Template match','units','normalized','Position',[.51 6/7-.04 .4 1/7],'Callback',@TemplateMatch,'Min',1,'Max',5,'Value',1);
+
 firing_rate_trial_control = uicontrol(options_panel,'Style','checkbox','String','per-trial firing rate','units','normalized','Position',[.01 5/7 .8 1/7]);
 r2_plot_control = uicontrol(options_panel,'Style','checkbox','String','Show reproducibility','units','normalized','Position',[.01 4/7 .8 1/7]);
 kill_valve_noise_control = uicontrol(options_panel,'Style','checkbox','String','Kill Valve Noise','units','normalized','Position',[.01 3/7 .8 1/7],'Value',0);
@@ -1111,9 +1113,9 @@ end
 
             % find ons and offs and build templates
             transitions = find(diff(control_signal));
-            before = 30;
-            after = 30;
-            Template = zeros(before+after+1,1);
+            before = 100;
+            after = 100;
+            
 
             
             if isempty(transitions)
@@ -1126,23 +1128,29 @@ end
                     transitions(1) = [];
                 end
 
-                
+                Template = zeros(before+after+1,1);
+                w = zeros(length(transitions),1);
+                dv = zeros(length(transitions),1);
                 for i = 1:length(transitions)
                     snippet = V(transitions(i)-before:transitions(i)+after);
-                    % scape snippet
-                    w = control_signal(transitions(i)-1) - control_signal(transitions(i)+1);
-                    snippet = snippet*w;
-                    
-                    Template = Template + snippet(:);
+                    % scale snippet
+                    w(i) = control_signal(transitions(i)-1) - control_signal(transitions(i)+1);
+                    dv(i) = max(snippet(before-10:before+10)) - min(snippet(before-10:before+10));
+                    if w(i) < 0
+                        dv(i) = -dv(i);
+                    end
+                    Template = Template + snippet'*w(i);
 
                 end
+                %Template = Template/(sum(w));
                 Template = Template/length(transitions);
                 
 
                 % subtract templates from trace
+                sf = get(template_match_slider,'Value');
                 for i = 1:length(transitions)
                     w = control_signal(transitions(i)-1) - control_signal(transitions(i)+1);
-                    V(transitions(i)-before:transitions(i)+after) = V(transitions(i)-before:transitions(i)+after) - Template'*w;
+                    V(transitions(i)-before:transitions(i)+after) = V(transitions(i)-before:transitions(i)+after) - Template'*w/sf;
 
                 end
             end
@@ -1510,6 +1518,29 @@ end
  
     end
 
+
+function generate_summary(~,~)
+    allfiles = dir(strcat(PathName,'*.mat'));
+    if any(find(strcmp('cached.mat',{allfiles.name})))
+        allfiles(find(strcmp('cached.mat',{allfiles.name}))) = [];
+    end
+    summary_string = '';
+    fileID = fopen('summary.log','w');
+    for i = 1:length(allfiles)
+        summary_string = strcat(summary_string,'\n', allfiles(i).name);
+        temp = load(allfiles(i).name,'metadata');
+        metadata = temp.metadata;
+            
+        if isfield(metadata,'spikesort_comment')
+            summary_string = strcat(summary_string,'\t\t', metadata.spikesort_comment);
+        else
+            % no comment on this file
+            summary_string = strcat(summary_string,'\t\t', 'no comment');
+        end
+    end
+    fprintf(fileID,summary_string);
+    fclose(fileID)
+end
 
 
 
