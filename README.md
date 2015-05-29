@@ -25,6 +25,7 @@ And here is another example showing how the `normalised PCA` method deals with a
 ![](images/2d-norm-pca.png)
 
 `spikesort` ships with the following dimensionality reduction algorithms:
+
 1. Spike Amplitudes
 2. Fractional Spike Amplitudes 
 3. Relative Spike Amplitudes 
