@@ -24,10 +24,23 @@ And here is another example showing how the `normalised PCA` method deals with a
 
 ![](images/2d-norm-pca.png)
 
+`spikesort` ships with the following dimensionality reduction algorithms:
+1. Spike Amplitudes
+2. Fractional Spike Amplitudes 
+3. Relative Spike Amplitudes 
+4. Fractional Amplitudes and Inter-Spike Intervals 
+5. Principal Components Analysis 
+6. Normalised PCA
 
 ### Several algorithms for data clustering
 
-Likewise, data clustering is achieved through plugins, allowing you to customise `spikesort` for any task. 
+Likewise, data clustering is achieved through plugins, allowing you to customise `spikesort` for any task. Out of the box, `spikesort` supports the following clustering algorithms: 
+
+1. k-means
+2. 1D Gaussian Clustering
+3. 2D Manual Clustering 
+
+All these methods are built around an awesome [plugin](#plugin-architecture) architecture, making inclusion of new clustering methods **very** easy. 
 
 ### SmartScroll
 
@@ -45,7 +58,8 @@ Limited support for the [extended file attribute](http://en.wikipedia.org/wiki/E
 
 ## Limitations 
 
-* for various reasons, sorting into only two groups (A and B) is supported. spikesort will not support more than 2 groups
+* for various reasons, sorting into only two groups (A and B) is supported. spikesort will not support more than 2 groups in the anticipated future. 
+* Only 1 recording electrode is supported at a time. No support for multi-electrode arrays, nor will spikesort ever have support for MEAs. 
 
 ## Installation
 
@@ -73,31 +87,16 @@ or use [this link](https://github.com/sg-s/spikesort/archive/master.zip).
 
 ## Plugin architecture
 
-`spikesort` is built around a plugin architectue for the two most important things it does: 
+`spikesort` is built around a plugin architecture for the two most important things it does: 
 
 * dimensionality reduction of spike shapes
 * clustering 
-
-### Default plugins
-
-`spikesort` ships with the following default plugins for dimensionality reduction:
-
-1. (1D) spike amplitudes
-2. (1D) fractional spike amplitudes
-3. (1D) relative spike amplitudes
-3. (2D) Principal Components 
-
-and the following default plugins for clustering:
-
-1. (1D) Gaussian Mixture Models
-2. (2D) Manual Clustering 
-3. (ND) Density-Peaks clustering 
 
 ### Writing your own plugins
 
 Writing your own plugins is really easy: `spikesort` does the heavy lifting in figuring out how to talk to it, and all you have to is write a function that conforms to a few standards:
 
-#### Naming.
+#### Naming
 Dimensionality reduction plugins have to be called `ssdm_foo.m` and clustering method plugins have to be called `sscm_bar.m`. Put them in the same folder as 	`spikesort` and it will automatically include them. 
 
 #### Outputs
@@ -116,7 +115,7 @@ and `spikesort` will intelligently give your function the correct variables in t
 
 #### Variable Names
 
-Here is a non-exhaustive list of some useful internal variables that `spikesort` uses that you might want to use in your plugin:
+This powerful input architecture means you need to know what variables are called in the `spikesort` codebase. You should read the code. Here is a non-exhaustive list of some useful internal variables that `spikesort` uses that you might want to use in your plugin:
 
 * `V` a vector, contains the raw voltage trace
 * `Vf` a vector, contains the filtered voltage trace
