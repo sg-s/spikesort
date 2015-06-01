@@ -158,20 +158,38 @@ minV_control = uicontrol(find_spike_panel,'Style','edit','String','-1','units','
 
 % metadata panel
 metadata_panel = uipanel('Title','Metadata','Position',[.29 .57 .21 .15]);
-metadata_text_control = uicontrol(metadata_panel,'Style','edit','String','','units','normalized','Position',[.03 .3 .94 .7],'Callback',@update_metadata,'Enable','off');
+metadata_text_control = uicontrol(metadata_panel,'Style','edit','String','','units','normalized','Position',[.03 .3 .94 .7],'Callback',@update_metadata,'Enable','off','Max',5,'Min',1,'HorizontalAlignment','left');
 metadata_summary_control = uicontrol(metadata_panel,'Style','pushbutton','String','Generate Summary','units','normalized','Position',[.03 .03 .94 .2],'Callback',@generate_summary);
 
 % other options
 options_panel = uipanel('Title','Options','Position',[.51 .60 .16 .30]);
 template_match_control = uicontrol(options_panel,'Style','checkbox','String','-Template','units','normalized','Position',[.01 6/7 .4 1/7],'Callback',@TemplateMatch,'Value',1);
-template_match_slider = uicontrol(options_panel,'Style','slider','String','Template match','units','normalized','Position',[.51 6/7-.04 .4 1/7],'Callback',@TemplateMatch,'Min',1,'Max',5,'Value',1);
+template_width_control = uicontrol(options_panel,'Style','slider','units','normalized','Position',[.35 5/7+.004 .6 1/7],'Callback',@TemplateMatch,'Value',50,'Min',5,'Max',200);
+try    % R2013b and older
+   addlistener(template_width_control,'ActionEvent',@TemplateMatch);
+catch  % R2014a and newer
+   addlistener(template_width_control,'ContinuousValueChange',@TemplateMatch);
+end
+uicontrol(options_panel,'Style','text','units','normalized','Position',[.01 5/7 .3 1/7],'String','width:');
+template_match_slider = uicontrol(options_panel,'Style','slider','units','normalized','Position',[.35 4/7+.04 .6 1/7],'Callback',@TemplateMatch,'Value',2,'Min',1,'Max',5);
+try    % R2013b and older
+   addlistener(template_match_slider,'ActionEvent',@TemplateMatch);
+catch  % R2014a and newer
+   addlistener(template_match_slider,'ContinuousValueChange',@TemplateMatch);
+end
 
-firing_rate_trial_control = uicontrol(options_panel,'Style','checkbox','String','per-trial firing rate','units','normalized','Position',[.01 5/7 .8 1/7]);
-r2_plot_control = uicontrol(options_panel,'Style','checkbox','String','Show reproducibility','units','normalized','Position',[.01 4/7 .8 1/7]);
-kill_valve_noise_control = uicontrol(options_panel,'Style','checkbox','String','Kill Valve Noise','units','normalized','Position',[.01 3/7 .8 1/7],'Value',0);
-smart_scroll_control = uicontrol(options_panel,'Style','checkbox','String','Smart Scroll','units','normalized','Position',[.01 2/7 .8 1/7],'Value',0);
-plot_control_control = uicontrol(options_panel,'Style','checkbox','String','Plot Control','units','normalized','Position',[.01 1/7 .8 1/7],'Value',0);
-flip_V_control = uicontrol(options_panel,'Style','checkbox','String','Find spikes in -V','units','normalized','Position',[.01 0 .8 1/7],'Value',1);
+
+uicontrol(options_panel,'Style','text','units','normalized','Position',[.01 4/7+.04 .3 1/7],'String','amount:');
+flip_V_control = uicontrol(options_panel,'Style','checkbox','String','Find spikes in -V','units','normalized','Position',[.01 4/7-.04 .8 1/8],'Value',1);
+smart_scroll_control = uicontrol(options_panel,'Style','checkbox','String','Smart Scroll','units','normalized','Position',[.01 3/7 .8 1/8],'Value',0);
+plot_control_control = uicontrol(options_panel,'Style','checkbox','String','Plot Control','units','normalized','Position',[.01 2/7 .8 1/8],'Value',0);
+
+
+
+% firing_rate_trial_control = uicontrol(options_panel,'Style','checkbox','String','per-trial firing rate','units','normalized','Position',[.01 5/7 .8 1/7]);
+
+% r2_plot_control = uicontrol(options_panel,'Style','checkbox','String','Show reproducibility','units','normalized','Position',[.01 4/7 .8 1/7]);
+
 
 
 
@@ -730,17 +748,19 @@ end
                     % suppress signals for 25 samples after any valve turns on or off
                     % this is a hack
                     
-                    if get(kill_valve_noise_control,'Value')
-                        for j = 1:length(digital_channels)
-                            [ons,offs] = ComputeOnsOffs(ControlParadigm(i).Outputs(digital_channels(j),:));
-                            if length(ons) == length(offs)
-                                for k = 1:length(ons)
-                                    data(i).voltage(:,ons(k):ons(k)+35) = NaN;
-                                    data(i).voltage(:,offs(k):offs(k)+25) = NaN;
-                                end
-                            end
-                        end
-                    end 
+                    % this code is going to be phased out, as template match is so much better. 
+
+                    % if get(kill_valve_noise_control,'Value')
+                    %     for j = 1:length(digital_channels)
+                    %         [ons,offs] = ComputeOnsOffs(ControlParadigm(i).Outputs(digital_channels(j),:));
+                    %         if length(ons) == length(offs)
+                    %             for k = 1:length(ons)
+                    %                 data(i).voltage(:,ons(k):ons(k)+35) = NaN;
+                    %                 data(i).voltage(:,offs(k):offs(k)+25) = NaN;
+                    %             end
+                    %         end
+                    %     end
+                    % end 
 
 
 
@@ -1113,20 +1133,21 @@ end
 
             % find ons and offs and build templates
             transitions = find(diff(control_signal));
-            before = 100;
-            after = 100;
-            
 
+            before = round(str2double(get(template_width_control,'String')));
+            if isnan(before)
+                before = 50;
+            end
+            after = before;
+            
+            
             
             if isempty(transitions)
             else
                 % trim some edge cases
-                if transitions(end)+after>length(V)
-                    transitions(end) = [];
-                end
-                if transitions(1)-before<1
-                    transitions(1) = [];
-                end
+                transitions(find(transitions+after>(length(V)-1))) = [];
+                transitions(find(transitions-before<1)) = [];
+
 
                 Template = zeros(before+after+1,1);
                 w = zeros(length(transitions),1);
