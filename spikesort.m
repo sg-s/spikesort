@@ -171,7 +171,7 @@ catch  % R2014a and newer
    addlistener(template_width_control,'ContinuousValueChange',@TemplateMatch);
 end
 uicontrol(options_panel,'Style','text','units','normalized','Position',[.01 5/7 .3 1/7],'String','width:');
-template_match_slider = uicontrol(options_panel,'Style','slider','units','normalized','Position',[.35 4/7+.04 .6 1/7],'Callback',@TemplateMatch,'Value',2,'Min',1,'Max',5);
+template_match_slider = uicontrol(options_panel,'Style','slider','units','normalized','Position',[.35 4/7+.04 .6 1/7],'Callback',@TemplateMatch,'Value',2,'Min',-1,'Max',5);
 try    % R2013b and older
    addlistener(template_match_slider,'ActionEvent',@TemplateMatch);
 catch  % R2014a and newer
@@ -183,12 +183,12 @@ uicontrol(options_panel,'Style','text','units','normalized','Position',[.01 4/7+
 flip_V_control = uicontrol(options_panel,'Style','checkbox','String','Find spikes in -V','units','normalized','Position',[.01 4/7-.04 .8 1/8],'Value',1);
 smart_scroll_control = uicontrol(options_panel,'Style','checkbox','String','Smart Scroll','units','normalized','Position',[.01 3/7 .8 1/8],'Value',0);
 plot_control_control = uicontrol(options_panel,'Style','checkbox','String','Plot Control','units','normalized','Position',[.01 2/7 .8 1/8],'Value',0);
+r2_plot_control = uicontrol(options_panel,'Style','checkbox','String','Show reproducibility','units','normalized','Position',[.01 1/7 .8 1/7]);
 
 
+firing_rate_trial_control = uicontrol(options_panel,'Style','checkbox','String','per-trial firing rate','units','normalized','Position',[.01 0/7 .8 1/7]);
 
-% firing_rate_trial_control = uicontrol(options_panel,'Style','checkbox','String','per-trial firing rate','units','normalized','Position',[.01 5/7 .8 1/7]);
 
-% r2_plot_control = uicontrol(options_panel,'Style','checkbox','String','Show reproducibility','units','normalized','Position',[.01 4/7 .8 1/7]);
 
 
 

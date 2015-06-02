@@ -11,6 +11,16 @@ function R = ssdm_1DAmplitudes(V,deltat,loc)
 h = (40*1e-4)/deltat; % deltat in seconds
 % 1D - find total spike amplitude for each
 R = zeros*loc;
-for i = 1:length(loc)
-    R(i) = max(V(loc(i)-h:loc(i))) - V(loc(i));
+loc_max = 0*loc;
+[R(1),loc_max(1)] = max(V(loc(1)-h:loc(1)) - V(loc(1)));
+loc_max(1) = loc(1) + loc_max(1) - h;
+for i = 2:length(loc)
+	if get(flip_V_control,'Value')
+		before = max([loc(i)-h loc(i-1)]);
+		[R(i),loc_max(i)] = max(V(before:loc(i)) - V(loc(i)));
+		loc_max(i) = loc_max(i) + before;
+	else
+		after = min([length(V) loc(i)+h]);
+		[R(i),loc_max(i)] =  max(V(loc(i)) - V(loc(i):after));
+	end
 end
