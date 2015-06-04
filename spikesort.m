@@ -58,11 +58,11 @@ load_waitbar = [];
 h_scatter1 = [];
 h_scatter2 = [];
 
-if isunix
-    % add support for xattr-based tagging
-    PATH = getenv('PATH');
-    setenv('PATH', [PATH strcat(':',fileparts(which('spikesort')))]);
-end
+% if isunix
+%     % add support for xattr-based tagging
+%     PATH = getenv('PATH');
+%     setenv('PATH', [PATH strcat(':',fileparts(which('spikesort')))]);
+% end
 
 % make the master figure, and the axes to plot the voltage traces
 fig = figure('position',[50 50 1200 700], 'Toolbar','figure','Menubar','none','Name',versionname,'NumberTitle','off','IntegerHandle','off','WindowButtonDownFcn',@mousecallback,'WindowScrollWheelFcn',@scroll,'CloseRequestFcn',@closess);
@@ -429,13 +429,13 @@ end
         end
 
         temp = whos('FileName');
-        if isunix && ~isempty(FileName) && strcmp(temp.class,'char')
-            % tag the file as done
-            es=strcat('unix(',char(39),'tagfile.py "Complete" ', PathName,FileName,char(39),');');
-            es = strrep(es,'"/','" /');
-            eval(es);
-            console('Tagging file with XATTR.');
-        end
+        % if isunix && ~isempty(FileName) && strcmp(temp.class,'char')
+        %     % tag the file as done
+        %     es=strcat('unix(',char(39),'tagfile.py "Complete" ', PathName,FileName,char(39),');');
+        %     es = strrep(es,'"/','" /');
+        %     eval(es);
+        %     console('Tagging file with XATTR.');
+        % end
         delete(fig)
 
     end
@@ -608,6 +608,9 @@ end
             if isempty(FileName)
                 return
             else
+                % first save what we had before
+                save(strcat(PathName,FileName),'spikes','-append')
+
                 allfiles = dir(strcat(PathName,'*.mat'));
                 if any(find(strcmp('cached.mat',{allfiles.name})))
                     allfiles(find(strcmp('cached.mat',{allfiles.name}))) = [];
@@ -622,6 +625,9 @@ end
             if isempty(FileName)
                 return
             else
+                % first save what we had before
+                save(strcat(PathName,FileName),'spikes','-append')
+                
                 allfiles = dir(strcat(PathName,'*.mat'));
                 if any(find(strcmp('cached.mat',{allfiles.name})))
                     allfiles(find(strcmp('cached.mat',{allfiles.name}))) = [];
@@ -1379,7 +1385,8 @@ end
         try
             eval(es);
         catch exc
-            ms = strkat(methodname, ' ran into an error: ', exc.message);
+            disp(exc.stack(1))
+            ms = strcat(methodname, ' ran into an error: ', exc.message,'. Look at the command window for more details.');
             msgbox(ms,'spikesort');
             return
         end
@@ -1435,8 +1442,8 @@ end
         spikes(ThisControlParadigm).B(ThisTrial,B) = 1;
 
         % also save spike amplitudes
-        spikes(ThisControlParadigm).amplitudes_A(ThisTrial,A)  =  ssdm_1DAmplitudes(V,deltat,A);
-        spikes(ThisControlParadigm).amplitudes_B(ThisTrial,B)  =  ssdm_1DAmplitudes(V,deltat,B);
+        spikes(ThisControlParadigm).amplitudes_A(ThisTrial,A)  =  ssdm_1DAmplitudes(V,deltat,A,flip_V_control);
+        spikes(ThisControlParadigm).amplitudes_B(ThisTrial,B)  =  ssdm_1DAmplitudes(V,deltat,B,flip_V_control);
 
         % save them
         save(strcat(PathName,FileName),'spikes','-append')
@@ -1477,7 +1484,7 @@ end
             end
             spikes(ThisControlParadigm).A(ThisTrial,-s+loc+floor(p(1))) = 1;
             A = find(spikes(ThisControlParadigm).A(ThisTrial,:));
-            spikes(ThisControlParadigm).amplitudes_A(ThisTrial,A)  =  ssdm_1DAmplitudes(V,deltat,A);
+            spikes(ThisControlParadigm).amplitudes_A(ThisTrial,A)  =  ssdm_1DAmplitudes(V,deltat,A,flip_V_control);
         elseif get(mode_new_B,'Value')==1
             % snip out a small waveform around the point
             if get(flip_V_control,'Value')
@@ -1487,7 +1494,7 @@ end
             end
             spikes(ThisControlParadigm).B(ThisTrial,-s+loc+floor(p(1))) = 1;
             B = find(spikes(ThisControlParadigm).B(ThisTrial,:));
-            spikes(ThisControlParadigm).amplitudes_B(ThisTrial,B)  =  ssdm_1DAmplitudes(V,deltat,B);
+            spikes(ThisControlParadigm).amplitudes_B(ThisTrial,B)  =  ssdm_1DAmplitudes(V,deltat,B,flip_V_control);
         elseif get(mode_delete,'Value')==1
             % find the closest spike
             Aspiketimes = find(spikes(ThisControlParadigm).A(ThisTrial,:));
@@ -1501,12 +1508,12 @@ end
                 [~,closest_spike] = min(dA);
                 spikes(ThisControlParadigm).A(ThisTrial,Aspiketimes(closest_spike)) = 0;
                 A = find(spikes(ThisControlParadigm).A(ThisTrial,:));
-                spikes(ThisControlParadigm).amplitudes_A(ThisTrial,A)  =  ssdm_1DAmplitudes(V,deltat,A);
+                spikes(ThisControlParadigm).amplitudes_A(ThisTrial,A)  =  ssdm_1DAmplitudes(V,deltat,A,flip_V_control);
             else
                 [~,closest_spike] = min(dB);
                 spikes(ThisControlParadigm).B(ThisTrial,Bspiketimes(closest_spike)) = 0;
                 B = find(spikes(ThisControlParadigm).B(ThisTrial,:));
-                spikes(ThisControlParadigm).amplitudes_B(ThisTrial,B)  =  ssdm_1DAmplitudes(V,deltat,B);
+                spikes(ThisControlParadigm).amplitudes_B(ThisTrial,B)  =  ssdm_1DAmplitudes(V,deltat,B,flip_V_control);
             end
         elseif get(mode_A2B,'Value')==1 
             % find the closest A spike
@@ -1516,9 +1523,9 @@ end
             spikes(ThisControlParadigm).A(ThisTrial,Aspiketimes(closest_spike)) = 0;
             spikes(ThisControlParadigm).B(ThisTrial,Aspiketimes(closest_spike)) = 1;
             A = find(spikes(ThisControlParadigm).A(ThisTrial,:));
-            spikes(ThisControlParadigm).amplitudes_A(ThisTrial,A)  =  ssdm_1DAmplitudes(V,deltat,A);
+            spikes(ThisControlParadigm).amplitudes_A(ThisTrial,A)  =  ssdm_1DAmplitudes(V,deltat,A,flip_V_control);
             B = find(spikes(ThisControlParadigm).B(ThisTrial,:));
-            spikes(ThisControlParadigm).amplitudes_B(ThisTrial,B)  =  ssdm_1DAmplitudes(V,deltat,B);
+            spikes(ThisControlParadigm).amplitudes_B(ThisTrial,B)  =  ssdm_1DAmplitudes(V,deltat,B,flip_V_control);
 
         elseif get(mode_B2A,'Value')==1
             % find the closest B spike
@@ -1528,9 +1535,9 @@ end
             spikes(ThisControlParadigm).A(ThisTrial,Bspiketimes(closest_spike)) = 1;
             spikes(ThisControlParadigm).B(ThisTrial,Bspiketimes(closest_spike)) = 0;
             A = find(spikes(ThisControlParadigm).A(ThisTrial,:));
-            spikes(ThisControlParadigm).amplitudes_A(ThisTrial,A)  =  ssdm_1DAmplitudes(V,deltat,A);
+            spikes(ThisControlParadigm).amplitudes_A(ThisTrial,A)  =  ssdm_1DAmplitudes(V,deltat,A,flip_V_control);
             B = find(spikes(ThisControlParadigm).B(ThisTrial,:));
-            spikes(ThisControlParadigm).amplitudes_B(ThisTrial,B)  =  ssdm_1DAmplitudes(V,deltat,B);
+            spikes(ThisControlParadigm).amplitudes_B(ThisTrial,B)  =  ssdm_1DAmplitudes(V,deltat,B,flip_V_control);
         end
 
         % update plot

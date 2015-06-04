@@ -17,7 +17,7 @@ function [A,B] = sscm_2DManualCluster(R,V_snippets,loc)
 C = zeros(1,length(R)); % stores the cluster ID
 
 % open up a new window for the interactive clustering interface
-hmc = figure('Name','2DManualCluster','WindowButtonDownFcn',@mansortmouse,'NumberTitle','off','position',[50 50 1200 700],'Menubar','none'); hold on,axis off
+hmc = figure('Name','2DManualCluster','WindowButtonDownFcn',@mansortmouse,'NumberTitle','off','position',[50 50 1200 700], 'Toolbar','figure','Menubar','none'); hold on,axis off
 hm1 = axes('parent',hmc,'position',[-0.05 0.1 0.7 0.7],'box','on');axis square, hold on ; title('Clusters'), xlabel('Dimension 1'), ylabel('Dimension 2')
 hm2 = axes('parent',hmc,'position',[0.5 0.5 0.3 0.3]);axis square, hold on  ; title('Unsorted Spikes'), set(gca,'YLim',[min(min(V_snippets)) max(max(V_snippets))]);
 hm3 = axes('parent',hmc,'position',[0.5 0.1 0.3 0.3]);axis square, hold on ; title('A Spikes'),set(gca,'YLim',[min(min(V_snippets)) max(max(V_snippets))]);

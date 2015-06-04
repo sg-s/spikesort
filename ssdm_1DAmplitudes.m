@@ -7,7 +7,7 @@
 % 
 % This work is licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License. 
 % To view a copy of this license, visit http://creativecommons.org/licenses/by-nc-sa/4.0/.
-function R = ssdm_1DAmplitudes(V,deltat,loc)
+function R = ssdm_1DAmplitudes(V,deltat,loc,flip_V_control)
 h = (40*1e-4)/deltat; % deltat in seconds
 % 1D - find total spike amplitude for each
 R = zeros*loc;

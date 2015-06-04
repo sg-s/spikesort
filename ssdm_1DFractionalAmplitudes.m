@@ -8,7 +8,7 @@
 % 
 % This work is licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License. 
 % To view a copy of this license, visit http://creativecommons.org/licenses/by-nc-sa/4.0/.
-function R = ssdm_1DFractionalAmplitudes(V,Vf,deltat,loc,ax,ax2)
+function R = ssdm_1DFractionalAmplitudes(V,Vf,deltat,loc,ax,ax2,flip_V_control)
 
 wb = waitbar(0.2,'Computing Fractional amplitudes...');
 
@@ -26,9 +26,9 @@ for i = 2:length(loc)
 	else
 		after = min([length(V) loc(i)+h]);
 		[R(i),loc_max(i)] =  max(V(loc(i)) - V(loc(i):after));
+		loc_max(i) = -loc_max(i) + after;
 	end
 end
-
 
 time = deltat:deltat:(deltat*length(V));
 % figure, hold on
@@ -40,15 +40,24 @@ time = deltat:deltat:(deltat*length(V));
 
 waitbar(0.4,wb,'Building spike envelopes...');
 % build an upper and lower envelope
+if get(flip_V_control,'Value')
+	upper_envelope = interp1(time(loc_max),V(loc_max),time);
+	upper_envelope(1:find(~isnan(upper_envelope),1,'first')) = upper_envelope(find(~isnan(upper_envelope),1,'first'));
+	upper_envelope((find(~isnan(upper_envelope),1,'last')):end) = upper_envelope(find(~isnan(upper_envelope),1,'last')-1);
+	lower_envelope = interp1(time(loc),V(loc),time);
+	lower_envelope(1:find(~isnan(lower_envelope),1,'first')) = lower_envelope(find(~isnan(lower_envelope),1,'first'));
+	lower_envelope((find(~isnan(lower_envelope),1,'last')):end) = lower_envelope(find(~isnan(lower_envelope),1,'last')-1);
+	% plot(ax,time,lower_envelope,'g')
+	% plot(ax,time,upper_envelope,'r')
+else
+	upper_envelope = interp1(time(loc),V(loc),time);
+	upper_envelope(1:find(~isnan(upper_envelope),1,'first')) = upper_envelope(find(~isnan(upper_envelope),1,'first'));
+	upper_envelope((find(~isnan(upper_envelope),1,'last')):end) = upper_envelope(find(~isnan(upper_envelope),1,'last')-1);
 
-upper_envelope = interp1(time(loc_max),V(loc_max),time);
-upper_envelope(1:find(~isnan(upper_envelope),1,'first')) = upper_envelope(find(~isnan(upper_envelope),1,'first'));
-upper_envelope((find(~isnan(upper_envelope),1,'last')):end) = upper_envelope(find(~isnan(upper_envelope),1,'last')-1);
-lower_envelope = interp1(time(loc),V(loc),time);
-lower_envelope(1:find(~isnan(lower_envelope),1,'first')) = lower_envelope(find(~isnan(lower_envelope),1,'first'));
-lower_envelope((find(~isnan(lower_envelope),1,'last')):end) = lower_envelope(find(~isnan(lower_envelope),1,'last')-1);
-% plot(ax,time,lower_envelope,'g')
-% plot(ax,time,upper_envelope,'r')
+	lower_envelope = interp1(time(loc_max),V(loc_max),time);
+	lower_envelope(1:find(~isnan(lower_envelope),1,'first')) = lower_envelope(find(~isnan(lower_envelope),1,'first'));
+	lower_envelope((find(~isnan(lower_envelope),1,'last')):end) = lower_envelope(find(~isnan(lower_envelope),1,'last')-1);
+end
 
 waitbar(0.6,wb,'Estimating spike density...');
 % build a time-varying estimate of ISI
@@ -62,7 +71,6 @@ isi = interp1(time(loc),t_closest_spike,time);
 isi(1:find(~isnan(isi),1,'first')) = isi(find(~isnan(isi),1,'first'));
 isi((find(~isnan(isi),1,'last')):end) = isi(find(~isnan(isi),1,'last')-1);
 isi = filtfilt(ones(1,h)/h,1,isi); clear t_closest_spike t_prev_spike t_next_spike
-
 
 
 waitbar(0.8,wb,'Filtering...');
