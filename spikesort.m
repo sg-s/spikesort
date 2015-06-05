@@ -58,11 +58,11 @@ load_waitbar = [];
 h_scatter1 = [];
 h_scatter2 = [];
 
-% if isunix
-%     % add support for xattr-based tagging
-%     PATH = getenv('PATH');
-%     setenv('PATH', [PATH strcat(':',fileparts(which('spikesort')))]);
-% end
+if isunix
+    % add support for xattr-based tagging
+    PATH = getenv('PATH');
+    setenv('PATH', [PATH strcat(':',fileparts(which('spikesort')))]);
+end
 
 % make the master figure, and the axes to plot the voltage traces
 fig = figure('position',[50 50 1200 700], 'Toolbar','figure','Menubar','none','Name',versionname,'NumberTitle','off','IntegerHandle','off','WindowButtonDownFcn',@mousecallback,'WindowScrollWheelFcn',@scroll,'CloseRequestFcn',@closess);
@@ -159,7 +159,13 @@ minV_control = uicontrol(find_spike_panel,'Style','edit','String','-1','units','
 % metadata panel
 metadata_panel = uipanel('Title','Metadata','Position',[.29 .57 .21 .15]);
 metadata_text_control = uicontrol(metadata_panel,'Style','edit','String','','units','normalized','Position',[.03 .3 .94 .7],'Callback',@update_metadata,'Enable','off','Max',5,'Min',1,'HorizontalAlignment','left');
-metadata_summary_control = uicontrol(metadata_panel,'Style','pushbutton','String','Generate Summary','units','normalized','Position',[.03 .03 .94 .2],'Callback',@generate_summary);
+metadata_summary_control = uicontrol(metadata_panel,'Style','pushbutton','String','Generate Summary','units','normalized','Position',[.03 .035 .45 .2],'Callback',@generate_summary);
+
+% disable tagging on non unix systems
+if ispc
+else
+    uicontrol(metadata_panel,'Style','edit','String','Add Tag...','units','normalized','Position',[.5 .035 .45 .2],'Callback',@add_tag);
+end
 
 % other options
 options_panel = uipanel('Title','Options','Position',[.51 .60 .16 .30]);
@@ -212,6 +218,17 @@ autosort_control = uicontrol(fig,'units','normalized','Position',[.16 .64 .12 .0
 sine_control = uicontrol(fig,'units','normalized','Position',[.03 .59 .12 .05],'Style','togglebutton','String',' Kill Ringing','Value',0,'Callback',@plot_resp,'Enable','off');
 discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05],'Style','togglebutton','String',' Discard','Value',0,'Callback',@discard,'Enable','off');
 
+
+    function add_tag(src,~)
+        tag = get(src,'String');
+        temp = whos('FileName');
+        if ~isempty(FileName) && strcmp(temp.class,'char')
+            % tag the file as done
+            es=strcat('unix(',char(39),'tagfile.py "', tag,'"', PathName,FileName,char(39),');');
+            es = strrep(es,'"/','" /');
+            eval(es);
+        end
+    end
 
     function update_metadata(src,~)
         metadata.spikesort_comment = get(src,'String');
@@ -689,7 +706,10 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
         % update response listbox with all the input channel names
         set(resp_channel,'String',fl);
 
-
+        % some sanity checks
+        if length(data) > length(ControlParadigm)
+            error('Something is wrong with this file: more data than control paradigms.')
+        end
 
         % find out which paradigms have data 
 		n = Kontroller_ntrials(data); 
@@ -697,6 +717,7 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
         % only show the paradigms with data
         temp = {ControlParadigm.Name};
         set(paradigm_chooser,'String',temp(find(n)),'Value',1);
+
 
         % go to the first paradigm with data. 
         ThisControlParadigm = find(n);
@@ -1568,7 +1589,7 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
         end
         
         fprintf(fileID,summary_string);
-        fclose(fileID)
+        fclose(fileID);
     end
 
 
