@@ -1555,14 +1555,18 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
             summary_string = strcat(summary_string,'\n', allfiles(i).name);
             temp = load(allfiles(i).name,'metadata');
             metadata = temp.metadata;
-                
+            if size(metadata.spikesort_comment,1) > 1
+                metadata.spikesort_comment = metadata.spikesort_comment(1,:);
+            end    
             if isfield(metadata,'spikesort_comment')
                 summary_string = strcat(summary_string,'\t\t', metadata.spikesort_comment);
             else
                 % no comment on this file
                 summary_string = strcat(summary_string,'\t\t', 'no comment');
             end
+
         end
+        
         fprintf(fileID,summary_string);
         fclose(fileID)
     end
