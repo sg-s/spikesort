@@ -213,14 +213,14 @@ sine_control = uicontrol(fig,'units','normalized','Position',[.03 .59 .12 .05],'
 discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05],'Style','togglebutton','String',' Discard','Value',0,'Callback',@discard,'Enable','off');
 
 
-function update_metadata(src,~)
-    metadata.spikesort_comment = get(src,'String');
-    save(strcat(PathName,FileName),'metadata','-append')
-end
+    function update_metadata(src,~)
+        metadata.spikesort_comment = get(src,'String');
+        save(strcat(PathName,FileName),'metadata','-append')
+    end
 
-function TemplateMatch(src,event)
-    plot_resp;
-end
+    function TemplateMatch(src,event)
+        plot_resp;
+    end
 
     
     function raster_plot(~,~)
@@ -689,12 +689,21 @@ end
         % update response listbox with all the input channel names
         set(resp_channel,'String',fl);
 
-		% update paradigm chooser with the first paradigm
-		set(paradigm_chooser,'String',{ControlParadigm.Name},'Value',1);
 
 
-		ThisControlParadigm = 1;
-		n = Kontroller_ntrials(data); n = n(ThisControlParadigm);
+        % find out which paradigms have data 
+		n = Kontroller_ntrials(data); 
+
+        % only show the paradigms with data
+        temp = {ControlParadigm.Name};
+        set(paradigm_chooser,'String',temp(find(n)),'Value',1);
+
+        % go to the first paradigm with data. 
+        ThisControlParadigm = find(n);
+        ThisControlParadigm = ThisControlParadigm(1);
+
+
+        n = n(ThisControlParadigm);
         if n
             temp  ={};
             for i = 1:n
@@ -910,39 +919,33 @@ end
 
     function choose_paradigm_callback(src,~)
         cla(ax); cla(ax2)
-        n = Kontroller_ntrials(data); 
+        paradigms_with_data = find(Kontroller_ntrials(data)); 
         if src == paradigm_chooser
-            ThisControlParadigm = get(paradigm_chooser,'Value');
+            ThisControlParadigm = paradigms_with_data(get(paradigm_chooser,'Value'));
         elseif src== next_paradigm
-            if length(data) > ThisControlParadigm 
-                ThisControlParadigm = ThisControlParadigm + 1;
-                set(paradigm_chooser,'Value',ThisControlParadigm);
+            if max(paradigms_with_data) > ThisControlParadigm 
+                ThisControlParadigm = paradigms_with_data(find(paradigms_with_data == ThisControlParadigm)+1);
+                set(paradigm_chooser,'Value',find(paradigms_with_data == ThisControlParadigm));
             end
         elseif src == prev_paradigm
-            if ThisControlParadigm > 1
-                ThisControlParadigm = ThisControlParadigm - 1;
-                set(paradigm_chooser,'Value',ThisControlParadigm);
+            if ThisControlParadigm > paradigms_with_data(1)
+                ThisControlParadigm = paradigms_with_data(find(paradigms_with_data == ThisControlParadigm)-1);
+                set(paradigm_chooser,'Value',find(paradigms_with_data == ThisControlParadigm));
             end
         else
             error('unknown source of callback 109. probably being incorrectly being called by something.')
         end
-        if length(n) < ThisControlParadigm
-            return
-        else
-            n = n(ThisControlParadigm);
+
+        n = Kontroller_ntrials(data);
+        n = n(ThisControlParadigm);
+        temp  ={};
+        for i = 1:n
+            temp{i} = strcat('Trial-',mat2str(i));
         end
-        if n
-            temp  ={};
-            for i = 1:n
-                temp{i} = strcat('Trial-',mat2str(i));
-            end
-            set(trial_chooser,'String',temp);
-            set(trial_chooser,'Value',1);
-            ThisTrial = 1;
-        else
-            set(trial_chooser,'String','No data','Value',1);
-            ThisTrial = NaN;
-        end
+        set(trial_chooser,'String',temp);
+        set(trial_chooser,'Value',1);
+        ThisTrial = 1;
+        
         % update the plots
         plot_stim;
         plot_resp;
@@ -993,13 +996,9 @@ end
             end
         else
             error('unknown source of callback 173. probably being incorrectly being called by something.')
-        end
+        end    
 
-
-        
-               
     end
-
 
 
     function plot_stim(~,~)
@@ -1305,8 +1304,6 @@ end
             set(ax,'XLimMode','auto')
         end
         
-
-
     end
 
     function [A,B] = autosort()
@@ -1547,28 +1544,28 @@ end
     end
 
 
-function generate_summary(~,~)
-    allfiles = dir(strcat(PathName,'*.mat'));
-    if any(find(strcmp('cached.mat',{allfiles.name})))
-        allfiles(find(strcmp('cached.mat',{allfiles.name}))) = [];
-    end
-    summary_string = '';
-    fileID = fopen('summary.log','w');
-    for i = 1:length(allfiles)
-        summary_string = strcat(summary_string,'\n', allfiles(i).name);
-        temp = load(allfiles(i).name,'metadata');
-        metadata = temp.metadata;
-            
-        if isfield(metadata,'spikesort_comment')
-            summary_string = strcat(summary_string,'\t\t', metadata.spikesort_comment);
-        else
-            % no comment on this file
-            summary_string = strcat(summary_string,'\t\t', 'no comment');
+    function generate_summary(~,~)
+        allfiles = dir(strcat(PathName,'*.mat'));
+        if any(find(strcmp('cached.mat',{allfiles.name})))
+            allfiles(find(strcmp('cached.mat',{allfiles.name}))) = [];
         end
+        summary_string = '';
+        fileID = fopen('summary.log','w');
+        for i = 1:length(allfiles)
+            summary_string = strcat(summary_string,'\n', allfiles(i).name);
+            temp = load(allfiles(i).name,'metadata');
+            metadata = temp.metadata;
+                
+            if isfield(metadata,'spikesort_comment')
+                summary_string = strcat(summary_string,'\t\t', metadata.spikesort_comment);
+            else
+                % no comment on this file
+                summary_string = strcat(summary_string,'\t\t', 'no comment');
+            end
+        end
+        fprintf(fileID,summary_string);
+        fclose(fileID)
     end
-    fprintf(fileID,summary_string);
-    fclose(fileID)
-end
 
 
 
