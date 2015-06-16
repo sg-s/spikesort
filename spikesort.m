@@ -867,9 +867,9 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
                             spikes(i).amplitudes_B(j,:) = sparse(1,length(A));
                             V = data(i).voltage(j,:);
                             deltat = 1e-4; % hack, will be removed in future releases
-                            spikes(i).amplitudes_A(j,find(A))  =  ssdm_1DAmplitudes(V,deltat,find(A));
+                            spikes(i).amplitudes_A(j,find(A))  =  ssdm_1DAmplitudes(V,deltat,find(A),flip_V_control);
                             B = spikes(i).B(j,:);
-                            spikes(i).amplitudes_B(j,find(B))  =  ssdm_1DAmplitudes(V,deltat,find(B));
+                            spikes(i).amplitudes_B(j,find(B))  =  ssdm_1DAmplitudes(V,deltat,find(B),flip_V_control);
                         end
                     end
 
@@ -1284,6 +1284,7 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
                 xlim(1) = min(time);
             end
             if xlim(2) > max(time)
+                xlim(1) = min(time);
                 xlim(2) = max(time);
             end
             xlim(2) = (floor(xlim(2)/deltat))*deltat;
