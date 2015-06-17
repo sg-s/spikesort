@@ -168,45 +168,51 @@ else
 end
 
 % other options
-options_panel = uipanel('Title','Options','Position',[.51 .60 .16 .30]);
-template_match_control = uicontrol(options_panel,'Style','checkbox','String','-Template','units','normalized','Position',[.01 6/7 .4 1/7],'Callback',@TemplateMatch,'Value',1);
-template_width_control = uicontrol(options_panel,'Style','slider','units','normalized','Position',[.35 5/7+.004 .6 1/7],'Callback',@TemplateMatch,'Value',50,'Min',5,'Max',200);
+nitems = 9;
+options_panel = uipanel('Title','Options','Position',[.51 .56 .16 .34]);
+template_match_control = uicontrol(options_panel,'Style','checkbox','String','-Template','units','normalized','Position',[.01 8/nitems .4 1/(nitems+1)],'Callback',@TemplateMatch,'Value',1);
+template_width_control = uicontrol(options_panel,'Style','slider','units','normalized','Position',[.35 7/nitems+.004 .6 1/(nitems+1)],'Callback',@TemplateMatch,'Value',50,'Min',5,'Max',200);
 try    % R2013b and older
    addlistener(template_width_control,'ActionEvent',@TemplateMatch);
 catch  % R2014a and newer
    addlistener(template_width_control,'ContinuousValueChange',@TemplateMatch);
 end
-uicontrol(options_panel,'Style','text','units','normalized','Position',[.01 5/7 .3 1/7],'String','width:');
-template_match_slider = uicontrol(options_panel,'Style','slider','units','normalized','Position',[.35 4/7+.04 .6 1/7],'Callback',@TemplateMatch,'Value',2,'Min',-1,'Max',5);
+uicontrol(options_panel,'Style','text','units','normalized','Position',[.01 7/nitems .3 1/(nitems+1)],'String','width:');
+template_match_slider = uicontrol(options_panel,'Style','slider','units','normalized','Position',[.35 6/nitems+.04 .6 1/(nitems+1)],'Callback',@TemplateMatch,'Value',2,'Min',-1,'Max',5);
 try    % R2013b and older
    addlistener(template_match_slider,'ActionEvent',@TemplateMatch);
 catch  % R2014a and newer
    addlistener(template_match_slider,'ContinuousValueChange',@TemplateMatch);
 end
+uicontrol(options_panel,'Style','text','units','normalized','Position',[.01 6/nitems+.04 .3 1/(nitems+1)],'String','amount:');
 
 
-uicontrol(options_panel,'Style','text','units','normalized','Position',[.01 4/7+.04 .3 1/7],'String','amount:');
-flip_V_control = uicontrol(options_panel,'Style','checkbox','String','Find spikes in -V','units','normalized','Position',[.01 4/7-.04 .8 1/8],'Value',1);
-smart_scroll_control = uicontrol(options_panel,'Style','checkbox','String','Smart Scroll','units','normalized','Position',[.01 3/7 .8 1/8],'Value',0);
-plot_control_control = uicontrol(options_panel,'Style','checkbox','String','Plot Control','units','normalized','Position',[.01 2/7 .8 1/8],'Value',0);
-r2_plot_control = uicontrol(options_panel,'Style','checkbox','String','Show reproducibility','units','normalized','Position',[.01 1/7 .8 1/7]);
+flip_V_control = uicontrol(options_panel,'Style','checkbox','String','Find spikes in -V','units','normalized','Position',[.1 .07+(5/nitems) .8 1/(nitems+1)],'Value',1);
+smart_scroll_control = uicontrol(options_panel,'Style','checkbox','String','Smart Scroll','units','normalized','Position',[.1 .1+(4/nitems) .8 1/(nitems+1)],'Value',0);
+plot_control_control = uicontrol(options_panel,'Style','checkbox','String','Plot Control','units','normalized','Position',[.1 .1+(3/nitems) .8 1/(nitems+1)],'Value',0);
+r2_plot_control = uicontrol(options_panel,'Style','checkbox','String','Show reproducibility','units','normalized','Position',[.1 .1+(2/nitems) .8 1/(nitems+1)]);
+firing_rate_trial_control = uicontrol(options_panel,'Style','checkbox','String','per-trial firing rate','units','normalized','Position',[.1 .1+1/nitems .8 1/(nitems+1)]);
 
-
-firing_rate_trial_control = uicontrol(options_panel,'Style','checkbox','String','per-trial firing rate','units','normalized','Position',[.01 0/7 .8 1/7]);
-
-
-
+% filter options
+uicontrol(options_panel,'Style','text','String','Bandpass:','units','normalized','Position',[.01 .1 .3 1/(nitems+1)]);
+low_cutoff_control = uicontrol(options_panel,'Style','edit','String','100','units','normalized','Position',[.1 0.01 .3 1/(nitems+1)]);
+uicontrol(options_panel,'Style','text','String','-','units','normalized','Position',[.42 .0 .05 1/(nitems+1)]);
+high_cutoff_control = uicontrol(options_panel,'Style','edit','String','1000','units','normalized','Position',[.5 0.01 .3 1/(nitems+1)]);
+uicontrol(options_panel,'Style','text','String','Hz','units','normalized','Position',[.82 .0 .10 1/(nitems+1)]);
 
 
 
 % manual override panel
-manualpanel = uibuttongroup(fig,'Title','Manual Override','Position',[.68 .60 .11 .28]);
-mode_new_A = uicontrol(manualpanel,'Position',[5 5 100 20], 'Style', 'radiobutton', 'String', '+A','FontSize',fs);
-mode_new_B = uicontrol(manualpanel,'Position',[5 35 100 20], 'Style', 'radiobutton', 'String', '+B','FontSize',fs);
-mode_delete = uicontrol(manualpanel,'Position',[5 65 100 20], 'Style', 'radiobutton', 'String', '-X','FontSize',fs);
-mode_A2B = uicontrol(manualpanel,'Position',[5 95 100 20], 'Style', 'radiobutton', 'String', 'A->B','FontSize',fs);
-mode_B2A = uicontrol(manualpanel,'Position',[5 125 100 20], 'Style', 'radiobutton', 'String', 'B->A','FontSize',fs);
-uicontrol(manualpanel,'Position',[15 150 100 30],'Style','pushbutton','String','Mark All in View','Callback',@mark_all_callback);
+manualpanel = uibuttongroup(fig,'Title','Manual Override','Position',[.68 .56 .11 .34]);
+uicontrol(manualpanel,'units','normalized','Position',[.1 7/8 .8 1/9],'Style','pushbutton','String','Mark All in View','Callback',@mark_all_callback);
+mode_new_A = uicontrol(manualpanel,'units','normalized','Position',[.1 6/8 .8 1/9], 'Style', 'radiobutton', 'String', '+A','FontSize',fs);
+mode_new_B = uicontrol(manualpanel,'units','normalized','Position',[.1 5/8 .8 1/9], 'Style', 'radiobutton', 'String', '+B','FontSize',fs);
+mode_delete = uicontrol(manualpanel,'units','normalized','Position',[.1 4/8 .8 1/9], 'Style', 'radiobutton', 'String', '-X','FontSize',fs);
+mode_A2B = uicontrol(manualpanel,'units','normalized','Position',[.1 3/8 .8 1/9], 'Style', 'radiobutton', 'String', 'A->B','FontSize',fs);
+mode_B2A = uicontrol(manualpanel,'units','normalized','Position',[.1 2/8 .8 1/9], 'Style', 'radiobutton', 'String', 'B->A','FontSize',fs);
+uicontrol(manualpanel,'units','normalized','Position',[.1 1/8 .8 1/9],'Style','pushbutton','String','Discard View','Callback',@modify_trace_discard);
+uicontrol(manualpanel,'units','normalized','Position',[.1 0/8 .8 1/9],'Style','pushbutton','String','Retain View','Callback',@modify_trace_discard);
+
 
 % various toggle switches and pushbuttons
 filtermode = uicontrol(fig,'units','normalized','Position',[.03 .69 .12 .05],'Style','togglebutton','String','Filter','Value',1,'Callback',@plot_resp,'Enable','off');
@@ -218,6 +224,37 @@ autosort_control = uicontrol(fig,'units','normalized','Position',[.16 .64 .12 .0
 sine_control = uicontrol(fig,'units','normalized','Position',[.03 .59 .12 .05],'Style','togglebutton','String',' Kill Ringing','Value',0,'Callback',@plot_resp,'Enable','off');
 discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05],'Style','togglebutton','String',' Discard','Value',0,'Callback',@discard,'Enable','off');
 
+
+    function modify_trace_discard(src,~)
+        % first get the viewport
+        xl = get(ax,'XLim');
+        xl = floor(xl/deltat);
+        if xl(1) < 1
+            xl(1) = 1;
+        end
+        if xl(2) > length(V)
+            xl(2) = length(V);
+        end
+
+        % check if we already have some discard information stored in spikes
+        if length(spikes) < ThisControlParadigm
+            spikes(ThisControlParadigm).use_trace_fragment = ones(1,length(V));
+        else
+            if isfield(spikes,'use_trace_fragment')
+            end
+        end
+
+
+        if strcmp(src.String,'Discard View')
+            spikes(ThisControlParadigm).use_trace_fragment(ThisTrial,xl(1):xl(2)) = 0;
+        elseif strcmp(src.String,'Retain View')
+            spikes(ThisControlParadigm).use_trace_fragment(ThisTrial,xl(1):xl(2)) = 1;
+        else
+            error('modify_trace_discard ran into an error because I was called by a function that I did not expect. I am meant to be called only by the discard view or the retain view pushbuttons.')
+        end
+
+        plot_resp(@modify_trace_discard);
+    end
 
     function add_tag(src,~)
         tag = get(src,'String');
@@ -236,7 +273,7 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
     end
 
     function TemplateMatch(src,event)
-        plot_resp;
+        plot_resp(@TemplateMatch);
     end
 
     
@@ -888,7 +925,7 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
         close(load_waitbar)
 
         plot_stim;
-        plot_resp;
+        plot_resp(@loadfilecallback);
     end
 
     function ExportFigs(~,~)
@@ -964,12 +1001,17 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
             temp{i} = strcat('Trial-',mat2str(i));
         end
         set(trial_chooser,'String',temp);
-        set(trial_chooser,'Value',1);
-        ThisTrial = 1;
+        if src == prev_paradigm
+            set(trial_chooser,'Value',n);
+            ThisTrial = n;
+        else
+            set(trial_chooser,'Value',1);
+            ThisTrial = 1;
+        end
         
         % update the plots
         plot_stim;
-        plot_resp;
+        plot_resp(@choose_paradigm_callback);
                
     end
 
@@ -985,14 +1027,14 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
             ThisTrial = get(trial_chooser,'Value');
             % update the plots
             plot_stim;
-            plot_resp;
+            plot_resp(@choose_trial_callback);
         elseif src== next_trial
             if ThisTrial < n
                 ThisTrial = ThisTrial +1;
                 set(trial_chooser,'Value',ThisTrial);
                 % update the plots
                 plot_stim;
-                plot_resp;
+                plot_resp(@choose_trial_callback);
             else
                 % fake a call
                 choose_paradigm_callback(next_paradigm);
@@ -1003,17 +1045,17 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
                 set(trial_chooser,'Value',ThisTrial);
                 % update the plots
                 plot_stim;
-                plot_resp;
+                plot_resp(@choose_trial_callback);
             else
                 % fake a call
                 choose_paradigm_callback(prev_paradigm);
                 % go to the last trial--fake another call
-                n = Kontroller_ntrials(data); 
-                n = n(ThisControlParadigm);
-                if n
-                    set(trial_chooser,'Value',n);
-                    choose_trial_callback(trial_chooser);
-                end
+                % n = Kontroller_ntrials(data); 
+                % n = n(ThisControlParadigm);
+                % if n
+                %     set(trial_chooser,'Value',n);
+                %     choose_trial_callback(trial_chooser);
+                % end
             end
         else
             error('unknown source of callback 173. probably being incorrectly being called by something.')
@@ -1096,7 +1138,7 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
     end
 
 
-    function plot_resp(~,~)
+    function plot_resp(src,~)
         % plot the response
         clear time V Vf % flush old variables 
         n = Kontroller_ntrials(data); 
@@ -1130,11 +1172,15 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
         end
 
         if get(filtermode,'Value') == 1
-            console('Need to filter data...')
-            [V,Vf] = filter_trace(temp);
+            lc = 1/str2double(get(low_cutoff_control,'String'));
+            lc = floor(lc/deltat);
+            hc = 1/str2double(get(high_cutoff_control,'String'));
+            hc = floor(hc/deltat);
+            [V,Vf] = filter_trace(temp,lc,hc);
         else
             V = temp;
         end 
+ 
 
 
         if get(sine_control,'Value') ==1
@@ -1203,43 +1249,65 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
             end
         end
 
+
         plot(ax,time,V,'k'); 
 
+
+        % check if we are discarding part of the trace
+        ignored_fragments = 0*V;
+        if isfield(spikes,'use_trace_fragment')
+            if length(spikes) < ThisControlParadigm
+            else
+                if ~isempty(spikes(ThisControlParadigm).use_trace_fragment)
+                    if width(spikes(ThisControlParadigm).use_trace_fragment) < ThisTrial
+                    else
+                        ignored_fragments = ~spikes(ThisControlParadigm).use_trace_fragment(ThisTrial,:);
+                        plot(ax,time(ignored_fragments),V(ignored_fragments),'Color',[.5 .5 .5])
+                    end
+                end
+            end
+        end
+
+
         % do we have to find spikes too?
+        V_censored = V;
+        if any(ignored_fragments)
+            V_censored(ignored_fragments) = NaN;
+        end
         if get(findmode,'Value') == 1
-            console('need to find spikes...')
-            loc=find_spikes(V);
+   
+            loc=find_spikes(V_censored);
 
             % do we already have sorted spikes?
             if length(spikes) < ThisControlParadigm
                 % no spikes
-                console('no spikes...')
+      
                 loc = find_spikes(V);
                 if get(autosort_control,'Value') == 1
                     % sort spikes and show them
-                    console('Autosorting spikes...')
+                   
                     [A,B] = autosort;
                     h_scatter1 = scatter(ax,time(A),V(A),'r');
                     h_scatter2 = scatter(ax,time(B),V(B),'b');
                 else
-                    console('Not autosorting spikes')
+                  
                     h_scatter1 = scatter(ax,time(loc),V(loc));
                 end
             else
-                console('spikes is at least this paradigm long')
+           
                 % maybe?
                 if ThisTrial <= width(spikes(ThisControlParadigm).A) 
-                    console('spike matrix is suff. wide.')
+              
                     % check...
                     if max(spikes(ThisControlParadigm).A(ThisTrial,:))
                         % yes, have spikes
-                        console('Have spikes. showing them. ')
+              
                         A = find(spikes(ThisControlParadigm).A(ThisTrial,:));
                         B = find(spikes(ThisControlParadigm).B(ThisTrial,:));
                         h_scatter1 = scatter(ax,time(A),V(A),'r');
                         h_scatter2 = scatter(ax,time(B),V(B),'b');
                     else
-                        console('no spikes case 397')
+    
                         if get(autosort_control,'Value') == 1
                             % sort spikes and show them
                             [A,B] = autosort;
@@ -1253,31 +1321,21 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
                     end
                 else
                     % no spikes
-                    console('spikes exists, but not for this trial')
+        
                     if get(autosort_control,'Value') == 1
                         % sort spikes and show them
                         [A,B] = autosort;
                         h_scatter1 = scatter(ax,time(A),V(A),'r');
                         h_scatter2 = scatter(ax,time(B),V(B),'b');
                     else
-                        console('No need to autosort')
+                    
                         % no need to autosort
                         h_scatter1 = scatter(ax,time(loc),V(loc));
                     end
                 end
             end
+  
 
-
-            % now rescale the Y axes so that only the interesting bit is retained
-            % if ~isempty(loc)
-            %     try
-            %         set(ax,'YLim',[1.1*min(V(loc)) -min(V(loc))]);
-            %     catch
-            %         keyboard
-            %     end
-            % else
-            %     set(ax,'YLim',[min(V) max(V)]);
-            % end
             
             xlim = get(ax,'XLim');
             if xlim(1) < min(time)
@@ -1305,25 +1363,23 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
 
 
         else
+            % ('No need to find spikes...')
             set(ax,'YLim',[min(V) max(V)]);
-            console('No need to find spikes...')
             set(method_control,'Enable','off')
         end
 
-
-        xl = get(ax,'XLim');
-        if xl(2) ==1
+        % this exception exists because XLimits weirdly go to [0 1] and "manual" even though I don't set them. 
+        xl  =get(ax,'XLim');
+        if xl(2) == 1
             set(ax,'XLim',[min(time) max(time)]);
-            % we spoof this because we want to distinguish this case from when the user zooms
             set(ax,'XLimMode','auto')
-
-        end
-
-        % unless the X-limits have been manually changed, fix them
-        if strcmp(get(ax,'XLimMode'),'auto')
-            set(ax,'XLim',[min(time) max(time)]);
-            % we spoof this because we want to distinguish this case from when the user zooms
-            set(ax,'XLimMode','auto')
+        else
+            % unless the X-limits have been manually changed, fix them
+            if strcmp(get(ax,'XLimMode'),'auto')
+                set(ax,'XLim',[min(time) max(time)]);
+                % we spoof this because we want to distinguish this case from when the user zooms
+                set(ax,'XLimMode','auto')
+            end
         end
         
     end
@@ -1560,7 +1616,7 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
         end
 
         % update plot
-        plot_resp;
+        plot_resp(@modify);
 
  
     end
