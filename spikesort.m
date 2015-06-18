@@ -241,12 +241,21 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
             spikes(ThisControlParadigm).use_trace_fragment = ones(1,length(V));
         else
             if isfield(spikes,'use_trace_fragment')
+                if width(spikes(ThisControlParadigm).use_trace_fragment) < ThisTrial
+                    spikes(ThisControlParadigm).use_trace_fragment(ThisTrial,:) = ones(1,length(V));
+                else
+                    
+                end
             end
         end
 
 
         if strcmp(src.String,'Discard View')
             spikes(ThisControlParadigm).use_trace_fragment(ThisTrial,xl(1):xl(2)) = 0;
+            % disp('Discarding view for trial #')
+            % disp(ThisTrial)
+            % disp('Discarding data from:')
+            % disp(xl*deltat)
         elseif strcmp(src.String,'Retain View')
             spikes(ThisControlParadigm).use_trace_fragment(ThisTrial,xl(1):xl(2)) = 1;
         else
