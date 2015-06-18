@@ -450,22 +450,19 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
             spikes(ThisControlParadigm).A(ThisTrial,loc(loc>xmin & loc<xmax))  = 1;
             % remove b spikes
             spikes(ThisControlParadigm).B(ThisTrial,loc(loc>xmin & loc<xmax))  = 0;
-            console('Marked all in view as A');
 
         elseif get(mode_A2B,'Value')
             % add to B spikes
             spikes(ThisControlParadigm).B(ThisTrial,loc(loc>xmin & loc<xmax))  = 1;
             % remove A spikes
             spikes(ThisControlParadigm).A(ThisTrial,loc(loc>xmin & loc<xmax))  = 0;
-            console('Marked all in view as B');
         elseif get(mode_delete,'Value')
             spikes(ThisControlParadigm).A(ThisTrial,loc(loc>xmin & loc<xmax))  = 0;
             spikes(ThisControlParadigm).B(ThisTrial,loc(loc>xmin & loc<xmax))  = 0;
-            console('Removed all spikes in view');
         end
 
         % update plot
-        plot_resp; 
+        plot_resp(@mark_all_callback); 
 
     end
 
@@ -1276,13 +1273,13 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
         end
         if get(findmode,'Value') == 1
    
-            loc=find_spikes(V_censored);
+            loc=find_spikes(V_censored); % disp('debug-1278')
 
             % do we already have sorted spikes?
             if length(spikes) < ThisControlParadigm
                 % no spikes
       
-                loc = find_spikes(V);
+                loc = find_spikes(V_censored); % disp('debug-1284')
                 if get(autosort_control,'Value') == 1
                     % sort spikes and show them
                    
@@ -1304,6 +1301,7 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
               
                         A = find(spikes(ThisControlParadigm).A(ThisTrial,:));
                         B = find(spikes(ThisControlParadigm).B(ThisTrial,:));
+                        loc = [A B];
                         h_scatter1 = scatter(ax,time(A),V(A),'r');
                         h_scatter2 = scatter(ax,time(B),V(B),'b');
                     else
@@ -1401,6 +1399,7 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
 
     function loc = find_spikes(V)
         % get param
+        % disp('debug-1403')
         mpp = str2double(get(mpp_control,'String'));
         mpd = str2double(get(mpd_control,'String'));
         mpw = str2double(get(mpw_control,'String'));
