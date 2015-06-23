@@ -356,6 +356,20 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
                     fA = cache(hash);
                     tA = (1:length(fA))*1e-3;
                 end
+
+                % censor fA when we ignore some data
+                if isfield(spikes,'use_trace_fragment')
+                    if any(sum(spikes(haz_data(i)).use_trace_fragment') < length(spikes(haz_data(i)).A))
+                        % there is excluded data somewhere
+                        for j = 1:width(spikes(haz_data(i)).use_trace_fragment)
+                            try
+                                fA(spikes(haz_data(i)).use_trace_fragment(j,1:10:end),j) = NaN;
+                            catch
+                            end
+                        end
+                    end
+                end
+
                 if width(fA) > 1
                     if get(firing_rate_trial_control,'Value')
                         for j = 1:width(fA)
