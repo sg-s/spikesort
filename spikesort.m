@@ -246,6 +246,8 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
                 else
                     
                 end
+            else
+                spikes(ThisControlParadigm).use_trace_fragment(ThisTrial,:) = ones(1,length(V));
             end
         end
 
