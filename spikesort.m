@@ -164,7 +164,12 @@ metadata_summary_control = uicontrol(metadata_panel,'Style','pushbutton','String
 % disable tagging on non unix systems
 if ispc
 else
-    uicontrol(metadata_panel,'Style','edit','String','Add Tag...','units','normalized','Position',[.5 .035 .45 .2],'Callback',@add_tag);
+    tag_control = uicontrol(metadata_panel,'Style','edit','String','+Tag, or -Tag','units','normalized','Position',[.5 .035 .45 .2],'Callback',@add_tag);
+
+    % add homebrew path
+    path1 = getenv('PATH');
+    path1 = [path1 ':/usr/local/bin'];
+    setenv('PATH', path1);
 end
 
 % other options
@@ -262,10 +267,12 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
         tag = get(src,'String');
         temp = whos('FileName');
         if ~isempty(FileName) && strcmp(temp.class,'char')
-            % tag the file as done
-            es=strcat('unix(',char(39),'tagfile.py "', tag,'"', PathName,FileName,char(39),');');
-            es = strrep(es,'"/','" /');
-            eval(es);
+            % tag the file with the given tag
+            clear es
+            es{1} = 'tag -a ';
+            es{2} = tag;
+            es{3} = strcat(PathName,FileName);
+            unix(strjoin(es));
         end
     end
 
@@ -803,47 +810,6 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
         temp = find(strcmp('voltage', fl));
         if ~isempty(temp)
             set(resp_channel,'Value',temp);
-            waitbar(.6,load_waitbar,'Finding artifacts in trace...')
-            n = Kontroller_ntrials(data);
-            for i = 1:length(data)
-                if n(i)
-                    
-                    % temp = mdot(abs(data(i).voltage));
-                    % temp(temp>(mean(temp) + std(temp))) = 1;
-                    % temp(temp<1)= 0;
-                    % [ons,offs] = ComputeOnsOffs(temp);
-                    % % get widths right
-                    % ons(offs-ons==0) = ons(offs-ons==0) - 1;
-                    % offs(offs-ons==1) = offs(offs-ons==1) + 1;
-                    % ons = ons-2; offs = offs+2;
-                    % for j = 1:length(ons)
-                    %     temp(ons(j):offs(j)) = 1;
-                    % end
-
-                    % data(i).voltage(:,logical(temp)) = 0;
-
-                    % suppress signals for 25 samples after any valve turns on or off
-                    % this is a hack
-                    
-                    % this code is going to be phased out, as template match is so much better. 
-
-                    % if get(kill_valve_noise_control,'Value')
-                    %     for j = 1:length(digital_channels)
-                    %         [ons,offs] = ComputeOnsOffs(ControlParadigm(i).Outputs(digital_channels(j),:));
-                    %         if length(ons) == length(offs)
-                    %             for k = 1:length(ons)
-                    %                 data(i).voltage(:,ons(k):ons(k)+35) = NaN;
-                    %                 data(i).voltage(:,offs(k):offs(k)+25) = NaN;
-                    %             end
-                    %         end
-                    %     end
-                    % end 
-
-
-
-
-                end
-            end
 
         end
 
@@ -923,6 +889,15 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
             set(metadata_text_control,'String',metadata.spikesort_comment)
         catch
             set(metadata_text_control,'String','')
+        end
+
+        % check to see if this file is tagged. 
+        if isunix
+            clear es
+            es{1} = 'tag -l ';
+            es{2} = strcat(PathName,FileName);
+            [~,temp] = unix(strjoin(es));
+            set(tag_control,'String',temp(strfind(temp,'.mat')+5:end-1));
         end
 
         % clean up

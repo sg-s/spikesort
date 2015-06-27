@@ -53,9 +53,9 @@ When SmartScroll is enabled, `spikesort` will keep a constant number of spikes i
 
 ### export all traces to EPS figures.
 
-### BSD xattr-based file tagging. 
+### Tag files on UNIX systems
 
-Limited support for the [extended file attribute](http://en.wikipedia.org/wiki/Extended_file_attributes) system on *nix-like systems. `spikesort` automatically tags files it touches so it makes working with lots of files easier. 
+`spikesort` supports the awesome [tag](https://github.com/jdberry/tag) command line file-tagging utility, allowing you to arbitrarily tag files with as many tags as you want.
 
 ## Limitations 
 
@@ -72,6 +72,7 @@ The best way to install spikesort is through my package manager:
 >> urlwrite('http://srinivas.gs/install.m','install.m'); 
 >> install spikesort
 >> install srinivas.gs_mtools # spikesort needs this package to run
+>> install kontroller # needs a few functions from this package
 ```
 
 This script grabs the code and fixes your path. 
@@ -82,7 +83,15 @@ Or, if you have `git` installed:
 git clone git@github.com:sg-s/spikesort.git
 ````
 
-or use [this link](https://github.com/sg-s/spikesort/archive/master.zip).
+or use [this link](https://github.com/sg-s/spikesort/archive/master.zip). Don't forget to install the other packages too. 
+
+### install tag
+
+On Mac OS X, `spikesort` supports file tagging. To get this working, you need to have [homebrew](http://brew.sh) installed. You can then install `tag` using
+
+````
+brew install tag
+````
 
 # Hacking
 
