@@ -1190,11 +1190,10 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
             % find ons and offs and build templates
             transitions = find(diff(control_signal));
 
-            before = round(str2double(get(template_width_control,'String')));
-            if isnan(before) || before < 11
-                before = 50;
+            after = round(str2double(get(template_width_control,'String')));
+            if isnan(after) || after < 11
+                after = 50;
             end
-            after = before;
             
             
             
@@ -1202,33 +1201,35 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
             else
                 % trim some edge cases
                 transitions(find(transitions+after>(length(V)-1))) = [];
-                transitions(find(transitions-before<1)) = [];
 
-
-                Template = zeros(before+after+1,1);
+                Template = zeros(after+1,1);
                 w = zeros(length(transitions),1);
                 dv = zeros(length(transitions),1);
                 for i = 1:length(transitions)
-                    snippet = V(transitions(i)-before:transitions(i)+after);
+                    snippet = V(transitions(i):transitions(i)+after);
                     % scale snippet
                     w(i) = control_signal(transitions(i)-1) - control_signal(transitions(i)+1);
-                    dv(i) = max(snippet(before-10:before+10)) - min(snippet(before-10:before+10));
-                    if w(i) < 0
-                        dv(i) = -dv(i);
-                    end
+                    % dv(i) = max(snippet(before-10:before+10)) - min(snippet(before-10:before+10));
+                    % if w(i) < 0
+                    %     dv(i) = -dv(i);
+                    % end
                     Template = Template + snippet'*w(i);
 
                 end
                 %Template = Template/(sum(w));
                 Template = Template/length(transitions);
-                
 
                 % subtract templates from trace
-                sf = (str2double(get(template_match_slider,'String')));
+                if length(unique(w)) == 2
+                    sf = 1;
+                    set(template_match_slider,'Enable','off');
+                else
+                    set(template_match_slider,'Enable','on');
+                    sf = (str2double(get(template_match_slider,'String')));
+                end
 
                 for i = 1:length(transitions)
-                    w = control_signal(transitions(i)-1) - control_signal(transitions(i)+1);
-                    V(transitions(i)-before:transitions(i)+after) = V(transitions(i)-before:transitions(i)+after) - Template'*w*sf;
+                    V(transitions(i):transitions(i)+after) = V(transitions(i):transitions(i)+after) - Template'*sf/w(i);
 
                 end
             end
