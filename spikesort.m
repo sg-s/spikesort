@@ -171,19 +171,10 @@ end
 nitems = 9;
 options_panel = uipanel('Title','Options','Position',[.51 .56 .16 .34]);
 template_match_control = uicontrol(options_panel,'Style','checkbox','String','-Template','units','normalized','Position',[.01 8/nitems .4 1/(nitems+1)],'Callback',@TemplateMatch,'Value',1);
-template_width_control = uicontrol(options_panel,'Style','slider','units','normalized','Position',[.35 7/nitems+.004 .6 1/(nitems+1)],'Callback',@TemplateMatch,'Value',50,'Min',5,'Max',200);
-try    % R2013b and older
-   addlistener(template_width_control,'ActionEvent',@TemplateMatch);
-catch  % R2014a and newer
-   addlistener(template_width_control,'ContinuousValueChange',@TemplateMatch);
-end
+template_width_control = uicontrol(options_panel,'Style','edit','units','normalized','Position',[.35 7/nitems+.004 .3 1/(nitems+1)],'Callback',@TemplateMatch,'String','50');
 uicontrol(options_panel,'Style','text','units','normalized','Position',[.01 7/nitems .3 1/(nitems+1)],'String','width:');
-template_match_slider = uicontrol(options_panel,'Style','slider','units','normalized','Position',[.35 6/nitems+.04 .6 1/(nitems+1)],'Callback',@TemplateMatch,'Value',2,'Min',-1,'Max',5);
-try    % R2013b and older
-   addlistener(template_match_slider,'ActionEvent',@TemplateMatch);
-catch  % R2014a and newer
-   addlistener(template_match_slider,'ContinuousValueChange',@TemplateMatch);
-end
+template_match_slider = uicontrol(options_panel,'Style','edit','units','normalized','Position',[.35 6/nitems+.04 .3 1/(nitems+1)],'Callback',@TemplateMatch,'String','2');
+
 uicontrol(options_panel,'Style','text','units','normalized','Position',[.01 6/nitems+.04 .3 1/(nitems+1)],'String','amount:');
 
 
@@ -498,20 +489,11 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
             if ~isempty(PathName) && ~isempty(FileName) 
                 if ischar(PathName) && ischar(FileName)
                     save(strcat(PathName,FileName),'spikes','-append')
-                    console('Saving file...');
                 end
             end
         catch
         end
 
-        temp = whos('FileName');
-        % if isunix && ~isempty(FileName) && strcmp(temp.class,'char')
-        %     % tag the file as done
-        %     es=strcat('unix(',char(39),'tagfile.py "Complete" ', PathName,FileName,char(39),');');
-        %     es = strrep(es,'"/','" /');
-        %     eval(es);
-        %     console('Tagging file with XATTR.');
-        % end
         delete(fig)
 
     end
@@ -1193,27 +1175,7 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
             end
         end
 
-        if get(filtermode,'Value') == 1
-            lc = 1/str2double(get(low_cutoff_control,'String'));
-            lc = floor(lc/deltat);
-            hc = 1/str2double(get(high_cutoff_control,'String'));
-            hc = floor(hc/deltat);
-            [V,Vf] = filter_trace(temp,lc,hc);
-        else
-            V = temp;
-        end 
- 
-
-
-        if get(sine_control,'Value') ==1
-            % need to suppress some periodic noise, probably from an electrical fault
-            z = min([length(time) 5e4]); % 5 seconds of data
-            time = time(:); V = V(:);
-            temp = fit(time(1:z),V(1:z),'sin1');
-            [num,den] = iirnotch(temp.b1/length(time),.01*(temp.b1/length(time)));
-            V = V - temp(time);
-        end
-
+        V = temp;
 
         if get(template_match_control,'Value')
             % template match
@@ -1229,7 +1191,7 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
             transitions = find(diff(control_signal));
 
             before = round(str2double(get(template_width_control,'String')));
-            if isnan(before)
+            if isnan(before) || before < 11
                 before = 50;
             end
             after = before;
@@ -1262,14 +1224,39 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
                 
 
                 % subtract templates from trace
-                sf = get(template_match_slider,'Value');
+                sf = (str2double(get(template_match_slider,'String')));
+
                 for i = 1:length(transitions)
                     w = control_signal(transitions(i)-1) - control_signal(transitions(i)+1);
-                    V(transitions(i)-before:transitions(i)+after) = V(transitions(i)-before:transitions(i)+after) - Template'*w/sf;
+                    V(transitions(i)-before:transitions(i)+after) = V(transitions(i)-before:transitions(i)+after) - Template'*w*sf;
 
                 end
             end
         end
+
+
+        if get(filtermode,'Value') == 1
+            lc = 1/str2double(get(low_cutoff_control,'String'));
+            lc = floor(lc/deltat);
+            hc = 1/str2double(get(high_cutoff_control,'String'));
+            hc = floor(hc/deltat);
+            [V,Vf] = filter_trace(V,lc,hc);
+        else
+           
+        end 
+ 
+
+
+        if get(sine_control,'Value') ==1
+            % need to suppress some periodic noise, probably from an electrical fault
+            z = min([length(time) 5e4]); % 5 seconds of data
+            time = time(:); V = V(:);
+            temp = fit(time(1:z),V(1:z),'sin1');
+            [num,den] = iirnotch(temp.b1/length(time),.01*(temp.b1/length(time)));
+            V = V - temp(time);
+        end
+
+
 
 
         plot(ax,time,V,'k'); 
