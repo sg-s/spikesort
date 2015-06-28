@@ -1194,19 +1194,25 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
                 %Template = Template/(sum(w));
                 Template = Template/length(transitions);
 
+
+
                 % subtract templates from trace
                 if length(unique(w)) == 2
                     sf = 1;
                     set(template_match_slider,'Enable','off');
+
+                    for i = 1:length(transitions)
+                        V(transitions(i):transitions(i)+after) = V(transitions(i):transitions(i)+after) - Template'*sf/w(i);
+                    end
                 else
                     set(template_match_slider,'Enable','on');
                     sf = (str2double(get(template_match_slider,'String')));
+
+                    for i = 1:length(transitions)
+                        V(transitions(i):transitions(i)+after) = V(transitions(i):transitions(i)+after) - Template'*sf*w(i);
+                    end
                 end
 
-                for i = 1:length(transitions)
-                    V(transitions(i):transitions(i)+after) = V(transitions(i):transitions(i)+after) - Template'*sf/w(i);
-
-                end
             end
         end
 
