@@ -682,9 +682,11 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
                 end
                 thisfile = find(strcmp(FileName,{allfiles.name}))-1;
                 if thisfile < 1
-                    return
+                    FileName = allfiles(end).name;
+                else
+                    FileName = allfiles(thisfile).name;    
                 end
-                FileName = allfiles(thisfile).name;
+                
             end
         else
             if isempty(FileName)
@@ -699,9 +701,11 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
                 end
                 thisfile = find(strcmp(FileName,{allfiles.name}))+1;
                 if thisfile > length(allfiles)
-                    return
+                    FileName = allfiles(1).name;
+                else
+                    FileName = allfiles(thisfile).name;
                 end
-                FileName = allfiles(thisfile).name;
+                
             end
         end
 
