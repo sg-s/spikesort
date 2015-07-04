@@ -23,9 +23,14 @@ elseif length(allfiles) > 10
 end
 
 disp('Merging the following files:')
-disp({allfiles.name})
+disp({allfiles.name}')
 % load the first one to get a sense of what this is like
 load(allfiles(1).name)
+
+% reorder fields because of MATLAB stupidity 
+data = orderfields(data);
+ControlParadigm = orderfields(ControlParadigm);
+
 hash = DataHash(ControlParadigm);
 
 merged_data = data;
@@ -35,13 +40,15 @@ merged_ControlParadigm = ControlParadigm;
 for i = 2:length(allfiles)
 	load(allfiles(i).name)
 
-	if ~strcmp(DataHash(sort(fieldnames(data))),DataHash(sort(fieldnames(merged_data))))
+	data = orderfields(data);
+	ControlParadigm = orderfields(ControlParadigm);
+
+	if ~strcmp(DataHash(fieldnames(data)),DataHash(fieldnames(merged_data)))
 		error('data that I just loaded has variables that I did not expect.')
 	end
 
-	if ~strcmp(DataHash(sort(fieldnames(spikes))),DataHash(sort(fieldnames(merged_spikes))))
-		disp('spikes that I just loaded has variables that I did not expect.')
-		keyboard
+	if ~strcmp(DataHash(fieldnames(spikes)),DataHash(fieldnames(merged_spikes)))
+		warning('spikes that I just loaded has variables that I did not expect.')
 	end
 
 	if strcmp(hash,DataHash(ControlParadigm))
@@ -107,7 +114,11 @@ for i = 2:length(allfiles)
 			fn = fieldnames(spikes);
 			if m > length(merged_spikes) 
 				for k = 1:length(fn)
-					eval((strcat('merged_spikes(m).',fn{k},'=  spikes(j).',fn{k},';')))
+					try
+						eval((strcat('merged_spikes(m).',fn{k},'=  spikes(j).',fn{k},';')))
+					catch
+						warning('Could not merge spikes...')
+					end
 				end
 			else
 				for k = 1:length(fn)

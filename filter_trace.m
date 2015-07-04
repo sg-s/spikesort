@@ -7,6 +7,7 @@
 % To view a copy of this license, visit http://creativecommons.org/licenses/by-nc-sa/4.0/.
 function [V, Vf] = filter_trace(V,low_cutoff,high_cutoff)
 
+	Vf = V;
 	% high pass filter the trace to remove the LFP
 	if ~isinf(low_cutoff) && low_cutoff > 0
 	    if any(isnan(V))
