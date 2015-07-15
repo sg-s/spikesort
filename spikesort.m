@@ -1572,14 +1572,47 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
 
     function [A,B] = removeDoublets(A,B)
         % remove B doublets and assign one of them to A
-        temp = (diff(B) < (median(diff(B)))/3);
-        A = sort([A B(temp)]);
-        B(temp) = [];
+        B2A_cand = B(diff(B) < (median(diff(B)))/3);
+        B2A_alt = B(find(diff(B) < (median(diff(B)))/3)+1);
+        B2A = NaN*B2A_cand;
+        
+        % for each candidate, find the one in the pair that is further away from adjacent A spikes
+        for i = 1:length(B2A_cand)
+            if min(abs(B2A_cand(i)-A)) < min(abs(B2A_alt(i)-A))
+                % candidate closer to A spike
+                B2A(i) = B2A_cand(i);
+            else
+                % alternate closer to A spike
+                B2A(i) = B2A_alt(i);
+            end
+        end
 
-        temp = (diff(A) < (median(diff(A)))/3);
-        B = sort([B A(temp)]);
-        A(temp) = [];
+        % swap 
+        A = sort(unique([A B2A]));
+        B = setdiff(B,B2A);
 
+        % remove A doublets and assign one of them to B
+        A2B_cand = A(diff(A) < (median(diff(A)))/3);
+        A2B_alt = A(find(diff(A) < (median(diff(A)))/3)+1);
+
+        % don't undo what we just did
+        temp = ismember(A2B_alt,unique([B2A_cand B2A_alt])) | ismember(A2B_cand,unique([B2A_cand B2A_alt]));
+        A2B_cand(temp) = [];
+        A2B_alt(temp) = [];
+        
+        % for each candidate, find the one in the pair that is further away from adjacent B spikes
+        for i = 1:length(A2B_cand)
+            if min(abs(A2B_cand(i)-B)) < min(abs(B2A_alt(i)-B))
+                % candidate closer to B spike
+            else
+                % alternate closer to B spike
+                A2B_cand(i) = A2B_alt(i);
+            end
+        end
+
+        % swap 
+        B = sort(unique([B A2B_cand]));
+        A = setdiff(A,A2B_cand);
     end
 
     function scroll(~,event)
