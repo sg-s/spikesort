@@ -1602,7 +1602,7 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
         
         % for each candidate, find the one in the pair that is further away from adjacent B spikes
         for i = 1:length(A2B_cand)
-            if min(abs(A2B_cand(i)-B)) < min(abs(B2A_alt(i)-B))
+            if min(abs(A2B_cand(i)-B)) < min(abs(A2B_alt(i)-B))
                 % candidate closer to B spike
             else
                 % alternate closer to B spike
