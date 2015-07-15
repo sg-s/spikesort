@@ -71,18 +71,18 @@ temp =  findall(gcf,'Type','uitoggletool','-or','Type','uipushtool');
 r = load('r.mat');
 f = load('f.mat');
 temp(15).CData = r.r;
-temp(15).ClickedCallback = @raster_plot;
+temp(15).ClickedCallback = @rasterPlot;
 temp(15).TooltipString = 'Generate Raster Plot';
 
 temp(14).CData = f.f;
-temp(14).ClickedCallback = @firing_rate_plot;
+temp(14).ClickedCallback = @firingRatePlot;
 temp(14).TooltipString = 'Generate Firing Rates';
 clear r f
 delete(temp([1:7 11 12]))
 clear temp
 % callback for export figs
 menubuttons = findall(gcf,'Type','uitoggletool','-or','Type','uipushtool');
-set(menubuttons(4),'ClickedCallback',@ExportFigs,'Enable','off')
+set(menubuttons(4),'ClickedCallback',@exportFigs,'Enable','off')
 
 ax = axes('parent',fig,'Position',[0.07 0.05 0.87 0.29]); hold on
 jump_back = uicontrol(fig,'units','normalized','Position',[0 .04 .04 .50],'Style', 'pushbutton', 'String', '<','callback',@jump);
@@ -95,28 +95,28 @@ linkaxes([ax2,ax],'x')
 % datapanel (allows you to choose what to plot where)
 datapanel = uipanel('Title','Data','Position',[.8 .57 .16 .4]);
 uicontrol(datapanel,'units','normalized','Position',[.02 .9 .510 .10],'Style', 'text', 'String', 'Control Signal','FontSize',fs,'FontWeight','bold');
-valve_channel = uicontrol(datapanel,'units','normalized','Position',[.03 .68 .910 .25],'Style', 'listbox', 'String', '','FontSize',fs,'FontWeight','bold','Callback',@plot_valve,'Min',0,'Max',2);
+valve_channel = uicontrol(datapanel,'units','normalized','Position',[.03 .68 .910 .25],'Style', 'listbox', 'String', '','FontSize',fs,'FontWeight','bold','Callback',@plotValve,'Min',0,'Max',2);
 uicontrol(datapanel,'units','normalized','Position',[.01 .56 .510 .10],'Style', 'text', 'String', 'Stimulus','FontSize',fs,'FontWeight','bold');
-stim_channel = uicontrol(datapanel,'units','normalized','Position',[.03 .38 .910 .20],'Style', 'listbox', 'String', '','FontSize',fs,'FontWeight','bold','Callback',@plot_stim);
+stim_channel = uicontrol(datapanel,'units','normalized','Position',[.03 .38 .910 .20],'Style', 'listbox', 'String', '','FontSize',fs,'FontWeight','bold','Callback',@plotStim);
 
 uicontrol(datapanel,'units','normalized','Position',[.01 .25 .610 .10],'Style', 'text', 'String', 'Response','FontSize',fs,'FontWeight','bold');
 resp_channel = uicontrol(datapanel,'units','normalized','Position',[.01 .01 .910 .25],'Style', 'listbox', 'String', '','FontSize',fs,'FontWeight','bold');
 
 
 % file I/O
-uicontrol(fig,'units','normalized','Position',[.10 .92 .07 .07],'Style', 'pushbutton', 'String', 'Load File','FontSize',fs,'FontWeight','bold','callback',@loadfilecallback);
-uicontrol(fig,'units','normalized','Position',[.05 .93 .03 .05],'Style', 'pushbutton', 'String', '<','FontSize',fs,'FontWeight','bold','callback',@loadfilecallback);
-uicontrol(fig,'units','normalized','Position',[.19 .93 .03 .05],'Style', 'pushbutton', 'String', '>','FontSize',fs,'FontWeight','bold','callback',@loadfilecallback);
+uicontrol(fig,'units','normalized','Position',[.10 .92 .07 .07],'Style', 'pushbutton', 'String', 'Load File','FontSize',fs,'FontWeight','bold','callback',@loadFileCallback);
+uicontrol(fig,'units','normalized','Position',[.05 .93 .03 .05],'Style', 'pushbutton', 'String', '<','FontSize',fs,'FontWeight','bold','callback',@loadFileCallback);
+uicontrol(fig,'units','normalized','Position',[.19 .93 .03 .05],'Style', 'pushbutton', 'String', '>','FontSize',fs,'FontWeight','bold','callback',@loadFileCallback);
 
 % paradigms and trials
 datachooserpanel = uipanel('Title','Paradigms and Trials','Position',[.03 .75 .25 .16]);
-paradigm_chooser = uicontrol(datachooserpanel,'units','normalized','Position',[.25 .75 .5 .20],'Style', 'popupmenu', 'String', 'Choose Paradigm','callback',@choose_paradigm_callback,'Enable','off');
-next_paradigm = uicontrol(datachooserpanel,'units','normalized','Position',[.75 .65 .15 .33],'Style', 'pushbutton', 'String', '>','callback',@choose_paradigm_callback,'Enable','off');
-prev_paradigm = uicontrol(datachooserpanel,'units','normalized','Position',[.05 .65 .15 .33],'Style', 'pushbutton', 'String', '<','callback',@choose_paradigm_callback,'Enable','off');
+paradigm_chooser = uicontrol(datachooserpanel,'units','normalized','Position',[.25 .75 .5 .20],'Style', 'popupmenu', 'String', 'Choose Paradigm','callback',@chooseParadigmCallback,'Enable','off');
+next_paradigm = uicontrol(datachooserpanel,'units','normalized','Position',[.75 .65 .15 .33],'Style', 'pushbutton', 'String', '>','callback',@chooseParadigmCallback,'Enable','off');
+prev_paradigm = uicontrol(datachooserpanel,'units','normalized','Position',[.05 .65 .15 .33],'Style', 'pushbutton', 'String', '<','callback',@chooseParadigmCallback,'Enable','off');
 
-trial_chooser = uicontrol(datachooserpanel,'units','normalized','Position',[.25 .27 .5 .20],'Style', 'popupmenu', 'String', 'Choose Trial','callback',@choose_trial_callback,'Enable','off');
-next_trial = uicontrol(datachooserpanel,'units','normalized','Position',[.75 .15 .15 .33],'Style', 'pushbutton', 'String', '>','callback',@choose_trial_callback,'Enable','off');
-prev_trial = uicontrol(datachooserpanel,'units','normalized','Position',[.05 .15 .15 .33],'Style', 'pushbutton', 'String', '<','callback',@choose_trial_callback,'Enable','off');
+trial_chooser = uicontrol(datachooserpanel,'units','normalized','Position',[.25 .27 .5 .20],'Style', 'popupmenu', 'String', 'Choose Trial','callback',@chooseTrialCallback,'Enable','off');
+next_trial = uicontrol(datachooserpanel,'units','normalized','Position',[.75 .15 .15 .33],'Style', 'pushbutton', 'String', '>','callback',@chooseTrialCallback,'Enable','off');
+prev_trial = uicontrol(datachooserpanel,'units','normalized','Position',[.05 .15 .15 .33],'Style', 'pushbutton', 'String', '<','callback',@chooseTrialCallback,'Enable','off');
 
 % dimension reduction and clustering panels
 dimredpanel = uipanel('Title','Dimensionality Reduction','Position',[.29 .92 .21 .07]);
@@ -130,7 +130,7 @@ for oi = 1:length(avail_methods)
     avail_methods{oi} = temp(6:end-2);
 end
 clear oi
-method_control = uicontrol(dimredpanel,'Style','popupmenu','String',avail_methods,'units','normalized','Position',[.02 .6 .9 .2],'Callback',@reduce_dimensions_callback,'Enable','off');
+method_control = uicontrol(dimredpanel,'Style','popupmenu','String',avail_methods,'units','normalized','Position',[.02 .6 .9 .2],'Callback',@reduceDimensionsCallback,'Enable','off');
 
 % find the available methods for clustering
 look_here = mfilename('fullpath');
@@ -143,28 +143,28 @@ for oi = 1:length(avail_methods)
 end
 clear oi
 cluster_panel = uipanel('Title','Clustering','Position',[.51 .92 .21 .07]);
-cluster_control = uicontrol(cluster_panel,'Style','popupmenu','String',avail_methods,'units','normalized','Position',[.02 .6 .9 .2],'Callback',@find_cluster,'Enable','off');
+cluster_control = uicontrol(cluster_panel,'Style','popupmenu','String',avail_methods,'units','normalized','Position',[.02 .6 .9 .2],'Callback',@findCluster,'Enable','off');
 
 % spike find parameters
 find_spike_panel = uipanel('Title','Spike Detection','Position',[.29 .73 .21 .17]);
-uicontrol(find_spike_panel,'Style','text','String','MinPeakProminence','units','normalized','Position',[0 .73 .8 .2],'Callback',@plot_resp)
-mpp_control = uicontrol(find_spike_panel,'Style','edit','String','.03','units','normalized','Position',[.77 .75 .2 .2],'Callback',@plot_resp);
+uicontrol(find_spike_panel,'Style','text','String','MinPeakProminence','units','normalized','Position',[0 .73 .8 .2],'Callback',@plotResp)
+mpp_control = uicontrol(find_spike_panel,'Style','edit','String','.03','units','normalized','Position',[.77 .75 .2 .2],'Callback',@plotResp);
 uicontrol(find_spike_panel,'Style','text','String','MinPeakWidth','units','normalized','Position',[0 .53 .8 .2])
-mpw_control = uicontrol(find_spike_panel,'Style','edit','String','15','units','normalized','Position',[.77 .55 .2 .2],'Callback',@plot_resp);
+mpw_control = uicontrol(find_spike_panel,'Style','edit','String','15','units','normalized','Position',[.77 .55 .2 .2],'Callback',@plotResp);
 uicontrol(find_spike_panel,'Style','text','String','MinPeakDistance','units','normalized','Position',[0 .33 .8 .2])
-mpd_control = uicontrol(find_spike_panel,'Style','edit','String','10','units','normalized','Position',[.77 .35 .2 .2],'Callback',@plot_resp);
+mpd_control = uicontrol(find_spike_panel,'Style','edit','String','10','units','normalized','Position',[.77 .35 .2 .2],'Callback',@plotResp);
 uicontrol(find_spike_panel,'Style','text','String','-V Cutoff','units','normalized','Position',[0 .13 .8 .2])
-minV_control = uicontrol(find_spike_panel,'Style','edit','String','-1','units','normalized','Position',[.77 .15 .2 .2],'Callback',@plot_resp);
+minV_control = uicontrol(find_spike_panel,'Style','edit','String','-1','units','normalized','Position',[.77 .15 .2 .2],'Callback',@plotResp);
 
 % metadata panel
 metadata_panel = uipanel('Title','Metadata','Position',[.29 .57 .21 .15]);
-metadata_text_control = uicontrol(metadata_panel,'Style','edit','String','','units','normalized','Position',[.03 .3 .94 .7],'Callback',@update_metadata,'Enable','off','Max',5,'Min',1,'HorizontalAlignment','left');
-metadata_summary_control = uicontrol(metadata_panel,'Style','pushbutton','String','Generate Summary','units','normalized','Position',[.03 .035 .45 .2],'Callback',@generate_summary);
+metadata_text_control = uicontrol(metadata_panel,'Style','edit','String','','units','normalized','Position',[.03 .3 .94 .7],'Callback',@updateMetadata,'Enable','off','Max',5,'Min',1,'HorizontalAlignment','left');
+metadata_summary_control = uicontrol(metadata_panel,'Style','pushbutton','String','Generate Summary','units','normalized','Position',[.03 .035 .45 .2],'Callback',@generateSummary);
 
 % disable tagging on non unix systems
 if ispc
 else
-    tag_control = uicontrol(metadata_panel,'Style','edit','String','+Tag, or -Tag','units','normalized','Position',[.5 .035 .45 .2],'Callback',@add_tag);
+    tag_control = uicontrol(metadata_panel,'Style','edit','String','+Tag, or -Tag','units','normalized','Position',[.5 .035 .45 .2],'Callback',@addTag);
 
     % add homebrew path
     path1 = getenv('PATH');
@@ -175,10 +175,10 @@ end
 % other options
 nitems = 9;
 options_panel = uipanel('Title','Options','Position',[.51 .56 .16 .34]);
-template_match_control = uicontrol(options_panel,'Style','checkbox','String','-Template','units','normalized','Position',[.01 8/nitems .4 1/(nitems+1)],'Callback',@TemplateMatch,'Value',1);
-template_width_control = uicontrol(options_panel,'Style','edit','units','normalized','Position',[.35 7/nitems+.004 .3 1/(nitems+1)],'Callback',@TemplateMatch,'String','50');
+template_match_control = uicontrol(options_panel,'Style','checkbox','String','-Template','units','normalized','Position',[.01 8/nitems .4 1/(nitems+1)],'Callback',@templateMatch,'Value',1);
+template_width_control = uicontrol(options_panel,'Style','edit','units','normalized','Position',[.35 7/nitems+.004 .3 1/(nitems+1)],'Callback',@templateMatch,'String','50');
 uicontrol(options_panel,'Style','text','units','normalized','Position',[.01 7/nitems .3 1/(nitems+1)],'String','width:');
-template_match_slider = uicontrol(options_panel,'Style','edit','units','normalized','Position',[.35 6/nitems+.04 .3 1/(nitems+1)],'Callback',@TemplateMatch,'String','2');
+template_match_slider = uicontrol(options_panel,'Style','edit','units','normalized','Position',[.35 6/nitems+.04 .3 1/(nitems+1)],'Callback',@templateMatch,'String','2');
 
 uicontrol(options_panel,'Style','text','units','normalized','Position',[.01 6/nitems+.04 .3 1/(nitems+1)],'String','amount:');
 
@@ -200,70 +200,31 @@ uicontrol(options_panel,'Style','text','String','Hz','units','normalized','Posit
 
 % manual override panel
 manualpanel = uibuttongroup(fig,'Title','Manual Override','Position',[.68 .56 .11 .34]);
-uicontrol(manualpanel,'units','normalized','Position',[.1 7/8 .8 1/9],'Style','pushbutton','String','Mark All in View','Callback',@mark_all_callback);
+uicontrol(manualpanel,'units','normalized','Position',[.1 7/8 .8 1/9],'Style','pushbutton','String','Mark All in View','Callback',@markAllCallback);
 mode_new_A = uicontrol(manualpanel,'units','normalized','Position',[.1 6/8 .8 1/9], 'Style', 'radiobutton', 'String', '+A','FontSize',fs);
 mode_new_B = uicontrol(manualpanel,'units','normalized','Position',[.1 5/8 .8 1/9], 'Style', 'radiobutton', 'String', '+B','FontSize',fs);
 mode_delete = uicontrol(manualpanel,'units','normalized','Position',[.1 4/8 .8 1/9], 'Style', 'radiobutton', 'String', '-X','FontSize',fs);
 mode_A2B = uicontrol(manualpanel,'units','normalized','Position',[.1 3/8 .8 1/9], 'Style', 'radiobutton', 'String', 'A->B','FontSize',fs);
 mode_B2A = uicontrol(manualpanel,'units','normalized','Position',[.1 2/8 .8 1/9], 'Style', 'radiobutton', 'String', 'B->A','FontSize',fs);
-uicontrol(manualpanel,'units','normalized','Position',[.1 1/8 .8 1/9],'Style','pushbutton','String','Discard View','Callback',@modify_trace_discard);
-uicontrol(manualpanel,'units','normalized','Position',[.1 0/8 .8 1/9],'Style','pushbutton','String','Retain View','Callback',@modify_trace_discard);
+uicontrol(manualpanel,'units','normalized','Position',[.1 1/8 .8 1/9],'Style','pushbutton','String','Discard View','Callback',@modifyTraceDiscard);
+uicontrol(manualpanel,'units','normalized','Position',[.1 0/8 .8 1/9],'Style','pushbutton','String','Retain View','Callback',@modifyTraceDiscard);
 
 
 % various toggle switches and pushbuttons
-filtermode = uicontrol(fig,'units','normalized','Position',[.03 .69 .12 .05],'Style','togglebutton','String','Filter','Value',1,'Callback',@plot_resp,'Enable','off');
-findmode = uicontrol(fig,'units','normalized','Position',[.16 .69 .12 .05],'Style','togglebutton','String','Find Spikes','Value',1,'Callback',@plot_resp,'Enable','off');
+filtermode = uicontrol(fig,'units','normalized','Position',[.03 .69 .12 .05],'Style','togglebutton','String','Filter','Value',1,'Callback',@plotResp,'Enable','off');
+findmode = uicontrol(fig,'units','normalized','Position',[.16 .69 .12 .05],'Style','togglebutton','String','Find Spikes','Value',1,'Callback',@plotResp,'Enable','off');
 
 redo_control = uicontrol(fig,'units','normalized','Position',[.03 .64 .12 .05],'Style','pushbutton','String','Redo','Value',0,'Callback',@redo,'Enable','off');
 autosort_control = uicontrol(fig,'units','normalized','Position',[.16 .64 .12 .05],'Style','togglebutton','String','Autosort','Value',0,'Enable','off');
 
-sine_control = uicontrol(fig,'units','normalized','Position',[.03 .59 .12 .05],'Style','togglebutton','String',' Kill Ringing','Value',0,'Callback',@plot_resp,'Enable','off');
+sine_control = uicontrol(fig,'units','normalized','Position',[.03 .59 .12 .05],'Style','togglebutton','String',' Kill Ringing','Value',0,'Callback',@plotResp,'Enable','off');
 discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05],'Style','togglebutton','String',' Discard','Value',0,'Callback',@discard,'Enable','off');
 
 
-    function modify_trace_discard(src,~)
-        % first get the viewport
-        xl = get(ax,'XLim');
-        xl = floor(xl/deltat);
-        if xl(1) < 1
-            xl(1) = 1;
-        end
-        if xl(2) > length(V)
-            xl(2) = length(V);
-        end
+%% begin subfunctions
+% all subfunctions here are listed alphabetically
 
-        % check if we already have some discard information stored in spikes
-        if length(spikes) < ThisControlParadigm
-            spikes(ThisControlParadigm).use_trace_fragment = ones(1,length(V));
-        else
-            if isfield(spikes,'use_trace_fragment')
-                if width(spikes(ThisControlParadigm).use_trace_fragment) < ThisTrial
-                    spikes(ThisControlParadigm).use_trace_fragment(ThisTrial,:) = ones(1,length(V));
-                else
-                    
-                end
-            else
-                spikes(ThisControlParadigm).use_trace_fragment(ThisTrial,:) = ones(1,length(V));
-            end
-        end
-
-
-        if strcmp(src.String,'Discard View')
-            spikes(ThisControlParadigm).use_trace_fragment(ThisTrial,xl(1):xl(2)) = 0;
-            % disp('Discarding view for trial #')
-            % disp(ThisTrial)
-            % disp('Discarding data from:')
-            % disp(xl*deltat)
-        elseif strcmp(src.String,'Retain View')
-            spikes(ThisControlParadigm).use_trace_fragment(ThisTrial,xl(1):xl(2)) = 1;
-        else
-            error('modify_trace_discard ran into an error because I was called by a function that I did not expect. I am meant to be called only by the discard view or the retain view pushbuttons.')
-        end
-
-        plot_resp(@modify_trace_discard);
-    end
-
-    function add_tag(src,~)
+    function addTag(src,~)
         tag = get(src,'String');
         temp = whos('FileName');
         if ~isempty(FileName) && strcmp(temp.class,'char')
@@ -276,38 +237,274 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
         end
     end
 
-    function update_metadata(src,~)
-        metadata.spikesort_comment = get(src,'String');
-        save(strcat(PathName,FileName),'metadata','-append')
+    function [A,B] = autosort()
+        reduceDimensionsCallback;
+        [A,B]=findCluster;
+
     end
 
-    function TemplateMatch(src,event)
-        plot_resp(@TemplateMatch);
+    function chooseParadigmCallback(src,~)
+        cla(ax); cla(ax2)
+        paradigms_with_data = find(Kontroller_ntrials(data)); 
+        if src == paradigm_chooser
+            ThisControlParadigm = paradigms_with_data(get(paradigm_chooser,'Value'));
+        elseif src== next_paradigm
+            if max(paradigms_with_data) > ThisControlParadigm 
+                ThisControlParadigm = paradigms_with_data(find(paradigms_with_data == ThisControlParadigm)+1);
+                set(paradigm_chooser,'Value',find(paradigms_with_data == ThisControlParadigm));
+            end
+        elseif src == prev_paradigm
+            if ThisControlParadigm > paradigms_with_data(1)
+                ThisControlParadigm = paradigms_with_data(find(paradigms_with_data == ThisControlParadigm)-1);
+                set(paradigm_chooser,'Value',find(paradigms_with_data == ThisControlParadigm));
+            end
+        else
+            error('unknown source of callback 109. probably being incorrectly being called by something.')
+        end
+
+        n = Kontroller_ntrials(data);
+        n = n(ThisControlParadigm);
+        temp  ={};
+        for i = 1:n
+            temp{i} = strcat('Trial-',mat2str(i));
+        end
+        set(trial_chooser,'String',temp);
+        if src == prev_paradigm
+            set(trial_chooser,'Value',n);
+            ThisTrial = n;
+        else
+            set(trial_chooser,'Value',1);
+            ThisTrial = 1;
+        end
+        
+        % update the plots
+        plotStim;
+        plotResp(@chooseParadigmCallback);
+               
     end
 
-    
-    function raster_plot(~,~)
-        figure('outerposition',[0 0 1000 500],'PaperUnits','points','PaperSize',[1000 500]); hold on
-        yoffset = 0;
-        ytick=0;
-        L ={};
+    function chooseTrialCallback(src,~)
+        cla(ax); cla(ax2)
+        n = Kontroller_ntrials(data); 
+        if length(n) < ThisControlParadigm
+            return
+        else
+            n = n(ThisControlParadigm);
+        end
+        if src == trial_chooser
+            ThisTrial = get(trial_chooser,'Value');
+            % update the plots
+            plotStim;
+            plotResp(@chooseTrialCallback);
+        elseif src== next_trial
+            if ThisTrial < n
+                ThisTrial = ThisTrial +1;
+                set(trial_chooser,'Value',ThisTrial);
+                % update the plots
+                plotStim;
+                plotResp(@chooseTrialCallback);
+            else
+                % fake a call
+                chooseParadigmCallback(next_paradigm);
+            end
+        elseif src == prev_trial
+            if ThisTrial > 1
+                ThisTrial = ThisTrial  - 1;
+                set(trial_chooser,'Value',ThisTrial);
+                % update the plots
+                plotStim;
+                plotResp(@chooseTrialCallback);
+            else
+                % fake a call
+                chooseParadigmCallback(prev_paradigm);
+                % go to the last trial--fake another call
+                % n = Kontroller_ntrials(data); 
+                % n = n(ThisControlParadigm);
+                % if n
+                %     set(trial_chooser,'Value',n);
+                %     chooseTrialCallback(trial_chooser);
+                % end
+            end
+        else
+            error('unknown source of callback 173. probably being incorrectly being called by something.')
+        end    
+
+    end
+
+    function closess(~,~)
+        % save everything
+        try
+            if ~isempty(PathName) && ~isempty(FileName) 
+                if ischar(PathName) && ischar(FileName)
+                    save(strcat(PathName,FileName),'spikes','-append')
+                end
+            end
+        catch
+        end
+
+        delete(fig)
+
+    end
+
+    function discard(~,~)
+        if get(discard_control,'Value') == 0
+            % reset discard
+            if isfield(spikes,'discard')
+                spikes(ThisControlParadigm).discard(ThisTrial) = 0;
+            end
+        else
+            % need to reset spikes
+            if length(spikes) >= ThisControlParadigm
+                if width(spikes(ThisControlParadigm).A) >= ThisTrial
+                    spikes(ThisControlParadigm).A(ThisTrial,:) = 0;
+                    spikes(ThisControlParadigm).B(ThisTrial,:) = 0;
+                    spikes(ThisControlParadigm).amplitudes_A(ThisTrial,:) = 0;
+                    spikes(ThisControlParadigm).amplitudes_B(ThisTrial,:) = 0;
+
+                else
+                    % all cool
+                end
+            else
+                % should have no problem
+            end   
+
+            % mark as discarded
+            spikes(ThisControlParadigm).discard(ThisTrial) = 1;
+            save(strcat(PathName,FileName),'spikes','-append')
+            
+        end
+        
+
+        % update screen
+        plotResp;
+    end
+
+    function exportFigs(~,~)
+        % cache current state
+        c.ax2 = ax2;
+        c.ax = ax;
+        c.ThisControlParadigm = ThisControlParadigm;
+        c.ThisTrial = ThisTrial;
+
+        % export all figs
         for i = 1:length(spikes)
-            if length(spikes(i).A) > 1
-                raster2(full(spikes(i).A),spikes(i).B,yoffset);
-                yoffset = yoffset + width(spikes(i).A)*2 + 1;
-                ytick = [ytick yoffset];
-                L = [L strrep(ControlParadigm(i).Name,'_','-')];
-                
+            for j = 1:width(spikes(i).A)
+                if length(spikes(i).A(j,:)) > 1
+                    % haz data
+                    figure('outerposition',[0 0 1200 700],'PaperUnits','points','PaperSize',[1200 700]); hold on
+                    ax2 = subplot(2,1,1); hold on
+                    ax = subplot(2,1,2); hold on
+                    ThisControlParadigm = i;
+                    ThisTrial = j;
+                    plotStim;
+                    plotResp;
+                    title(ax2,strrep(FileName,'_','-'));
+                    tstr = strcat(ControlParadigm(ThisControlParadigm).Name,'_Trial:',mat2str(ThisTrial));
+                    tstr = strrep(tstr,'_','-');
+                    title(ax,tstr)
+                    xlabel(ax,'Time (s)')
+
+                    
+                    %set(gcf,'renderer','painters')
+                    tstr = strcat(FileName,'_',tstr,'.fig');
+                    tstr = strrep(tstr,'_','-');
+                    % print(gcf,tstr,'-depsc2','-opengl')
+                   
+
+                    savefig(gcf,tstr);
+                    delete(gcf);
+
+
+                end
             end
         end
-        set(gca,'YTick',ytick(1:end-1)+diff(ytick)/2,'YTickLabel',L,'box','on')
-        xlabel('Time (s)')
-        console('Made a raster plot.')
-    
-        
+        % return to state
+        ax2 = c.ax2;
+        ax = c.ax;
+        ThisControlParadigm = c.ThisControlParadigm;
+        ThisTrial = c.ThisTrial;
+        clear c
     end
 
-    function firing_rate_plot(~,~)
+
+    function [A,B] = findCluster(~,~)
+        % cluster based on the method
+        methodname = get(cluster_control,'String');
+        method = get(cluster_control,'Value');
+        methodname = strcat('sscm_',methodname{method});
+        req_arg = arginnames(methodname); % find out what arguments the external method needs
+        % start constructing the eval string
+        es = strcat('[A,B]=',methodname,'(');
+        for ri =  1:length(req_arg)
+            es = strcat(es,req_arg{ri},',');
+        end
+        clear ri
+        es = es(1:end-1);
+        es = strcat(es,');');
+        try
+            eval(es);
+        catch exc
+            ms = strkat(methodname, ' ran into an error: ', exc.message);
+            msgbox(ms,'spikesort');
+            return
+        end
+        clear es
+        
+        
+
+        % mark them
+        delete(h_scatter1)
+        delete(h_scatter2)
+        h_scatter1 = scatter(ax,time(A),V(A),'r');
+        h_scatter2 = scatter(ax,time(B),V(B),'b');
+
+        % save them
+        try
+            spikes(ThisControlParadigm).A(ThisTrial,:) = sparse(1,length(time));
+            spikes(ThisControlParadigm).amplitudes_A(ThisTrial,:) = sparse(1,length(time));
+            spikes(ThisControlParadigm).B(ThisTrial,:) = sparse(1,length(time));
+            spikes(ThisControlParadigm).amplitudes_B(ThisTrial,:) = sparse(1,length(time));
+        catch
+            spikes(ThisControlParadigm).A= sparse(ThisTrial,length(time));
+            spikes(ThisControlParadigm).B= sparse(ThisTrial,length(time));
+            spikes(ThisControlParadigm).amplitudes_A = sparse(ThisTrial,length(time));
+            spikes(ThisControlParadigm).amplitudes_B = sparse(ThisTrial,length(time));
+
+        end
+        spikes(ThisControlParadigm).A(ThisTrial,A) = 1;
+        
+        spikes(ThisControlParadigm).B(ThisTrial,B) = 1;
+
+        % also save spike amplitudes
+        spikes(ThisControlParadigm).amplitudes_A(ThisTrial,A)  =  ssdm_1DAmplitudes(V,deltat,A,flip_V_control);
+        spikes(ThisControlParadigm).amplitudes_B(ThisTrial,B)  =  ssdm_1DAmplitudes(V,deltat,B,flip_V_control);
+
+        % save them
+        save(strcat(PathName,FileName),'spikes','-append')
+
+    end
+
+    function loc = findSpikes(V)
+        % get param
+        % disp('debug-1403')
+        mpp = str2double(get(mpp_control,'String'));
+        mpd = str2double(get(mpd_control,'String'));
+        mpw = str2double(get(mpw_control,'String'));
+        minV = str2double(get(minV_control,'String'));
+        % find local minima 
+
+        if get(flip_V_control,'Value')
+            [~,loc] = findpeaks(-V,'MinPeakProminence',mpp,'MinPeakDistance',mpd,'MinPeakWidth',mpw);
+        else
+            [~,loc] = findpeaks(V,'MinPeakProminence',mpp,'MinPeakDistance',mpd,'MinPeakWidth',mpw);
+        end
+        % remove spikes below min V
+        loc(V(loc) < minV) = [];
+        set(method_control,'Enable','on')
+
+    end
+
+    function firingRatePlot(~,~)
         if get(r2_plot_control,'Value')
             figure('outerposition',[0 0 1200 800],'PaperUnits','points','PaperSize',[1200 800]); hold on
             sp(1)=subplot(2,4,1:3); hold on
@@ -376,7 +573,7 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
                             l(i) = plot(sp(1),tA,fA(:,j),'Color',c(i,:));
                         end
                     else
-                	   l(i) = plot(sp(1),tA,mean2(fA),'Color',c(i,:));
+                       l(i) = plot(sp(1),tA,mean2(fA),'Color',c(i,:));
                     end
                     if get(r2_plot_control,'Value')
                         hash = DataHash(fA);
@@ -397,7 +594,7 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
                     end
                 else
                     try
-                	   l(i) = plot(sp(1),tA,(fA),'Color',c(i,:));
+                       l(i) = plot(sp(1),tA,(fA),'Color',c(i,:));
                     catch
                         % no data, ignore.
                     end
@@ -422,7 +619,7 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
                             l(i) = plot(sp(2),tA,fB(:,j),'Color',c(i,:));
                         end
                     else
-                	   l(i) = plot(sp(2),tB,mean2(fB),'Color',c(i,:));
+                       l(i) = plot(sp(2),tB,mean2(fB),'Color',c(i,:));
                     end
                     if get(r2_plot_control,'Value')
                         hash = DataHash(fB);
@@ -442,7 +639,7 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
                     end
                 else
                     try
-                	   l(i) = plot(sp(2),tB,(fB),'Color',c(i,:));
+                       l(i) = plot(sp(2),tB,(fB),'Color',c(i,:));
                     catch
                     end
                 end
@@ -460,49 +657,31 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
         console('Made a firing rate plot.')
     end
 
-
-    function mark_all_callback(~,~)
-        % get view
-        xmin = get(ax,'XLim');
-        xmin = xmin/deltat;
-        xmax = xmin(2); xmin=xmin(1);
-
-        % get mode
-        if get(mode_B2A,'Value')
-            % add to A spikes
-            spikes(ThisControlParadigm).A(ThisTrial,loc(loc>xmin & loc<xmax))  = 1;
-            % remove b spikes
-            spikes(ThisControlParadigm).B(ThisTrial,loc(loc>xmin & loc<xmax))  = 0;
-
-        elseif get(mode_A2B,'Value')
-            % add to B spikes
-            spikes(ThisControlParadigm).B(ThisTrial,loc(loc>xmin & loc<xmax))  = 1;
-            % remove A spikes
-            spikes(ThisControlParadigm).A(ThisTrial,loc(loc>xmin & loc<xmax))  = 0;
-        elseif get(mode_delete,'Value')
-            spikes(ThisControlParadigm).A(ThisTrial,loc(loc>xmin & loc<xmax))  = 0;
-            spikes(ThisControlParadigm).B(ThisTrial,loc(loc>xmin & loc<xmax))  = 0;
+    function generateSummary(~,~)
+        allfiles = dir(strcat(PathName,'*.mat'));
+        if any(find(strcmp('cached.mat',{allfiles.name})))
+            allfiles(find(strcmp('cached.mat',{allfiles.name}))) = [];
         end
-
-        % update plot
-        plot_resp(@mark_all_callback); 
-
-    end
-
-
-    function closess(~,~)
-        % save everything
-        try
-            if ~isempty(PathName) && ~isempty(FileName) 
-                if ischar(PathName) && ischar(FileName)
-                    save(strcat(PathName,FileName),'spikes','-append')
-                end
+        summary_string = '';
+        fileID = fopen('summary.log','w');
+        for i = 1:length(allfiles)
+            summary_string = strcat(summary_string,'\n', allfiles(i).name);
+            temp = load(allfiles(i).name,'metadata');
+            metadata = temp.metadata;
+            if size(metadata.spikesort_comment,1) > 1
+                metadata.spikesort_comment = metadata.spikesort_comment(1,:);
+            end    
+            if isfield(metadata,'spikesort_comment')
+                summary_string = strcat(summary_string,'\t\t', metadata.spikesort_comment);
+            else
+                % no comment on this file
+                summary_string = strcat(summary_string,'\t\t', 'no comment');
             end
-        catch
+
         end
-
-        delete(fig)
-
+        
+        fprintf(fileID,summary_string);
+        fclose(fileID);
     end
 
     function jump(src,~)
@@ -543,127 +722,8 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
             error('Unknown source of call to jump');
         end
     end
-
-    function scroll(~,event)
-        xlimits = get(ax,'XLim');
-        xrange = (xlimits(2) - xlimits(1));
-        scroll_amount = event.VerticalScrollCount;
-        if ~get(smart_scroll_control,'Value')
-            if scroll_amount < 0
-                if xlimits(1) <= min(time)
-                    return
-                else
-                    newlim(1) = max([min(time) (xlimits(1)-.2*xrange)]);
-                    newlim(2) = newlim(1)+xrange;
-                end
-            else
-                if xlimits(2) >= max(time)
-                    return
-                else
-                    newlim(2) = min([max(time) (xlimits(2)+.2*xrange)]);
-                    newlim(1) = newlim(2)-xrange;
-                end
-            end
-        else
-            % find number of spikes in view
-            n_spikes_in_view = length(loc(loc>(xlimits(1)/deltat) & loc<(xlimits(2)/deltat)));
-            if scroll_amount > 0
-                try
-                    newlim(1) = min([max(time) (xlimits(1)+.2*xrange)]);
-                    newlim(2) = loc(find(loc > newlim(1)/deltat,1,'first') + n_spikes_in_view)*deltat;
-                catch
-                end
-            else
-                try
-                    newlim(2) = max([min(time)+xrange (xlimits(2)-.2*xrange)]);
-                    newlim(1) = loc(find(loc < newlim(2)/deltat,1,'last') - n_spikes_in_view)*deltat;
-                catch
-                end
-            end
-        end
-        
-        try
-            set(ax,'Xlim',newlim)
-        catch
-        end
-
-        xlim = get(ax,'XLim');
-        if xlim(1) < min(time)
-            xlim(1) = min(time);
-        end
-        if xlim(2) > max(time)
-            xlim(2) = max(time);
-        end
-        xlim(2) = (floor(xlim(2)/deltat))*deltat;
-        xlim(1) = (floor(xlim(1)/deltat))*deltat;
-        ylim(2) = max(V(find(time==xlim(1)):find(time==xlim(2))));
-        ylim(1) = min(V(find(time==xlim(1)):find(time==xlim(2))));
-        yr = 2*std(V(find(time==xlim(1)):find(time==xlim(2))));
-        if yr==0
-            set(ax,'YLim',[ylim(1)-1 ylim(2)+1]);
-        else
-            set(ax,'YLim',[ylim(1)-yr ylim(2)+yr]);
-        end
-
-    end
-
-    function discard(~,~)
-        if get(discard_control,'Value') == 0
-            % reset discard
-            if isfield(spikes,'discard')
-                spikes(ThisControlParadigm).discard(ThisTrial) = 0;
-            end
-        else
-            % need to reset spikes
-            if length(spikes) >= ThisControlParadigm
-                if width(spikes(ThisControlParadigm).A) >= ThisTrial
-                    spikes(ThisControlParadigm).A(ThisTrial,:) = 0;
-                    spikes(ThisControlParadigm).B(ThisTrial,:) = 0;
-                    spikes(ThisControlParadigm).amplitudes_A(ThisTrial,:) = 0;
-                    spikes(ThisControlParadigm).amplitudes_B(ThisTrial,:) = 0;
-
-                else
-                    % all cool
-                end
-            else
-                % should have no problem
-            end   
-
-            % mark as discarded
-            spikes(ThisControlParadigm).discard(ThisTrial) = 1;
-            save(strcat(PathName,FileName),'spikes','-append')
-            
-        end
-        
-
-        % update screen
-        plot_resp;
-    end
-
-    function redo(~,~)
-        % need to reset spikes
-        if length(spikes) >= ThisControlParadigm
-            if width(spikes(ThisControlParadigm).A) >= ThisTrial
-                spikes(ThisControlParadigm).A(ThisTrial,:) = 0;
-                spikes(ThisControlParadigm).B(ThisTrial,:) = 0;
-                spikes(ThisControlParadigm).amplitudes_A(ThisTrial,:) = 0;
-                spikes(ThisControlParadigm).amplitudes_B(ThisTrial,:) = 0;
-            else
-                % all cool
-            end
-        else
-            % should have no problem
-        end       
-
-        % update the plot
-        plot_resp;
-
-        % save the clear
-        save(strcat(PathName,FileName),'spikes','-append')
-
-    end
-
-    function loadfilecallback(src,~)
+    
+    function loadFileCallback(src,~)
         if strcmp(src.String,'Load File')
             [FileName,PathName] = uigetfile('.mat');
             if ~FileName
@@ -730,24 +790,24 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
         load_waitbar = waitbar(0.2, 'Loading data...');
         temp=load(strcat(PathName,FileName));
         ControlParadigm = temp.ControlParadigm;
-		data = temp.data;
-		SamplingRate = temp.SamplingRate;
-		OutputChannelNames = temp.OutputChannelNames;
+        data = temp.data;
+        SamplingRate = temp.SamplingRate;
+        OutputChannelNames = temp.OutputChannelNames;
         try
-		  metadata = temp.metadata;
-		  timestamps = temp.timestamps;
+          metadata = temp.metadata;
+          timestamps = temp.timestamps;
         catch
         end
         if isfield(temp,'spikes')
             spikes = temp.spikes;
         end
-		clear temp
+        clear temp
 
         
 
         waitbar(0.3,load_waitbar,'Updating listboxes...')
-		% update control signal listboxes with OutputChannelNames
-		set(valve_channel,'String',OutputChannelNames)
+        % update control signal listboxes with OutputChannelNames
+        set(valve_channel,'String',OutputChannelNames)
 
         % update stimulus listbox with all input channel names
         fl = fieldnames(data);
@@ -764,7 +824,7 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
         end
 
         % find out which paradigms have data 
-		n = Kontroller_ntrials(data); 
+        n = Kontroller_ntrials(data); 
 
         % only show the paradigms with data
         temp = {ControlParadigm.Name};
@@ -784,7 +844,7 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
             end
             set(trial_chooser,'String',temp);
             ThisTrial = 1;
-		    set(trial_chooser,'String',temp);
+            set(trial_chooser,'String',temp);
         else
             set(trial_chooser,'String','No data');
             ThisTrial = NaN;
@@ -907,221 +967,175 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
         % clean up
         close(load_waitbar)
 
-        plot_stim;
-        plot_resp(@loadfilecallback);
+        plotStim;
+        plotResp(@loadFileCallback);
     end
 
-    function ExportFigs(~,~)
-        % cache current state
-        c.ax2 = ax2;
-        c.ax = ax;
-        c.ThisControlParadigm = ThisControlParadigm;
-        c.ThisTrial = ThisTrial;
+    function markAllCallback(~,~)
+        % get view
+        xmin = get(ax,'XLim');
+        xmin = xmin/deltat;
+        xmax = xmin(2); xmin=xmin(1);
 
-        % export all figs
-        for i = 1:length(spikes)
-            for j = 1:width(spikes(i).A)
-                if length(spikes(i).A(j,:)) > 1
-                    % haz data
-                    figure('outerposition',[0 0 1200 700],'PaperUnits','points','PaperSize',[1200 700]); hold on
-                    ax2 = subplot(2,1,1); hold on
-                    ax = subplot(2,1,2); hold on
-                    ThisControlParadigm = i;
-                    ThisTrial = j;
-                    plot_stim;
-                    plot_resp;
-                    title(ax2,strrep(FileName,'_','-'));
-                    tstr = strcat(ControlParadigm(ThisControlParadigm).Name,'_Trial:',mat2str(ThisTrial));
-                    tstr = strrep(tstr,'_','-');
-                    title(ax,tstr)
-                    xlabel(ax,'Time (s)')
+        % get mode
+        if get(mode_B2A,'Value')
+            % add to A spikes
+            spikes(ThisControlParadigm).A(ThisTrial,loc(loc>xmin & loc<xmax))  = 1;
+            % remove b spikes
+            spikes(ThisControlParadigm).B(ThisTrial,loc(loc>xmin & loc<xmax))  = 0;
 
-                    
-                    %set(gcf,'renderer','painters')
-                    tstr = strcat(FileName,'_',tstr,'.fig');
-                    tstr = strrep(tstr,'_','-');
-                    % print(gcf,tstr,'-depsc2','-opengl')
-                   
-
-                    savefig(gcf,tstr);
-                    delete(gcf);
-
-
-                end
-            end
+        elseif get(mode_A2B,'Value')
+            % add to B spikes
+            spikes(ThisControlParadigm).B(ThisTrial,loc(loc>xmin & loc<xmax))  = 1;
+            % remove A spikes
+            spikes(ThisControlParadigm).A(ThisTrial,loc(loc>xmin & loc<xmax))  = 0;
+        elseif get(mode_delete,'Value')
+            spikes(ThisControlParadigm).A(ThisTrial,loc(loc>xmin & loc<xmax))  = 0;
+            spikes(ThisControlParadigm).B(ThisTrial,loc(loc>xmin & loc<xmax))  = 0;
         end
-        % return to state
-        ax2 = c.ax2;
-        ax = c.ax;
-        ThisControlParadigm = c.ThisControlParadigm;
-        ThisTrial = c.ThisTrial;
-        clear c
+
+        % update plot
+        plotResp(@markAllCallback); 
+
     end
 
-    function choose_paradigm_callback(src,~)
-        cla(ax); cla(ax2)
-        paradigms_with_data = find(Kontroller_ntrials(data)); 
-        if src == paradigm_chooser
-            ThisControlParadigm = paradigms_with_data(get(paradigm_chooser,'Value'));
-        elseif src== next_paradigm
-            if max(paradigms_with_data) > ThisControlParadigm 
-                ThisControlParadigm = paradigms_with_data(find(paradigms_with_data == ThisControlParadigm)+1);
-                set(paradigm_chooser,'Value',find(paradigms_with_data == ThisControlParadigm));
-            end
-        elseif src == prev_paradigm
-            if ThisControlParadigm > paradigms_with_data(1)
-                ThisControlParadigm = paradigms_with_data(find(paradigms_with_data == ThisControlParadigm)-1);
-                set(paradigm_chooser,'Value',find(paradigms_with_data == ThisControlParadigm));
-            end
-        else
-            error('unknown source of callback 109. probably being incorrectly being called by something.')
-        end
-
-        n = Kontroller_ntrials(data);
-        n = n(ThisControlParadigm);
-        temp  ={};
-        for i = 1:n
-            temp{i} = strcat('Trial-',mat2str(i));
-        end
-        set(trial_chooser,'String',temp);
-        if src == prev_paradigm
-            set(trial_chooser,'Value',n);
-            ThisTrial = n;
-        else
-            set(trial_chooser,'Value',1);
-            ThisTrial = 1;
-        end
-        
-        % update the plots
-        plot_stim;
-        plot_resp(@choose_paradigm_callback);
-               
-    end
-
-    function choose_trial_callback(src,~)
-        cla(ax); cla(ax2)
-        n = Kontroller_ntrials(data); 
-        if length(n) < ThisControlParadigm
+    function modify(p)
+        % check that the point is within the axes
+        ylimits = get(ax,'YLim');
+        if p(2) > ylimits(2) || p(2) < ylimits(1)
+            console('Rejecting point: Y exceeded')
             return
-        else
-            n = n(ThisControlParadigm);
         end
-        if src == trial_chooser
-            ThisTrial = get(trial_chooser,'Value');
-            % update the plots
-            plot_stim;
-            plot_resp(@choose_trial_callback);
-        elseif src== next_trial
-            if ThisTrial < n
-                ThisTrial = ThisTrial +1;
-                set(trial_chooser,'Value',ThisTrial);
-                % update the plots
-                plot_stim;
-                plot_resp(@choose_trial_callback);
+        xlimits = get(ax,'XLim');
+        if p(1) > xlimits(2) || p(1) < xlimits(1)
+            console('Rejecting point: X exceeded')
+            return
+        end
+
+        p(1) = p(1)/deltat;
+        xrange = (xlimits(2) - xlimits(1))/deltat;
+        yrange = ylimits(2) - ylimits(1);
+        % get the width over which to search for spikes dynamically from the zoom factor
+        s = floor((.005*xrange));
+        if get(mode_new_A,'Value')==1
+            % snip out a small waveform around the point
+            if get(flip_V_control,'Value')
+                [~,loc] = min(V(floor(p(1)-s:p(1)+s)));
             else
-                % fake a call
-                choose_paradigm_callback(next_paradigm);
+                [~,loc] = max(V(floor(p(1)-s:p(1)+s)));
             end
-        elseif src == prev_trial
-            if ThisTrial > 1
-                ThisTrial = ThisTrial  - 1;
-                set(trial_chooser,'Value',ThisTrial);
-                % update the plots
-                plot_stim;
-                plot_resp(@choose_trial_callback);
+            spikes(ThisControlParadigm).A(ThisTrial,-s+loc+floor(p(1))) = 1;
+            A = find(spikes(ThisControlParadigm).A(ThisTrial,:));
+            spikes(ThisControlParadigm).amplitudes_A(ThisTrial,A)  =  ssdm_1DAmplitudes(V,deltat,A,flip_V_control);
+        elseif get(mode_new_B,'Value')==1
+            % snip out a small waveform around the point
+            if get(flip_V_control,'Value')
+                [~,loc] = min(V(floor(p(1)-s:p(1)+s)));
             else
-                % fake a call
-                choose_paradigm_callback(prev_paradigm);
-                % go to the last trial--fake another call
-                % n = Kontroller_ntrials(data); 
-                % n = n(ThisControlParadigm);
-                % if n
-                %     set(trial_chooser,'Value',n);
-                %     choose_trial_callback(trial_chooser);
-                % end
+                [~,loc] = max(V(floor(p(1)-s:p(1)+s)));
             end
-        else
-            error('unknown source of callback 173. probably being incorrectly being called by something.')
-        end    
+            spikes(ThisControlParadigm).B(ThisTrial,-s+loc+floor(p(1))) = 1;
+            B = find(spikes(ThisControlParadigm).B(ThisTrial,:));
+            spikes(ThisControlParadigm).amplitudes_B(ThisTrial,B)  =  ssdm_1DAmplitudes(V,deltat,B,flip_V_control);
+        elseif get(mode_delete,'Value')==1
+            % find the closest spike
+            Aspiketimes = find(spikes(ThisControlParadigm).A(ThisTrial,:));
+            Bspiketimes = find(spikes(ThisControlParadigm).B(ThisTrial,:));
+
+            dA= (((Aspiketimes-p(1))/(xrange)).^2  + ((V(Aspiketimes) - p(2))/(5*yrange)).^2);
+            dB= (((Bspiketimes-p(1))/(xrange)).^2  + ((V(Bspiketimes) - p(2))/(5*yrange)).^2);
+            dist_to_A = min(dA);
+            dist_to_B = min(dB);
+            if dist_to_A < dist_to_B
+                [~,closest_spike] = min(dA);
+                spikes(ThisControlParadigm).A(ThisTrial,Aspiketimes(closest_spike)) = 0;
+                A = find(spikes(ThisControlParadigm).A(ThisTrial,:));
+                spikes(ThisControlParadigm).amplitudes_A(ThisTrial,A)  =  ssdm_1DAmplitudes(V,deltat,A,flip_V_control);
+            else
+                [~,closest_spike] = min(dB);
+                spikes(ThisControlParadigm).B(ThisTrial,Bspiketimes(closest_spike)) = 0;
+                B = find(spikes(ThisControlParadigm).B(ThisTrial,:));
+                spikes(ThisControlParadigm).amplitudes_B(ThisTrial,B)  =  ssdm_1DAmplitudes(V,deltat,B,flip_V_control);
+            end
+        elseif get(mode_A2B,'Value')==1 
+            % find the closest A spike
+            Aspiketimes = find(spikes(ThisControlParadigm).A(ThisTrial,:));
+            dA= (((Aspiketimes-p(1))/(xrange)).^2  + ((V(Aspiketimes) - p(2))/(5*yrange)).^2);
+            [~,closest_spike] = min(dA);
+            spikes(ThisControlParadigm).A(ThisTrial,Aspiketimes(closest_spike)) = 0;
+            spikes(ThisControlParadigm).B(ThisTrial,Aspiketimes(closest_spike)) = 1;
+            A = find(spikes(ThisControlParadigm).A(ThisTrial,:));
+            spikes(ThisControlParadigm).amplitudes_A(ThisTrial,A)  =  ssdm_1DAmplitudes(V,deltat,A,flip_V_control);
+            B = find(spikes(ThisControlParadigm).B(ThisTrial,:));
+            spikes(ThisControlParadigm).amplitudes_B(ThisTrial,B)  =  ssdm_1DAmplitudes(V,deltat,B,flip_V_control);
+
+        elseif get(mode_B2A,'Value')==1
+            % find the closest B spike
+            Bspiketimes = find(spikes(ThisControlParadigm).B(ThisTrial,:));
+            dB= (((Bspiketimes-p(1))/(xrange)).^2  + ((V(Bspiketimes) - p(2))/(5*yrange)).^2);
+            [~,closest_spike] = min(dB);
+            spikes(ThisControlParadigm).A(ThisTrial,Bspiketimes(closest_spike)) = 1;
+            spikes(ThisControlParadigm).B(ThisTrial,Bspiketimes(closest_spike)) = 0;
+            A = find(spikes(ThisControlParadigm).A(ThisTrial,:));
+            spikes(ThisControlParadigm).amplitudes_A(ThisTrial,A)  =  ssdm_1DAmplitudes(V,deltat,A,flip_V_control);
+            B = find(spikes(ThisControlParadigm).B(ThisTrial,:));
+            spikes(ThisControlParadigm).amplitudes_B(ThisTrial,B)  =  ssdm_1DAmplitudes(V,deltat,B,flip_V_control);
+        end
+
+        % update plot
+        plotResp(@modify);
 
     end
 
+    function modifyTraceDiscard(src,~)
+        % first get the viewport
+        xl = get(ax,'XLim');
+        xl = floor(xl/deltat);
+        if xl(1) < 1
+            xl(1) = 1;
+        end
+        if xl(2) > length(V)
+            xl(2) = length(V);
+        end
 
-    function plot_stim(~,~)
-        % plot the stimulus
-        n = Kontroller_ntrials(data); 
-        cla(ax2)
-        miny = Inf; maxy = -Inf;
-        if n(ThisControlParadigm)
-            plotwhat = get(stim_channel,'String');
-            nchannels = length(get(stim_channel,'Value'));
-            plot_these = get(stim_channel,'Value');
-            c = jet(nchannels);
-            if nchannels == 1
-                c = [0 0 0];
-            end
-            for i = 1:nchannels
-                
-                if plot_these(i) > length(fieldnames(data))
-                    temp= ControlParadigm(ThisControlParadigm).Outputs(plot_these(i) - length(fieldnames(data)),:);
+        % check if we already have some discard information stored in spikes
+        if length(spikes) < ThisControlParadigm
+            spikes(ThisControlParadigm).use_trace_fragment = ones(1,length(V));
+        else
+            if isfield(spikes,'use_trace_fragment')
+                if width(spikes(ThisControlParadigm).use_trace_fragment) < ThisTrial
+                    spikes(ThisControlParadigm).use_trace_fragment(ThisTrial,:) = ones(1,length(V));
                 else
-                    plotthis = plotwhat{plot_these(i)};
-                    eval(strcat('temp=data(ThisControlParadigm).',plotthis,';'));
-                    temp = temp(ThisTrial,:);
+                    
                 end
-                time = deltat*(1:length(temp));
-                plot(ax2,time,temp,'Color',c(i,:)); hold on;
-                miny  =min([miny min(temp)]);
-                maxy  =max([maxy max(temp)]);
+            else
+                spikes(ThisControlParadigm).use_trace_fragment(ThisTrial,:) = ones(1,length(V));
             end
         end
 
-        % rescale the Y axis appropriately
-        if ~isinf(sum(abs([maxy miny])))
-            if maxy > miny
-                set(ax2,'YLim',[miny maxy+.1*(maxy-miny)]);
-            end
+
+        if strcmp(src.String,'Discard View')
+            spikes(ThisControlParadigm).use_trace_fragment(ThisTrial,xl(1):xl(2)) = 0;
+            % disp('Discarding view for trial #')
+            % disp(ThisTrial)
+            % disp('Discarding data from:')
+            % disp(xl*deltat)
+        elseif strcmp(src.String,'Retain View')
+            spikes(ThisControlParadigm).use_trace_fragment(ThisTrial,xl(1):xl(2)) = 1;
+        else
+            error('modifyTraceDiscard ran into an error because I was called by a function that I did not expect. I am meant to be called only by the discard view or the retain view pushbuttons.')
         end
 
-        % plot the control signals using thick lines
-        if n(ThisControlParadigm)
-            plotwhat = get(valve_channel,'String');
-            nchannels = length(get(valve_channel,'Value'));
-            plot_these = get(valve_channel,'Value');
-            c = jet(nchannels);
-            if nchannels == 1
-                c = [0 0 0];
-            end
-
-            ymax = get(ax2,'YLim');
-            ymin = ymax(1); ymax = ymax(2); 
-            y0 = (ymax- .1*(ymax-ymin));
-            dy = (ymax-y0)/nchannels;
-            thisy = ymax;
-
-            for i = 1:nchannels
-                temp=ControlParadigm(ThisControlParadigm).Outputs(plot_these(i),:);
-                if get(plot_control_control,'Value')
-                	% plot the control signal directly
-                	time = deltat*(1:length(temp));
-                	cla(ax2);
-                	plot(ax2,time,temp,'LineWidth',1); hold on;
-                	set(ax2,'YLim',[min(temp) max(temp)]);
-                else
-	                temp(temp>0)=1;
-	                time = deltat*(1:length(temp));
-	                thisy = thisy - dy;
-	                temp = temp*thisy;
-	                temp(temp==0) = NaN;
-	                plot(ax2,time,temp,'Color',c(i,:),'LineWidth',5); hold on;
-	            end
-            end
-        end
-
+        plotResp(@modifyTraceDiscard);
     end
 
+    function mousecallback(~,~)
+        p=get(ax,'CurrentPoint');
+        p=p(1,1:2);
+        modify(p)
+    end
 
-    function plot_resp(src,~)
+    function plotResp(src,~)
         % plot the response
         clear time V Vf % flush old variables 
         n = Kontroller_ntrials(data); 
@@ -1271,13 +1285,13 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
         end
         if get(findmode,'Value') == 1
    
-            loc=find_spikes(V_censored); % disp('debug-1278')
+            loc=findSpikes(V_censored); % disp('debug-1278')
 
             % do we already have sorted spikes?
             if length(spikes) < ThisControlParadigm
                 % no spikes
       
-                loc = find_spikes(V_censored); % disp('debug-1284')
+                loc = findSpikes(V_censored); % disp('debug-1284')
                 if get(autosort_control,'Value') == 1
                     % sort spikes and show them
                    
@@ -1380,47 +1394,132 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
         
     end
 
-    function [A,B] = autosort()
-        reduce_dimensions_callback;
-        [A,B]=find_cluster;
-
-    end
-
-    function plot_valve(~,~)
-    	% get the channels to plot
-    	valve_channels = get(valve_channel,'Value');
-    	c = jet(length(valve_channels));
-    	for i = 1:length(valve_channels)
-    		this_valve = ControlParadigm(ThisControlParadigm).Outputs(valve_channels(i),:);
-    	end
-	end
-
-    function loc = find_spikes(V)
-        % get param
-        % disp('debug-1403')
-        mpp = str2double(get(mpp_control,'String'));
-        mpd = str2double(get(mpd_control,'String'));
-        mpw = str2double(get(mpw_control,'String'));
-        minV = str2double(get(minV_control,'String'));
-        % find local minima 
-
-        if get(flip_V_control,'Value')
-            [~,loc] = findpeaks(-V,'MinPeakProminence',mpp,'MinPeakDistance',mpd,'MinPeakWidth',mpw);
-        else
-            [~,loc] = findpeaks(V,'MinPeakProminence',mpp,'MinPeakDistance',mpd,'MinPeakWidth',mpw);
+    function plotStim(~,~)
+        % plot the stimulus
+        n = Kontroller_ntrials(data); 
+        cla(ax2)
+        miny = Inf; maxy = -Inf;
+        if n(ThisControlParadigm)
+            plotwhat = get(stim_channel,'String');
+            nchannels = length(get(stim_channel,'Value'));
+            plot_these = get(stim_channel,'Value');
+            c = jet(nchannels);
+            if nchannels == 1
+                c = [0 0 0];
+            end
+            for i = 1:nchannels
+                
+                if plot_these(i) > length(fieldnames(data))
+                    temp= ControlParadigm(ThisControlParadigm).Outputs(plot_these(i) - length(fieldnames(data)),:);
+                else
+                    plotthis = plotwhat{plot_these(i)};
+                    eval(strcat('temp=data(ThisControlParadigm).',plotthis,';'));
+                    temp = temp(ThisTrial,:);
+                end
+                time = deltat*(1:length(temp));
+                plot(ax2,time,temp,'Color',c(i,:)); hold on;
+                miny  =min([miny min(temp)]);
+                maxy  =max([maxy max(temp)]);
+            end
         end
-        % remove spikes below min V
-        loc(V(loc) < minV) = [];
-        set(method_control,'Enable','on')
+
+        % rescale the Y axis appropriately
+        if ~isinf(sum(abs([maxy miny])))
+            if maxy > miny
+                set(ax2,'YLim',[miny maxy+.1*(maxy-miny)]);
+            end
+        end
+
+        % plot the control signals using thick lines
+        if n(ThisControlParadigm)
+            plotwhat = get(valve_channel,'String');
+            nchannels = length(get(valve_channel,'Value'));
+            plot_these = get(valve_channel,'Value');
+            c = jet(nchannels);
+            if nchannels == 1
+                c = [0 0 0];
+            end
+
+            ymax = get(ax2,'YLim');
+            ymin = ymax(1); ymax = ymax(2); 
+            y0 = (ymax- .1*(ymax-ymin));
+            dy = (ymax-y0)/nchannels;
+            thisy = ymax;
+
+            for i = 1:nchannels
+                temp=ControlParadigm(ThisControlParadigm).Outputs(plot_these(i),:);
+                if get(plot_control_control,'Value')
+                    % plot the control signal directly
+                    time = deltat*(1:length(temp));
+                    cla(ax2);
+                    plot(ax2,time,temp,'LineWidth',1); hold on;
+                    set(ax2,'YLim',[min(temp) max(temp)]);
+                else
+                    temp(temp>0)=1;
+                    time = deltat*(1:length(temp));
+                    thisy = thisy - dy;
+                    temp = temp*thisy;
+                    temp(temp==0) = NaN;
+                    plot(ax2,time,temp,'Color',c(i,:),'LineWidth',5); hold on;
+                end
+            end
+        end
 
     end
 
-    function reduce_dimensions_callback(~,~)
-        method=(get(method_control,'Value'));
-        [R,V_snippets] = reduce_dimensions(method);
+    function plotValve(~,~)
+        % get the channels to plot
+        valve_channels = get(valve_channel,'Value');
+        c = jet(length(valve_channels));
+        for i = 1:length(valve_channels)
+            this_valve = ControlParadigm(ThisControlParadigm).Outputs(valve_channels(i),:);
+        end
     end
 
-    function [R,V_snippets] = reduce_dimensions(method)
+    function rasterPlot(~,~)
+        figure('outerposition',[0 0 1000 500],'PaperUnits','points','PaperSize',[1000 500]); hold on
+        yoffset = 0;
+        ytick=0;
+        L ={};
+        for i = 1:length(spikes)
+            if length(spikes(i).A) > 1
+                raster2(full(spikes(i).A),spikes(i).B,yoffset);
+                yoffset = yoffset + width(spikes(i).A)*2 + 1;
+                ytick = [ytick yoffset];
+                L = [L strrep(ControlParadigm(i).Name,'_','-')];
+                
+            end
+        end
+        set(gca,'YTick',ytick(1:end-1)+diff(ytick)/2,'YTickLabel',L,'box','on')
+        xlabel('Time (s)')
+        console('Made a raster plot.')
+    
+    end
+
+    function redo(~,~)
+        % need to reset spikes
+        if length(spikes) >= ThisControlParadigm
+            if width(spikes(ThisControlParadigm).A) >= ThisTrial
+                spikes(ThisControlParadigm).A(ThisTrial,:) = 0;
+                spikes(ThisControlParadigm).B(ThisTrial,:) = 0;
+                spikes(ThisControlParadigm).amplitudes_A(ThisTrial,:) = 0;
+                spikes(ThisControlParadigm).amplitudes_B(ThisTrial,:) = 0;
+            else
+                % all cool
+            end
+        else
+            % should have no problem
+        end       
+
+        % update the plot
+        plotResp;
+
+        % save the clear
+        save(strcat(PathName,FileName),'spikes','-append')
+
+    end
+
+    function [R,V_snippets] = reduceDimensions(method)
 
         % take snippets for each putative spike
         t_before = 20;
@@ -1465,186 +1564,84 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
         clear es
     end
 
-    function [A,B] = find_cluster(~,~)
-        % cluster based on the method
-        methodname = get(cluster_control,'String');
-        method = get(cluster_control,'Value');
-        methodname = strcat('sscm_',methodname{method});
-        req_arg = arginnames(methodname); % find out what arguments the external method needs
-        % start constructing the eval string
-        es = strcat('[A,B]=',methodname,'(');
-        for ri =  1:length(req_arg)
-            es = strcat(es,req_arg{ri},',');
-        end
-        clear ri
-        es = es(1:end-1);
-        es = strcat(es,');');
-        try
-            eval(es);
-        catch exc
-            ms = strkat(methodname, ' ran into an error: ', exc.message);
-            msgbox(ms,'spikesort');
-            return
-        end
-        clear es
-        
-        
-
-        % mark them
-        delete(h_scatter1)
-        delete(h_scatter2)
-        h_scatter1 = scatter(ax,time(A),V(A),'r');
-        h_scatter2 = scatter(ax,time(B),V(B),'b');
-
-        % save them
-        try
-            spikes(ThisControlParadigm).A(ThisTrial,:) = sparse(1,length(time));
-            spikes(ThisControlParadigm).amplitudes_A(ThisTrial,:) = sparse(1,length(time));
-            spikes(ThisControlParadigm).B(ThisTrial,:) = sparse(1,length(time));
-            spikes(ThisControlParadigm).amplitudes_B(ThisTrial,:) = sparse(1,length(time));
-        catch
-            spikes(ThisControlParadigm).A= sparse(ThisTrial,length(time));
-            spikes(ThisControlParadigm).B= sparse(ThisTrial,length(time));
-            spikes(ThisControlParadigm).amplitudes_A = sparse(ThisTrial,length(time));
-            spikes(ThisControlParadigm).amplitudes_B = sparse(ThisTrial,length(time));
-
-        end
-        spikes(ThisControlParadigm).A(ThisTrial,A) = 1;
-        
-        spikes(ThisControlParadigm).B(ThisTrial,B) = 1;
-
-        % also save spike amplitudes
-        spikes(ThisControlParadigm).amplitudes_A(ThisTrial,A)  =  ssdm_1DAmplitudes(V,deltat,A,flip_V_control);
-        spikes(ThisControlParadigm).amplitudes_B(ThisTrial,B)  =  ssdm_1DAmplitudes(V,deltat,B,flip_V_control);
-
-        % save them
-        save(strcat(PathName,FileName),'spikes','-append')
-
+    function reduceDimensionsCallback(~,~)
+        method=(get(method_control,'Value'));
+        [R,V_snippets] = reduceDimensions(method);
     end
 
 
-    function mousecallback(~,~)
-        p=get(ax,'CurrentPoint');
-        p=p(1,1:2);
-        modify(p)
-    end
-
-    function modify(p)
-        % check that the point is within the axes
-        ylimits = get(ax,'YLim');
-        if p(2) > ylimits(2) || p(2) < ylimits(1)
-            console('Rejecting point: Y exceeded')
-            return
-        end
+    function scroll(~,event)
         xlimits = get(ax,'XLim');
-        if p(1) > xlimits(2) || p(1) < xlimits(1)
-            console('Rejecting point: X exceeded')
-            return
-        end
-
-        p(1) = p(1)/deltat;
-        xrange = (xlimits(2) - xlimits(1))/deltat;
-        yrange = ylimits(2) - ylimits(1);
-        % get the width over which to search for spikes dynamically from the zoom factor
-        s = floor((.005*xrange));
-        if get(mode_new_A,'Value')==1
-            % snip out a small waveform around the point
-            if get(flip_V_control,'Value')
-                [~,loc] = min(V(floor(p(1)-s:p(1)+s)));
+        xrange = (xlimits(2) - xlimits(1));
+        scroll_amount = event.VerticalScrollCount;
+        if ~get(smart_scroll_control,'Value')
+            if scroll_amount < 0
+                if xlimits(1) <= min(time)
+                    return
+                else
+                    newlim(1) = max([min(time) (xlimits(1)-.2*xrange)]);
+                    newlim(2) = newlim(1)+xrange;
+                end
             else
-                [~,loc] = max(V(floor(p(1)-s:p(1)+s)));
+                if xlimits(2) >= max(time)
+                    return
+                else
+                    newlim(2) = min([max(time) (xlimits(2)+.2*xrange)]);
+                    newlim(1) = newlim(2)-xrange;
+                end
             end
-            spikes(ThisControlParadigm).A(ThisTrial,-s+loc+floor(p(1))) = 1;
-            A = find(spikes(ThisControlParadigm).A(ThisTrial,:));
-            spikes(ThisControlParadigm).amplitudes_A(ThisTrial,A)  =  ssdm_1DAmplitudes(V,deltat,A,flip_V_control);
-        elseif get(mode_new_B,'Value')==1
-            % snip out a small waveform around the point
-            if get(flip_V_control,'Value')
-                [~,loc] = min(V(floor(p(1)-s:p(1)+s)));
+        else
+            % find number of spikes in view
+            n_spikes_in_view = length(loc(loc>(xlimits(1)/deltat) & loc<(xlimits(2)/deltat)));
+            if scroll_amount > 0
+                try
+                    newlim(1) = min([max(time) (xlimits(1)+.2*xrange)]);
+                    newlim(2) = loc(find(loc > newlim(1)/deltat,1,'first') + n_spikes_in_view)*deltat;
+                catch
+                end
             else
-                [~,loc] = max(V(floor(p(1)-s:p(1)+s)));
+                try
+                    newlim(2) = max([min(time)+xrange (xlimits(2)-.2*xrange)]);
+                    newlim(1) = loc(find(loc < newlim(2)/deltat,1,'last') - n_spikes_in_view)*deltat;
+                catch
+                end
             end
-            spikes(ThisControlParadigm).B(ThisTrial,-s+loc+floor(p(1))) = 1;
-            B = find(spikes(ThisControlParadigm).B(ThisTrial,:));
-            spikes(ThisControlParadigm).amplitudes_B(ThisTrial,B)  =  ssdm_1DAmplitudes(V,deltat,B,flip_V_control);
-        elseif get(mode_delete,'Value')==1
-            % find the closest spike
-            Aspiketimes = find(spikes(ThisControlParadigm).A(ThisTrial,:));
-            Bspiketimes = find(spikes(ThisControlParadigm).B(ThisTrial,:));
-
-            dA= (((Aspiketimes-p(1))/(xrange)).^2  + ((V(Aspiketimes) - p(2))/(5*yrange)).^2);
-            dB= (((Bspiketimes-p(1))/(xrange)).^2  + ((V(Bspiketimes) - p(2))/(5*yrange)).^2);
-            dist_to_A = min(dA);
-            dist_to_B = min(dB);
-            if dist_to_A < dist_to_B
-                [~,closest_spike] = min(dA);
-                spikes(ThisControlParadigm).A(ThisTrial,Aspiketimes(closest_spike)) = 0;
-                A = find(spikes(ThisControlParadigm).A(ThisTrial,:));
-                spikes(ThisControlParadigm).amplitudes_A(ThisTrial,A)  =  ssdm_1DAmplitudes(V,deltat,A,flip_V_control);
-            else
-                [~,closest_spike] = min(dB);
-                spikes(ThisControlParadigm).B(ThisTrial,Bspiketimes(closest_spike)) = 0;
-                B = find(spikes(ThisControlParadigm).B(ThisTrial,:));
-                spikes(ThisControlParadigm).amplitudes_B(ThisTrial,B)  =  ssdm_1DAmplitudes(V,deltat,B,flip_V_control);
-            end
-        elseif get(mode_A2B,'Value')==1 
-            % find the closest A spike
-            Aspiketimes = find(spikes(ThisControlParadigm).A(ThisTrial,:));
-            dA= (((Aspiketimes-p(1))/(xrange)).^2  + ((V(Aspiketimes) - p(2))/(5*yrange)).^2);
-            [~,closest_spike] = min(dA);
-            spikes(ThisControlParadigm).A(ThisTrial,Aspiketimes(closest_spike)) = 0;
-            spikes(ThisControlParadigm).B(ThisTrial,Aspiketimes(closest_spike)) = 1;
-            A = find(spikes(ThisControlParadigm).A(ThisTrial,:));
-            spikes(ThisControlParadigm).amplitudes_A(ThisTrial,A)  =  ssdm_1DAmplitudes(V,deltat,A,flip_V_control);
-            B = find(spikes(ThisControlParadigm).B(ThisTrial,:));
-            spikes(ThisControlParadigm).amplitudes_B(ThisTrial,B)  =  ssdm_1DAmplitudes(V,deltat,B,flip_V_control);
-
-        elseif get(mode_B2A,'Value')==1
-            % find the closest B spike
-            Bspiketimes = find(spikes(ThisControlParadigm).B(ThisTrial,:));
-            dB= (((Bspiketimes-p(1))/(xrange)).^2  + ((V(Bspiketimes) - p(2))/(5*yrange)).^2);
-            [~,closest_spike] = min(dB);
-            spikes(ThisControlParadigm).A(ThisTrial,Bspiketimes(closest_spike)) = 1;
-            spikes(ThisControlParadigm).B(ThisTrial,Bspiketimes(closest_spike)) = 0;
-            A = find(spikes(ThisControlParadigm).A(ThisTrial,:));
-            spikes(ThisControlParadigm).amplitudes_A(ThisTrial,A)  =  ssdm_1DAmplitudes(V,deltat,A,flip_V_control);
-            B = find(spikes(ThisControlParadigm).B(ThisTrial,:));
-            spikes(ThisControlParadigm).amplitudes_B(ThisTrial,B)  =  ssdm_1DAmplitudes(V,deltat,B,flip_V_control);
-        end
-
-        % update plot
-        plot_resp(@modify);
-
- 
-    end
-
-
-    function generate_summary(~,~)
-        allfiles = dir(strcat(PathName,'*.mat'));
-        if any(find(strcmp('cached.mat',{allfiles.name})))
-            allfiles(find(strcmp('cached.mat',{allfiles.name}))) = [];
-        end
-        summary_string = '';
-        fileID = fopen('summary.log','w');
-        for i = 1:length(allfiles)
-            summary_string = strcat(summary_string,'\n', allfiles(i).name);
-            temp = load(allfiles(i).name,'metadata');
-            metadata = temp.metadata;
-            if size(metadata.spikesort_comment,1) > 1
-                metadata.spikesort_comment = metadata.spikesort_comment(1,:);
-            end    
-            if isfield(metadata,'spikesort_comment')
-                summary_string = strcat(summary_string,'\t\t', metadata.spikesort_comment);
-            else
-                % no comment on this file
-                summary_string = strcat(summary_string,'\t\t', 'no comment');
-            end
-
         end
         
-        fprintf(fileID,summary_string);
-        fclose(fileID);
+        try
+            set(ax,'Xlim',newlim)
+        catch
+        end
+
+        xlim = get(ax,'XLim');
+        if xlim(1) < min(time)
+            xlim(1) = min(time);
+        end
+        if xlim(2) > max(time)
+            xlim(2) = max(time);
+        end
+        xlim(2) = (floor(xlim(2)/deltat))*deltat;
+        xlim(1) = (floor(xlim(1)/deltat))*deltat;
+        ylim(2) = max(V(find(time==xlim(1)):find(time==xlim(2))));
+        ylim(1) = min(V(find(time==xlim(1)):find(time==xlim(2))));
+        yr = 2*std(V(find(time==xlim(1)):find(time==xlim(2))));
+        if yr==0
+            set(ax,'YLim',[ylim(1)-1 ylim(2)+1]);
+        else
+            set(ax,'YLim',[ylim(1)-yr ylim(2)+yr]);
+        end
+
     end
+
+    function templateMatch(src,event)
+        plotResp(@templateMatch);
+    end
+
+    function updateMetadata(src,~)
+        metadata.spikesort_comment = get(src,'String');
+        save(strcat(PathName,FileName),'metadata','-append')
+    end
+
 
 
 

@@ -1,4 +1,6 @@
 % filter_trace.m 
+% bandpasses input signal to spikes and/or slow fluctuations
+% 
 % part of spikesort.m
 %  
 % created by Srinivas Gorur-Shandilya at 10:20 , 09 April 2014. Contact me at http://srinivas.gs/contact/

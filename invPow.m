@@ -1,3 +1,6 @@
+% invPow.m
+% inverse power method for sparse PCA
+% 
 % Performs one run of the inverse power method for sparse PCA as
 % described in the paper
 %
