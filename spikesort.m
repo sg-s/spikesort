@@ -450,7 +450,8 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
         end
         clear es
         
-        
+        % try to remove doublets
+        [A,B]=removeDoublets(A,B);
 
         % mark them
         delete(h_scatter1)
@@ -1569,6 +1570,17 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
         [R,V_snippets] = reduceDimensions(method);
     end
 
+    function [A,B] = removeDoublets(A,B)
+        % remove B doublets and assign one of them to A
+        temp = (diff(B) < (median(diff(B)))/3);
+        A = sort([A B(temp)]);
+        B(temp) = [];
+
+        temp = (diff(A) < (median(diff(A)))/3);
+        B = sort([B A(temp)]);
+        A(temp) = [];
+
+    end
 
     function scroll(~,event)
         xlimits = get(ax,'XLim');
