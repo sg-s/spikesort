@@ -7,7 +7,7 @@
 % This work is licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License. 
 % To view a copy of this license, visit http://creativecommons.org/licenses/by-nc-sa/4.0/.
 function [] = spikesort()
-ssDebug = true;
+ssDebug = false;
 h = GitHash(mfilename('fullpath'));
 versionname = strcat('spikesort for Kontroller (Build-',h(1:6),')');
 
@@ -58,12 +58,6 @@ valve_channel = [];
 load_waitbar = [];
 h_scatter1 = [];
 h_scatter2 = [];
-
-if isunix
-    % add support for xattr-based tagging
-    PATH = getenv('PATH');
-    setenv('PATH', [PATH strcat(':',fileparts(which('spikesort')))]);
-end
 
 % make the master figure, and the axes to plot the voltage traces
 fig = figure('position',[50 50 1200 700], 'Toolbar','figure','Menubar','none','Name',versionname,'NumberTitle','off','IntegerHandle','off','WindowButtonDownFcn',@mousecallback,'WindowScrollWheelFcn',@scroll,'CloseRequestFcn',@closess);
@@ -176,7 +170,8 @@ end
 % other options
 nitems = 10;
 options_panel = uipanel('Title','Options','Position',[.51 .56 .16 .34]);
-remove_doublets_control = uicontrol(options_panel,'Style','checkbox','String','-Doublets','units','normalized','Position',[.01 9/nitems .5 1/(nitems+1)],'Value',0);
+remove_doublets_control = uicontrol(options_panel,'Style','checkbox','String','-Doublets','units','normalized','Position',[.01 9/nitems .4 1/(nitems+1)],'Value',0);
+refractory_time_control = uicontrol(options_panel,'Style','edit','String','10','units','normalized','Position',[.5 9/nitems .3 1/(nitems+1)],'Value',0);
 template_match_control = uicontrol(options_panel,'Style','checkbox','String','-Template','units','normalized','Position',[.01 8/nitems .5 1/(nitems+1)],'Callback',@templateMatch,'Value',0);
 template_width_control = uicontrol(options_panel,'Style','edit','units','normalized','Position',[.35 7/nitems+.004 .3 1/(nitems+1)],'Callback',@templateMatch,'String','50');
 uicontrol(options_panel,'Style','text','units','normalized','Position',[.01 7/nitems .3 1/(nitems+1)],'String','width:');
@@ -1599,8 +1594,11 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
 
     function [A,B] = removeDoublets(A,B)
         % remove B doublets and assign one of them to A
-        B2A_cand = B(diff(B) < (median(diff(B)))/3);
-        B2A_alt = B(find(diff(B) < (median(diff(B)))/3)+1);
+        % get the refractory time 
+        refractory_time = str2double(get(refractory_time_control,'String'));
+
+        B2A_cand = B(diff(B) < refractory_time);
+        B2A_alt = B(find(diff(B) < refractory_time)+1);
         B2A = NaN*B2A_cand;
         
         % for each candidate, find the one in the pair that is further away from adjacent A spikes
@@ -1614,13 +1612,17 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
             end
         end
 
+        if ssDebug
+            disp('B2A doublet resolution. #spikes swapped:')
+            disp(length(B2A))
+        end
         % swap 
         A = sort(unique([A B2A]));
         B = setdiff(B,B2A);
 
         % remove A doublets and assign one of them to B
-        A2B_cand = A(diff(A) < (median(diff(A)))/3);
-        A2B_alt = A(find(diff(A) < (median(diff(A)))/3)+1);
+        A2B_cand = A(diff(A) < refractory_time);
+        A2B_alt = A(find(diff(A) < refractory_time)+1);
 
         % don't undo what we just did
         temp = ismember(A2B_alt,unique([B2A_cand B2A_alt])) | ismember(A2B_cand,unique([B2A_cand B2A_alt]));
@@ -1640,6 +1642,11 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
         % swap 
         B = sort(unique([B A2B_cand]));
         A = setdiff(A,A2B_cand);
+
+        if ssDebug
+            disp('A2B doublet resolution. #spikes swapped:')
+            disp(length(A2B_cand))
+        end
     end
 
     function scroll(~,event)
