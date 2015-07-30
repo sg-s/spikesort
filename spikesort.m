@@ -7,6 +7,7 @@
 % This work is licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License. 
 % To view a copy of this license, visit http://creativecommons.org/licenses/by-nc-sa/4.0/.
 function [] = spikesort()
+ssDebug = true;
 h = GitHash(mfilename('fullpath'));
 versionname = strcat('spikesort for Kontroller (Build-',h(1:6),')');
 
@@ -153,8 +154,8 @@ uicontrol(find_spike_panel,'Style','text','String','MinPeakWidth','units','norma
 mpw_control = uicontrol(find_spike_panel,'Style','edit','String','15','units','normalized','Position',[.77 .55 .2 .2],'Callback',@plotResp);
 uicontrol(find_spike_panel,'Style','text','String','MinPeakDistance','units','normalized','Position',[0 .33 .8 .2])
 mpd_control = uicontrol(find_spike_panel,'Style','edit','String','10','units','normalized','Position',[.77 .35 .2 .2],'Callback',@plotResp);
-uicontrol(find_spike_panel,'Style','text','String','-V Cutoff','units','normalized','Position',[0 .13 .8 .2])
-minV_control = uicontrol(find_spike_panel,'Style','edit','String','-1','units','normalized','Position',[.77 .15 .2 .2],'Callback',@plotResp);
+uicontrol(find_spike_panel,'Style','text','String','V Cutoff','units','normalized','Position',[0 .13 .8 .2])
+V_cutoff_control = uicontrol(find_spike_panel,'Style','edit','String','-1','units','normalized','Position',[.77 .15 .2 .2],'Callback',@plotResp);
 
 % metadata panel
 metadata_panel = uipanel('Title','Metadata','Position',[.29 .57 .21 .15]);
@@ -173,9 +174,10 @@ else
 end
 
 % other options
-nitems = 9;
+nitems = 10;
 options_panel = uipanel('Title','Options','Position',[.51 .56 .16 .34]);
-template_match_control = uicontrol(options_panel,'Style','checkbox','String','-Template','units','normalized','Position',[.01 8/nitems .4 1/(nitems+1)],'Callback',@templateMatch,'Value',1);
+remove_doublets_control = uicontrol(options_panel,'Style','checkbox','String','-Doublets','units','normalized','Position',[.01 9/nitems .5 1/(nitems+1)],'Value',0);
+template_match_control = uicontrol(options_panel,'Style','checkbox','String','-Template','units','normalized','Position',[.01 8/nitems .5 1/(nitems+1)],'Callback',@templateMatch,'Value',0);
 template_width_control = uicontrol(options_panel,'Style','edit','units','normalized','Position',[.35 7/nitems+.004 .3 1/(nitems+1)],'Callback',@templateMatch,'String','50');
 uicontrol(options_panel,'Style','text','units','normalized','Position',[.01 7/nitems .3 1/(nitems+1)],'String','width:');
 template_match_slider = uicontrol(options_panel,'Style','edit','units','normalized','Position',[.35 6/nitems+.04 .3 1/(nitems+1)],'Callback',@templateMatch,'String','2');
@@ -451,7 +453,9 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
         clear es
         
         % try to remove doublets
-        [A,B]=removeDoublets(A,B);
+        if get(remove_doublets_control,'Value')
+            [A,B]=removeDoublets(A,B);
+        end
 
         % mark them
         delete(h_scatter1)
@@ -487,21 +491,27 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
 
     function loc = findSpikes(V)
         % get param
-        % disp('debug-1403')
+        % disp('ssDebug-1403')
         mpp = str2double(get(mpp_control,'String'));
         mpd = str2double(get(mpd_control,'String'));
         mpw = str2double(get(mpw_control,'String'));
-        minV = str2double(get(minV_control,'String'));
-        % find local minima 
+        v_cutoff = str2double(get(V_cutoff_control,'String'));
 
+
+        % find peaks and remove spikes beyond v_cutoff
         if get(flip_V_control,'Value')
             [~,loc] = findpeaks(-V,'MinPeakProminence',mpp,'MinPeakDistance',mpd,'MinPeakWidth',mpw);
+            loc(V(loc) < -abs(v_cutoff)) = [];
         else
             [~,loc] = findpeaks(V,'MinPeakProminence',mpp,'MinPeakDistance',mpd,'MinPeakWidth',mpw);
+            loc(V(loc) > abs(v_cutoff)) = [];
         end
-        % remove spikes below min V
-        loc(V(loc) < minV) = [];
         set(method_control,'Enable','on')
+
+        if ssDebug
+            disp('findSpikes 512: found these many spikes:')
+            disp(length(loc))
+        end
 
     end
 
@@ -1237,6 +1247,9 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
 
 
         if get(filtermode,'Value') == 1
+            if ssDebug 
+                disp('plotResp 1251: filtering trace...')
+            end
             lc = 1/str2double(get(low_cutoff_control,'String'));
             lc = floor(lc/deltat);
             hc = 1/str2double(get(high_cutoff_control,'String'));
@@ -1285,14 +1298,18 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
             V_censored(ignored_fragments) = NaN;
         end
         if get(findmode,'Value') == 1
-   
-            loc=findSpikes(V_censored); % disp('debug-1278')
+        
+            if ssDebug
+                disp('plotResp 1304: invoking findSpikes...')
+            end
+            loc=findSpikes(V_censored); 
 
             % do we already have sorted spikes?
             if length(spikes) < ThisControlParadigm
                 % no spikes
       
-                loc = findSpikes(V_censored); % disp('debug-1284')
+
+                loc = findSpikes(V_censored); % disp('ssDebug-1284')
                 if get(autosort_control,'Value') == 1
                     % sort spikes and show them
                    
@@ -1533,7 +1550,17 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
         loc(end) = []; V_snippets(:,end) = [];
 
         % remove noise and artifacts
-        temp = find(max(V_snippets)>.15);
+        v_cutoff = str2double(get(V_cutoff_control,'String'));
+
+        if get(flip_V_control,'Value')
+            v_cutoff =  -abs(v_cutoff);
+            temp = find(max(V_snippets)<v_cutoff);
+        else
+            v_cutoff = abs(v_cutoff);
+            temp = find(max(V_snippets)>v_cutoff);
+        end
+
+        
         V_snippets(:,temp) = [];
         loc(temp) = [];
 

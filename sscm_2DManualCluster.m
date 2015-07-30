@@ -126,7 +126,7 @@ uiwait(hmc);
          set(hm5,'XLim',[-5 width(V_snippets)+5])
 
 
-        if min([length(find(C == 1)) length(find(C == 2)) length(find(C == 3))]) > 0
+        if min([length(find(C == 1)) length(find(C == 2))]) > 0
             set(autofixbutton,'Enable','on')
         end
 
@@ -205,7 +205,25 @@ uiwait(hmc);
                
 
             end
-            clusterplot;
+        elseif length(unique(C)) == 3 && sum(C==0) > 1 
+            % some unassigned spikes, but nothing assigned to noise
+            % we have made at least some assignments to each cluster
+            xA = R(1,C==1); yA = R(2,C==1);
+            xB = R(1,C==2); yB = R(2,C==2);
+            dothese = find(C == 0);
+            for i = 1:length(dothese)
+                p = R(1:2,dothese(i))';
+                if any(isnan(p))
+                    keyboard
+                    C(dothese(i)) = 3; % why are there NaNs? weird.
+                else
+                    cdist(1) = min((xA-p(1)).^2+(yA-p(2)).^2);
+                    cdist(2) = min((xB-p(1)).^2+(yB-p(2)).^2);
+                    C(dothese(i)) = find(cdist == min(cdist));
+                end
+               
+
+            end
         end
 
         A = C==1;
