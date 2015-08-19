@@ -1030,37 +1030,43 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
         this_stim=this_stim - min(this_stim);
         this_stim = this_stim/max(this_stim);
 
-        before = 30;
-        after = 29;
+        before = 100;
+        after = 99;
 
         A_spikes = find(spikes(ThisControlParadigm).A(ThisTrial,:));
         B_spikes = find(spikes(ThisControlParadigm).B(ThisTrial,:));
         N_spikes = find(spikes(ThisControlParadigm).N(ThisTrial,:));
 
-        train_x = zeros(length([A_spikes B_spikes N_spikes]),120);
+        A_spikes(A_spikes<1+before) = [];
+        A_spikes(A_spikes>length(V)-after-1) = [];
+        B_spikes(B_spikes<1+before) = [];
+        B_spikes(B_spikes>length(V)-after-1) = [];
+        N_spikes(N_spikes<1+before) = [];
+        N_spikes(N_spikes>length(V)-after-1) = [];
+
+        train_x = zeros(length([A_spikes B_spikes N_spikes]),2*(1+before+after));
         train_y = zeros(length([A_spikes B_spikes N_spikes]),3);
 
 
         for i = 1:length(A_spikes)
             this_loc = A_spikes(i);
-            train_x(i,1:60) = train_data(1,this_loc-before:this_loc+after);
-            train_x(i,61:120) = this_stim(1,this_loc-before:this_loc+after);
+            train_x(i,1:before+after+1) = train_data(this_loc-before:this_loc+after);
+            train_x(i,before+after+2:end) = this_stim(this_loc-before:this_loc+after);
             train_y(i,1) = 1;
         end
 
         for i = length(A_spikes)+1:length(B_spikes)+length(A_spikes)
             this_loc = B_spikes(i-length(A_spikes));
-            train_x(i,1:60) = train_data(1,this_loc-before:this_loc+after);
-            train_x(i,61:120) = this_stim(1,this_loc-before:this_loc+after);
+            train_x(i,1:before+after+1) = train_data(this_loc-before:this_loc+after);
+            train_x(i,before+after+2:end) = this_stim(this_loc-before:this_loc+after);
             train_y(i,2) = 1;
         end
 
-        N_spikes(N_spikes<before) = [];
-        N_spikes(N_spikes>length(V)-after) = [];
+
         for i = length(A_spikes)+length(B_spikes)+ 1:length(B_spikes)+length(A_spikes)+length(N_spikes)
             this_loc = N_spikes(i-length(A_spikes)-length(B_spikes));
-            train_x(i,1:60) = train_data(1,this_loc-before:this_loc+after);
-            train_x(i,61:120) = this_stim(1,this_loc-before:this_loc+after);
+            train_x(i,1:before+after+1) = train_data(this_loc-before:this_loc+after);
+            train_x(i,before+after+2:end) = this_stim(this_loc-before:this_loc+after);
             train_y(i,3) = 1;
         end
 
@@ -1068,9 +1074,10 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
         train_y = double(train_y);
         train_x = double(train_x);
         
+        set(ml_ui.status_text,'String','Training...')
         % train dbn
         rand('state',0)
-        dbn.sizes = [6 6];
+        dbn.sizes = [10 10];
         opts.numepochs =   1;
         opts.batchsize = length(train_x);
         opts.momentum  =   0;
@@ -1082,7 +1089,8 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
         nn = dbnunfoldtonn(dbn, 3);
         nn.activation_function = 'sigm';
 
-        %train nn
+        % train nn
+
         opts.numepochs =  1e3;
         opts.momentum = 1;
         opts.batchsize = length(train_x);
@@ -1106,22 +1114,21 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
         eval(strcat('this_stim=data(ThisControlParadigm).',stim_channel.String{get(stim_channel,'Value')},'(ThisTrial,:);'))
         this_stim=this_stim - min(this_stim);
         this_stim = this_stim/max(this_stim);
-
-        before = 30;
-        after = 29;
+        
+        before = 100;
+        after = 99;
 
         ok_loc = loc;
-        ok_loc(ok_loc<before) = [];
-        ok_loc(ok_loc>length(V)-after) = [];
+        ok_loc(ok_loc<before+1) = [];
+        ok_loc(ok_loc>length(V)-1-after) = [];
 
         % get all putative spike locations
-        test_x = zeros(length(ok_loc),120);
-
+        test_x = zeros(length(ok_loc),2*(1+before+after));
 
         for i = 1:length(ok_loc)
             this_loc = ok_loc(i);
-            test_x(i,1:60) = test_data(1,this_loc-before:this_loc+after);
-            test_x(i,61:120) = this_stim(1,this_loc-before:this_loc+after);
+            test_x(i,1:(before+after+1)) = test_data(this_loc-before:this_loc+after);
+            test_x(i,before+after+2:end) = this_stim(this_loc-before:this_loc+after);
         end
 
         test_x = double(test_x);
@@ -1136,7 +1143,11 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
         spikes(ThisControlParadigm).A(ThisTrial,ok_loc(temp2 == 3)) = 0;
         spikes(ThisControlParadigm).B(ThisTrial,ok_loc(temp2 == 3)) = 0;
 
+        clear temp temp2
+
         plotResp;
+
+
 
 
     end
