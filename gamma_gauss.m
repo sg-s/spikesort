@@ -1,4 +1,6 @@
 % gamma_gauss.m
+% sums a gamma and a gaussian function
+% where is this used? candidate for removal...
 % 
 % created by Srinivas Gorur-Shandilya at 10:20 , 09 April 2014. Contact me at http://srinivas.gs/contact/
 % 

@@ -5,7 +5,7 @@
 % 
 % This work is licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License. 
 % To view a copy of this license, visit http://creativecommons.org/licenses/by-nc-sa/4.0/.
-function [A,B] = sscm_1DGaussianFit(R,loc)
+function [A,B,N] = sscm_1DGaussianFit(R,loc)
 
 [y,x] = hist(R,floor(length(R)/30));
 if length(x) < 6
@@ -93,3 +93,4 @@ else
 	end
 end
 
+N = 0*A;

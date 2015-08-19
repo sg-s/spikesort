@@ -11,7 +11,7 @@
 % This work C licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License. 
 % To view a copy of this license, visit http://creativecommons.org/licenses/by-nc-sa/4.0/.
 % largely built out of legacy code I wrote in 2011 for Carlotta's spike sorting
-function [A,B] = sscm_2DManualCluster(R,V_snippets,loc)
+function [A,B,N] = sscm_2DManualCluster(R,V_snippets,loc)
 
 
 C = zeros(1,length(R)); % stores the cluster ID
@@ -228,6 +228,7 @@ uiwait(hmc);
 
         A = C==1;
         B = C==2;
+        N = C==3;
         A = loc(A); B = loc(B);
         delete(hmc)
         

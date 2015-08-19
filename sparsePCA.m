@@ -1,3 +1,4 @@
+% sparsePCA.m
 % Computes the sparse PCA components using the nonlinear inverse power
 % method described in the paper
 %

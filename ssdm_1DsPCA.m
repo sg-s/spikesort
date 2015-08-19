@@ -1,5 +1,5 @@
 % ssdm_1DsPCA.m
-% 
+% Dimensionality reduction plugin for spikesport: performs a sparse PCA. 
 % this is a plugin for spikesort.m
 % reduces spikes to a amplitude, measured from the minimum to preceding maximum.
 % 

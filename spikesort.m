@@ -52,6 +52,7 @@ PathName = [];
 
 % UI
 fs = 14; % font size
+ml_ui = [];
 
 % handles
 valve_channel = [];
@@ -114,7 +115,7 @@ next_trial = uicontrol(datachooserpanel,'units','normalized','Position',[.75 .15
 prev_trial = uicontrol(datachooserpanel,'units','normalized','Position',[.05 .15 .15 .33],'Style', 'pushbutton', 'String', '<','callback',@chooseTrialCallback,'Enable','off');
 
 % dimension reduction and clustering panels
-dimredpanel = uipanel('Title','Dimensionality Reduction','Position',[.29 .92 .21 .07]);
+dimredpanel = uipanel('Title','Dimensionality Reduction','Position',[.25 .92 .17 .07]);
 % find the available methods
 look_here = mfilename('fullpath');
 look_here=look_here(1:max(strfind(look_here,oss))); % this is where we should look for methods
@@ -137,8 +138,12 @@ for oi = 1:length(avail_methods)
     avail_methods{oi} = temp(6:end-2);
 end
 clear oi
-cluster_panel = uipanel('Title','Clustering','Position',[.51 .92 .21 .07]);
+cluster_panel = uipanel('Title','Clustering','Position',[.43 .92 .17 .07]);
 cluster_control = uicontrol(cluster_panel,'Style','popupmenu','String',avail_methods,'units','normalized','Position',[.02 .6 .9 .2],'Callback',@findCluster,'Enable','off');
+
+% add a button for machine learning
+mlpanel = uipanel('Title','Machine Learning','Position',[.61 .92 .17 .07]);
+machineLearningUIControl = uicontrol(mlpanel,'Style','pushbutton','String','Launch DeepNN...','units','normalized','Position',[.02 .1 .9 .9],'Callback',@makeMachineLearningUI,'Enable','on');
 
 % spike find parameters
 find_spike_panel = uipanel('Title','Spike Detection','Position',[.29 .73 .21 .17]);
@@ -424,14 +429,14 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
     end
 
 
-    function [A,B] = findCluster(~,~)
+    function [A,B,N] = findCluster(~,~)
         % cluster based on the method
         methodname = get(cluster_control,'String');
         method = get(cluster_control,'Value');
         methodname = strcat('sscm_',methodname{method});
         req_arg = arginnames(methodname); % find out what arguments the external method needs
         % start constructing the eval string
-        es = strcat('[A,B]=',methodname,'(');
+        es = strcat('[A,B,N]=',methodname,'(');
         for ri =  1:length(req_arg)
             es = strcat(es,req_arg{ri},',');
         end
@@ -460,20 +465,22 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
 
         % save them
         try
-            spikes(ThisControlParadigm).A(ThisTrial,:) = sparse(1,length(time));
-            spikes(ThisControlParadigm).amplitudes_A(ThisTrial,:) = sparse(1,length(time));
+            spikes(ThisControlParadigm).A(ThisTrial,:) = sparse(1,length(time));      
             spikes(ThisControlParadigm).B(ThisTrial,:) = sparse(1,length(time));
+            spikes(ThisControlParadigm).N(ThisTrial,:) = sparse(1,length(time));
+            spikes(ThisControlParadigm).amplitudes_A(ThisTrial,:) = sparse(1,length(time));
             spikes(ThisControlParadigm).amplitudes_B(ThisTrial,:) = sparse(1,length(time));
         catch
-            spikes(ThisControlParadigm).A= sparse(ThisTrial,length(time));
-            spikes(ThisControlParadigm).B= sparse(ThisTrial,length(time));
+            spikes(ThisControlParadigm).A = sparse(ThisTrial,length(time));
+            spikes(ThisControlParadigm).B = sparse(ThisTrial,length(time));
+            spikes(ThisControlParadigm).N = sparse(ThisTrial,length(time));
             spikes(ThisControlParadigm).amplitudes_A = sparse(ThisTrial,length(time));
             spikes(ThisControlParadigm).amplitudes_B = sparse(ThisTrial,length(time));
 
         end
         spikes(ThisControlParadigm).A(ThisTrial,A) = 1;
-        
         spikes(ThisControlParadigm).B(ThisTrial,B) = 1;
+        spikes(ThisControlParadigm).N(ThisTrial,N) = 1;
 
         % also save spike amplitudes
         spikes(ThisControlParadigm).amplitudes_A(ThisTrial,A)  =  ssdm_1DAmplitudes(V,deltat,A,flip_V_control);
@@ -977,6 +984,163 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
         plotResp(@loadFileCallback);
     end
 
+
+    function makeMachineLearningUI(~,~)
+        % makes the UI for machine learning
+        ml_ui.fig = figure('Position',[60 500 450 450],'Toolbar','none','Menubar','none','Name','Deep Learning','NumberTitle','off','Resize','on','HandleVisibility','on');
+        try (spikes(ThisControlParadigm).nn{ThisTrial});
+            ml_ui.status_text = uicontrol(ml_ui.fig,'units','normalized','Position',[.05 .85 .9 .10],'Style', 'text', 'String', 'DBN configured for this trial','FontSize',20);
+        catch
+            ml_ui.status_text = uicontrol(ml_ui.fig,'units','normalized','Position',[.05 .85 .9 .10],'Style', 'text', 'String', 'No DBN configured for this trial','FontSize',20);
+        end
+        ml_ui.trainButton = uicontrol(ml_ui.fig,'units','normalized','Position',[.05 .75 .9 .10],'Style', 'pushbutton', 'String', 'Train DBN','FontSize',20,'Callback',@trainDBN);
+        uicontrol(ml_ui.fig,'units','normalized','Position',[.05 .60 .35 .10],'Style', 'text', 'String', 'Use this:','FontSize',20);
+        ml_ui.sort_control = uicontrol(ml_ui.fig,'units','normalized','Position',[.05 .50 .90 .10],'Style', 'pushbutton', 'String', 'Deep Sort','FontSize',20,'Callback',@deepSort,'Enable','off');
+        ml_ui.chooseDBN = findAllDBNs;
+    end
+
+    function  temp_handle = findAllDBNs
+        % function finds all DBNs in this data file, and lists them in a chooser
+        if ~isfield(spikes,'dbn')
+            temp_handle = [];
+            return
+        end
+        s= {'temp'};
+        temp_handle = uicontrol(ml_ui.fig,'units','normalized','Position',[.35 .60 .55 .10],'Style', 'popupmenu', 'String', s,'FontSize',20);
+        s = {};
+        for i = 1:length(spikes)
+            for j = 1:width(spikes(i).A)
+                try isempty(spikes(i).nn{j});
+                    s{end+1} = ['Paradigm:' mat2str(i), ' Trial:' mat2str(j)];
+                catch
+                end
+            end
+        end
+        set(temp_handle,'String',s);
+        set(ml_ui.sort_control,'Enable','on');
+    end
+
+    function trainDBN(~,~)
+        % normalise V
+        train_data = V;
+        train_data = train_data - min(train_data);
+        train_data = train_data/max(train_data);
+
+        eval(strcat('this_stim=data(ThisControlParadigm).',stim_channel.String{get(stim_channel,'Value')},'(ThisTrial,:);'))
+        this_stim=this_stim - min(this_stim);
+        this_stim = this_stim/max(this_stim);
+
+        before = 30;
+        after = 29;
+
+        A_spikes = find(spikes(ThisControlParadigm).A(ThisTrial,:));
+        B_spikes = find(spikes(ThisControlParadigm).B(ThisTrial,:));
+        N_spikes = find(spikes(ThisControlParadigm).N(ThisTrial,:));
+
+        train_x = zeros(length([A_spikes B_spikes N_spikes]),120);
+        train_y = zeros(length([A_spikes B_spikes N_spikes]),3);
+
+
+        for i = 1:length(A_spikes)
+            this_loc = A_spikes(i);
+            train_x(i,1:60) = train_data(1,this_loc-before:this_loc+after);
+            train_x(i,61:120) = this_stim(1,this_loc-before:this_loc+after);
+            train_y(i,1) = 1;
+        end
+
+        for i = length(A_spikes)+1:length(B_spikes)+length(A_spikes)
+            this_loc = B_spikes(i-length(A_spikes));
+            train_x(i,1:60) = train_data(1,this_loc-before:this_loc+after);
+            train_x(i,61:120) = this_stim(1,this_loc-before:this_loc+after);
+            train_y(i,2) = 1;
+        end
+
+        N_spikes(N_spikes<before) = [];
+        N_spikes(N_spikes>length(V)-after) = [];
+        for i = length(A_spikes)+length(B_spikes)+ 1:length(B_spikes)+length(A_spikes)+length(N_spikes)
+            this_loc = N_spikes(i-length(A_spikes)-length(B_spikes));
+            train_x(i,1:60) = train_data(1,this_loc-before:this_loc+after);
+            train_x(i,61:120) = this_stim(1,this_loc-before:this_loc+after);
+            train_y(i,3) = 1;
+        end
+
+        % make training data double
+        train_y = double(train_y);
+        train_x = double(train_x);
+        
+        % train dbn
+        rand('state',0)
+        dbn.sizes = [6 6];
+        opts.numepochs =   1;
+        opts.batchsize = length(train_x);
+        opts.momentum  =   0;
+        opts.alpha     =   1;
+        dbn = dbnsetup(dbn, train_x, opts);
+        dbn = dbntrain(dbn, train_x, opts);
+
+        %unfold dbn to nn
+        nn = dbnunfoldtonn(dbn, 3);
+        nn.activation_function = 'sigm';
+
+        %train nn
+        opts.numepochs =  1e3;
+        opts.momentum = 1;
+        opts.batchsize = length(train_x);
+        nn = nntrain(nn, train_x, train_y, opts);
+
+        % add to the spikes structure
+        spikes(ThisControlParadigm).nn{ThisTrial} = nn;
+        spikes(ThisControlParadigm).dbn{ThisTrial} = dbn;
+
+        % change text
+        set(ml_ui.status_text,'String','Training Complete.')
+
+    end
+
+    function deepSort(~,~)
+        % normalise V
+        test_data = V;
+        test_data = test_data - min(test_data);
+        test_data = test_data/max(test_data);
+
+        eval(strcat('this_stim=data(ThisControlParadigm).',stim_channel.String{get(stim_channel,'Value')},'(ThisTrial,:);'))
+        this_stim=this_stim - min(this_stim);
+        this_stim = this_stim/max(this_stim);
+
+        before = 30;
+        after = 29;
+
+        ok_loc = loc;
+        ok_loc(ok_loc<before) = [];
+        ok_loc(ok_loc>length(V)-after) = [];
+
+        % get all putative spike locations
+        test_x = zeros(length(ok_loc),120);
+
+
+        for i = 1:length(ok_loc)
+            this_loc = ok_loc(i);
+            test_x(i,1:60) = test_data(1,this_loc-before:this_loc+after);
+            test_x(i,61:120) = this_stim(1,this_loc-before:this_loc+after);
+        end
+
+        test_x = double(test_x);
+
+        % figure out which NN to use
+        temp = char(ml_ui.chooseDBN.String(get(ml_ui.chooseDBN,'Value')));
+        temp2 = strfind(temp,':');
+        temp2 = nnpredict(spikes(str2double(temp(temp2(1)+1:strfind(temp,'Trial')-1))).nn{str2double(temp(strfind(temp,'Trial:')+6:end))},test_x);
+
+        spikes(ThisControlParadigm).A(ThisTrial,ok_loc(temp2 == 1)) = 1;
+        spikes(ThisControlParadigm).B(ThisTrial,ok_loc(temp2 == 2)) = 1;
+        spikes(ThisControlParadigm).A(ThisTrial,ok_loc(temp2 == 3)) = 0;
+        spikes(ThisControlParadigm).B(ThisTrial,ok_loc(temp2 == 3)) = 0;
+
+        plotResp;
+
+
+    end
+
     function markAllCallback(~,~)
         % get view
         xmin = get(ax,'XLim');
@@ -998,6 +1162,7 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
         elseif get(mode_delete,'Value')
             spikes(ThisControlParadigm).A(ThisTrial,loc(loc>xmin & loc<xmax))  = 0;
             spikes(ThisControlParadigm).B(ThisTrial,loc(loc>xmin & loc<xmax))  = 0;
+            spikes(ThisControlParadigm).N(ThisTrial,loc(loc>xmin & loc<xmax))  = 1;
         end
 
         % update plot
@@ -1055,11 +1220,13 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
             if dist_to_A < dist_to_B
                 [~,closest_spike] = min(dA);
                 spikes(ThisControlParadigm).A(ThisTrial,Aspiketimes(closest_spike)) = 0;
+                spikes(ThisControlParadigm).N(ThisTrial,Aspiketimes(closest_spike)) = 1;
                 A = find(spikes(ThisControlParadigm).A(ThisTrial,:));
                 spikes(ThisControlParadigm).amplitudes_A(ThisTrial,A)  =  ssdm_1DAmplitudes(V,deltat,A,flip_V_control);
             else
                 [~,closest_spike] = min(dB);
                 spikes(ThisControlParadigm).B(ThisTrial,Bspiketimes(closest_spike)) = 0;
+                spikes(ThisControlParadigm).N(ThisTrial,Aspiketimes(closest_spike)) = 1;
                 B = find(spikes(ThisControlParadigm).B(ThisTrial,:));
                 spikes(ThisControlParadigm).amplitudes_B(ThisTrial,B)  =  ssdm_1DAmplitudes(V,deltat,B,flip_V_control);
             end

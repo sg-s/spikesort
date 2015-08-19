@@ -1,7 +1,6 @@
 % ssdm_2DFactorAnalysis.m
+% Dimensionality reduction plug-in for spikesort: 2D Factor Analysis
 % 
-% this is a plugin for spikesort.m
-% reduces spikes to a amplitude, measured from the minimum to preceding maximum.
 % 
 % created by Srinivas Gorur-Shandilya at 10:20 , 09 April 2014. Contact me at http://srinivas.gs/contact/
 % 

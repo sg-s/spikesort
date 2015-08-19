@@ -1,13 +1,13 @@
 ### [filter_envelope.m](https://github.com/sg-s/spikesort/blob/master/filter_envelope.m)
 filters the spike amplitude envelope
 ### [filter_trace.m](https://github.com/sg-s/spikesort/blob/master/filter_trace.m)
-part of spikesort.m
+bandpasses input signal to spikes and/or slow fluctuations
 ### [frac_amp.m](https://github.com/sg-s/spikesort/blob/master/frac_amp.m)
 returns a vector of fractional amplitudes of spikes given a matrix of voltage snippets around a vector of spike times
 ### [gamma_gauss.m](https://github.com/sg-s/spikesort/blob/master/gamma_gauss.m)
 
 ### [invPow.m](https://github.com/sg-s/spikesort/blob/master/invPow.m)
-described in the paper
+inverse power method for sparse PCA
 ### [mergeData.m](https://github.com/sg-s/spikesort/blob/master/mergeData.m)
 merges data from different files into one file
 ### [sparsePCA.m](https://github.com/sg-s/spikesort/blob/master/sparsePCA.m)

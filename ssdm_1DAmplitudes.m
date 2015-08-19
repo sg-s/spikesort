@@ -1,4 +1,5 @@
 % ssdm_1DAmplitudes.m
+% Dimensionality Reduction Plugin for spikesort: 1D spike amplitudes
 % 
 % this is a plugin for spikesort.m
 % reduces spikes to a amplitude, measured from the minimum to preceding maximum.

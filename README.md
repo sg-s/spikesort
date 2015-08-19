@@ -133,6 +133,10 @@ This powerful input architecture means you need to know what variables are calle
 * `ax`, `ax2` handles to the two main axes. Useful if your plugin does some fancy plotting.  
 * `V_snippets` a matrix containing snippets around `loc` from `Vf`. Useful if you just want to work with the spike shapes, and don't really care where they are. 
 
+#### Function Summary
+
+
+
 # License 
 
 [GPL v2](http://choosealicense.com/licenses/gpl-2.0/#)
