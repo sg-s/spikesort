@@ -52,7 +52,11 @@ PathName = [];
 
 % UI
 fs = 14; % font size
+
+% machine learning 
 ml_ui = [];
+dbn = [];
+nn = [];
 
 % handles
 valve_channel = [];
@@ -239,9 +243,9 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
         end
     end
 
-    function [A,B] = autosort()
+    function [A,B,N] = autosort()
         reduceDimensionsCallback;
-        [A,B]=findCluster;
+        [A,B,N]=findCluster;
 
     end
 
@@ -986,98 +990,99 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
 
 
     function makeMachineLearningUI(~,~)
-        % makes the UI for machine learning
         ml_ui.fig = figure('Position',[60 500 450 450],'Toolbar','none','Menubar','none','Name','Deep Learning','NumberTitle','off','Resize','on','HandleVisibility','on');
-        try (spikes(ThisControlParadigm).nn{ThisTrial});
-            ml_ui.status_text = uicontrol(ml_ui.fig,'units','normalized','Position',[.05 .85 .9 .10],'Style', 'text', 'String', 'DBN configured for this trial','FontSize',20);
-        catch
-            ml_ui.status_text = uicontrol(ml_ui.fig,'units','normalized','Position',[.05 .85 .9 .10],'Style', 'text', 'String', 'No DBN configured for this trial','FontSize',20);
-        end
-        ml_ui.trainButton = uicontrol(ml_ui.fig,'units','normalized','Position',[.05 .75 .9 .10],'Style', 'pushbutton', 'String', 'Train DBN','FontSize',20,'Callback',@trainDBN);
-        uicontrol(ml_ui.fig,'units','normalized','Position',[.05 .60 .35 .10],'Style', 'text', 'String', 'Use this:','FontSize',20);
-        ml_ui.sort_control = uicontrol(ml_ui.fig,'units','normalized','Position',[.05 .50 .90 .10],'Style', 'pushbutton', 'String', 'Deep Sort','FontSize',20,'Callback',@deepSort,'Enable','off');
-        ml_ui.chooseDBN = findAllDBNs;
+
+        ml_ui.loadButton = uicontrol(ml_ui.fig,'units','normalized','Position',[.05 .85 .4 .10],'Style', 'pushbutton', 'String', 'Load DBN','FontSize',20,'Callback',@loadDBN);
+        ml_ui.saveButton = uicontrol(ml_ui.fig,'units','normalized','Position',[.55 .85 .4 .10],'Style', 'pushbutton', 'String', 'Save DBN','FontSize',20,'Callback',@saveDBN);
+        mlpanel = uipanel('Title','Train Network','Position',[.05 .3 .9 .5],'FontSize',16);
+        ml_ui.trainNS = uicontrol(mlpanel,'units','normalized','Position',[.05 .7 .6 .2],'Style', 'pushbutton', 'String', 'Noise/Spike Splitter','FontSize',20,'Callback',@trainDBN);
+        ml_ui.trainSC = uicontrol(mlpanel,'units','normalized','Position',[.05 .5 .6 .2],'Style', 'pushbutton', 'String', 'Single/Compound Splitter','FontSize',20,'Callback',@trainDBN);
+        ml_ui.trainAB = uicontrol(mlpanel,'units','normalized','Position',[.05 .3 .6 .2],'Style', 'pushbutton', 'String', 'A/B Splitter','FontSize',20,'Callback',@trainDBN);
+        uicontrol(mlpanel,'units','normalized','Position',[.05 .1 .2 .1],'Style', 'text', 'String', '#epochs:','FontSize',16);
+        ml_ui.epochControl= uicontrol(mlpanel,'units','normalized','Position',[.25 .1 .2 .1],'Style', 'edit', 'String', '1000','FontSize',16);
+        uicontrol(mlpanel,'units','normalized','Position',[.55 .1 .2 .1],'Style', 'text', 'String', 'Size:','FontSize',16);
+        ml_ui.sizeControl = uicontrol(mlpanel,'units','normalized','Position',[.75 .1 .2 .1],'Style', 'edit', 'String', '10','FontSize',16);
+
+        ml_ui.testControl = uicontrol(ml_ui.fig,'units','normalized','Position',[.05 .1 .2 .1],'Style', 'pushbutton', 'String', 'Test','FontSize',20);
+        ml_ui.sortControl = uicontrol(ml_ui.fig,'units','normalized','Position',[.55 .1 .2 .1],'Style', 'pushbutton', 'String', 'Sort','FontSize',20);
+
     end
 
-    function  temp_handle = findAllDBNs
-        % function finds all DBNs in this data file, and lists them in a chooser
-        if ~isfield(spikes,'dbn')
-            temp_handle = [];
-            return
-        end
-        s= {'temp'};
-        temp_handle = uicontrol(ml_ui.fig,'units','normalized','Position',[.35 .60 .55 .10],'Style', 'popupmenu', 'String', s,'FontSize',20);
-        s = {};
-        for i = 1:length(spikes)
-            for j = 1:width(spikes(i).A)
-                try isempty(spikes(i).nn{j});
-                    s{end+1} = ['Paradigm:' mat2str(i), ' Trial:' mat2str(j)];
-                catch
-                end
+
+    function trainDBN(src,~)
+
+        % figure out where this is coming from, and act appropriately 
+        switch src.String
+        case 'Noise/Spike Splitter'
+            % normalise data to train to
+            train_data = V;
+            train_data = train_data - min(train_data);
+            train_data = train_data/max(train_data);
+            train_data2 = Vf;
+            train_data2 = train_data2 - min(train_data2);
+            train_data2 = train_data2/max(train_data2);
+
+            eval(strcat('train_data3=data(ThisControlParadigm).',stim_channel.String{get(stim_channel,'Value')},'(ThisTrial,:);'))
+            train_data3=train_data3 - min(train_data3);
+            train_data3 = train_data3/max(train_data3);
+
+            before = 100;
+            after = 99;
+
+            A_spikes = find(spikes(ThisControlParadigm).A(ThisTrial,:));
+            B_spikes = find(spikes(ThisControlParadigm).B(ThisTrial,:));
+            A_spikes(A_spikes<1+before) = [];
+            A_spikes(A_spikes>length(V)-after-1) = [];
+            B_spikes(B_spikes<1+before) = [];
+            B_spikes(B_spikes>length(V)-after-1) = [];
+            all_spikes = unique([A_spikes B_spikes]);
+            try 
+                N_spikes = find(spikes(ThisControlParadigm).N(ThisTrial,:));
+            catch
+                N_spikes = [];
             end
-        end
-        set(temp_handle,'String',s);
-        set(ml_ui.sort_control,'Enable','on');
-    end
+            if length(N_spikes) == 0
+                % sample "not spikes" intelligently 
+                ok_spots = 1+0*V;
+                for i = 1:length(all_spikes)
+                    this_loc = all_spikes(i);
+                    ok_spots(this_loc-before:this_loc+after) = 0;
+                end
+                ok_spots(1:before+1) = 0;
+                ok_spots(length(V)-after-1:end)=0;
+                ok_spots = find(ok_spots);
+                N_spikes = ok_spots(randperm(length(ok_spots),length(all_spikes)));
+            end
 
-    function trainDBN(~,~)
-        % normalise V
-        train_data = V;
-        train_data = train_data - min(train_data);
-        train_data = train_data/max(train_data);
-
-        eval(strcat('this_stim=data(ThisControlParadigm).',stim_channel.String{get(stim_channel,'Value')},'(ThisTrial,:);'))
-        this_stim=this_stim - min(this_stim);
-        this_stim = this_stim/max(this_stim);
-
-        before = 100;
-        after = 99;
-
-        A_spikes = find(spikes(ThisControlParadigm).A(ThisTrial,:));
-        B_spikes = find(spikes(ThisControlParadigm).B(ThisTrial,:));
-        N_spikes = find(spikes(ThisControlParadigm).N(ThisTrial,:));
-
-        A_spikes(A_spikes<1+before) = [];
-        A_spikes(A_spikes>length(V)-after-1) = [];
-        B_spikes(B_spikes<1+before) = [];
-        B_spikes(B_spikes>length(V)-after-1) = [];
-        N_spikes(N_spikes<1+before) = [];
-        N_spikes(N_spikes>length(V)-after-1) = [];
-
-        train_x = zeros(length([A_spikes B_spikes N_spikes]),2*(1+before+after));
-        train_y = zeros(length([A_spikes B_spikes N_spikes]),3);
+            train_x = zeros(length([all_spikes N_spikes]),3*(1+before+after));
+            train_y = zeros(length([all_spikes N_spikes]),2);
+            all_loc = [all_spikes N_spikes];
+            category = [ones(length(all_spikes),1); 2*ones(length(N_spikes),1)];
 
 
-        for i = 1:length(A_spikes)
-            this_loc = A_spikes(i);
-            train_x(i,1:before+after+1) = train_data(this_loc-before:this_loc+after);
-            train_x(i,before+after+2:end) = this_stim(this_loc-before:this_loc+after);
-            train_y(i,1) = 1;
-        end
-
-        for i = length(A_spikes)+1:length(B_spikes)+length(A_spikes)
-            this_loc = B_spikes(i-length(A_spikes));
-            train_x(i,1:before+after+1) = train_data(this_loc-before:this_loc+after);
-            train_x(i,before+after+2:end) = this_stim(this_loc-before:this_loc+after);
-            train_y(i,2) = 1;
-        end
+            for i = 1:length(all_loc)
+                this_loc = all_loc(i);
+                train_x(i,1:before+after+1) = train_data(this_loc-before:this_loc+after);
+                train_x(i,before+after+2:2*(before+after+1)) = train_data2(this_loc-before:this_loc+after);
+                train_x(i,2*(before+after+1)+1:end) = train_data2(this_loc-before:this_loc+after);
+                train_y(i,category(i)) = 1;
+            end
 
 
-        for i = length(A_spikes)+length(B_spikes)+ 1:length(B_spikes)+length(A_spikes)+length(N_spikes)
-            this_loc = N_spikes(i-length(A_spikes)-length(B_spikes));
-            train_x(i,1:before+after+1) = train_data(this_loc-before:this_loc+after);
-            train_x(i,before+after+2:end) = this_stim(this_loc-before:this_loc+after);
-            train_y(i,3) = 1;
+
+        case 'Single/Compound Splitter'
+            keyboard
+        case 'A/B Splitter'
+            dkjdjkfkfkjk
         end
 
         % make training data double
         train_y = double(train_y);
         train_x = double(train_x);
         
-        set(ml_ui.status_text,'String','Training...')
         % train dbn
         rand('state',0)
-        dbn.sizes = [10 10];
+        dbn.sizes = [str2double(ml_ui.sizeControl.String) str2double(ml_ui.sizeControl.String)];
         opts.numepochs =   1;
         opts.batchsize = length(train_x);
         opts.momentum  =   0;
@@ -1086,22 +1091,14 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
         dbn = dbntrain(dbn, train_x, opts);
 
         %unfold dbn to nn
-        nn = dbnunfoldtonn(dbn, 3);
+        nn = dbnunfoldtonn(dbn, width(train_y));
         nn.activation_function = 'sigm';
 
         % train nn
-
-        opts.numepochs =  1e3;
+        opts.numepochs =  str2double(ml_ui.epochControl.String);
         opts.momentum = 1;
         opts.batchsize = length(train_x);
         nn = nntrain(nn, train_x, train_y, opts);
-
-        % add to the spikes structure
-        spikes(ThisControlParadigm).nn{ThisTrial} = nn;
-        spikes(ThisControlParadigm).dbn{ThisTrial} = dbn;
-
-        % change text
-        set(ml_ui.status_text,'String','Training Complete.')
 
     end
 
