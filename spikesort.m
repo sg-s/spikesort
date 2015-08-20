@@ -57,6 +57,7 @@ fs = 14; % font size
 ml_ui = [];
 dbn = [];
 nn = [];
+machine_learning_networks = []; % stores all networks we generate
 
 % handles
 valve_channel = [];
@@ -1011,49 +1012,51 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
 
     function trainDBN(src,~)
 
+        % first prepare some data
+        % normalise data to train to
+        train_data = V; % filtered voltage
+        train_data = train_data - min(train_data);
+        train_data = train_data/max(train_data);
+        train_data2 = Vf; % raw, unfiltered voltage
+        train_data2 = train_data2 - min(train_data2);
+        train_data2 = train_data2/max(train_data2);
+
+        % also use the stimulus that we're looking at
+        eval(strcat('train_data3=data(ThisControlParadigm).',stim_channel.String{get(stim_channel,'Value')},'(ThisTrial,:);'))
+        train_data3=train_data3 - min(train_data3);
+        train_data3 = train_data3/max(train_data3);
+
+        before = 100;
+        after = 99;
+
+        A_spikes = find(spikes(ThisControlParadigm).A(ThisTrial,:));
+        B_spikes = find(spikes(ThisControlParadigm).B(ThisTrial,:));
+        A_spikes(A_spikes<1+before) = [];
+        A_spikes(A_spikes>length(V)-after-1) = [];
+        B_spikes(B_spikes<1+before) = [];
+        B_spikes(B_spikes>length(V)-after-1) = [];
+        all_spikes = ([A_spikes B_spikes]);
+        try 
+            N_spikes = find(spikes(ThisControlParadigm).N(ThisTrial,:));
+        catch
+            N_spikes = [];
+        end
+        if length(N_spikes) == 0
+            % sample "not spikes" intelligently 
+            ok_spots = 1+0*V;
+            for i = 1:length(all_spikes)
+                this_loc = all_spikes(i);
+                ok_spots(this_loc-before:this_loc+after) = 0;
+            end
+            ok_spots(1:before+1) = 0;
+            ok_spots(length(V)-after-1:end)=0;
+            ok_spots = find(ok_spots);
+            N_spikes = ok_spots(randperm(length(ok_spots),length(all_spikes)));
+        end
+
         % figure out where this is coming from, and act appropriately 
         switch src.String
         case 'Noise/Spike Splitter'
-            % normalise data to train to
-            train_data = V;
-            train_data = train_data - min(train_data);
-            train_data = train_data/max(train_data);
-            train_data2 = Vf;
-            train_data2 = train_data2 - min(train_data2);
-            train_data2 = train_data2/max(train_data2);
-
-            eval(strcat('train_data3=data(ThisControlParadigm).',stim_channel.String{get(stim_channel,'Value')},'(ThisTrial,:);'))
-            train_data3=train_data3 - min(train_data3);
-            train_data3 = train_data3/max(train_data3);
-
-            before = 100;
-            after = 99;
-
-            A_spikes = find(spikes(ThisControlParadigm).A(ThisTrial,:));
-            B_spikes = find(spikes(ThisControlParadigm).B(ThisTrial,:));
-            A_spikes(A_spikes<1+before) = [];
-            A_spikes(A_spikes>length(V)-after-1) = [];
-            B_spikes(B_spikes<1+before) = [];
-            B_spikes(B_spikes>length(V)-after-1) = [];
-            all_spikes = unique([A_spikes B_spikes]);
-            try 
-                N_spikes = find(spikes(ThisControlParadigm).N(ThisTrial,:));
-            catch
-                N_spikes = [];
-            end
-            if length(N_spikes) == 0
-                % sample "not spikes" intelligently 
-                ok_spots = 1+0*V;
-                for i = 1:length(all_spikes)
-                    this_loc = all_spikes(i);
-                    ok_spots(this_loc-before:this_loc+after) = 0;
-                end
-                ok_spots(1:before+1) = 0;
-                ok_spots(length(V)-after-1:end)=0;
-                ok_spots = find(ok_spots);
-                N_spikes = ok_spots(randperm(length(ok_spots),length(all_spikes)));
-            end
-
             train_x = zeros(length([all_spikes N_spikes]),3*(1+before+after));
             train_y = zeros(length([all_spikes N_spikes]),2);
             all_loc = [all_spikes N_spikes];
@@ -1068,12 +1071,53 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
                 train_y(i,category(i)) = 1;
             end
 
-
-
         case 'Single/Compound Splitter'
-            keyboard
+            train_x = zeros(length([all_spikes ]),3*(1+before+after));
+            train_y = zeros(length([all_spikes ]),2);
+            all_loc = [all_spikes ];
+
+            for i = 1:length(all_loc)
+                this_loc = all_loc(i);
+                train_x(i,1:before+after+1) = train_data(this_loc-before:this_loc+after);
+                train_x(i,before+after+2:2*(before+after+1)) = train_data2(this_loc-before:this_loc+after);
+                train_x(i,2*(before+after+1)+1:end) = train_data2(this_loc-before:this_loc+after);
+                train_y = zeros(length(all_spikes),4);
+
+                % figure out the category
+                preceding_spike =  this_loc - all_loc;
+                preceding_spike(preceding_spike<0)=[];
+                preceding_spike(preceding_spike>before)=[];
+                preceding_spike(preceding_spike==0)=[];
+
+                following_spike =  this_loc - all_loc;
+                following_spike(following_spike>0)=[];
+                following_spike=abs(following_spike);
+                following_spike(following_spike>after)=[];
+                following_spike(following_spike==0)=[];
+                
+                if isempty(preceding_spike) && isempty(following_spike)
+                    train_y(i,1) = 1; % only one isolated spike
+                elseif ~isempty(preceding_spike) && isempty(following_spike)
+                    train_y(i,2) = 1; % spike before identified spike in snippet
+                elseif isempty(preceding_spike) && ~isempty(following_spike)
+                    train_y(i,3) = 1; % spike after identified spike in snippet
+                else
+                    train_y(i,4) = 1; % spike before and after identified spike in snippet
+                end
+            end
         case 'A/B Splitter'
-            dkjdjkfkfkjk
+            train_x = zeros(length([all_spikes ]),3*(1+before+after));
+            train_y = zeros(length([all_spikes ]),2);
+            all_loc = [all_spikes ];
+            category = [ones(length(A_spikes),1); 2*ones(length(B_spikes),1)];
+
+            for i = 1:length(all_loc)
+                this_loc = all_loc(i);
+                train_x(i,1:before+after+1) = train_data(this_loc-before:this_loc+after);
+                train_x(i,before+after+2:2*(before+after+1)) = train_data2(this_loc-before:this_loc+after);
+                train_x(i,2*(before+after+1)+1:end) = train_data2(this_loc-before:this_loc+after);
+                train_y(i,category(i)) = 1;
+            end
         end
 
         % make training data double
@@ -1099,6 +1143,19 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
         opts.momentum = 1;
         opts.batchsize = length(train_x);
         nn = nntrain(nn, train_x, train_y, opts);
+
+        % now save them (in memory as needed)
+        switch src.String
+        case 'Noise/Spike Splitter'
+            machine_learning_networks.NS.nn = nn;
+            machine_learning_networks.NS.dbn = dbn;
+        case 'Single/Compound Splitter'
+            machine_learning_networks.SC.nn = nn;
+            machine_learning_networks.SC.dbn = dbn;
+        case 'A/B Splitter'
+            machine_learning_networks.AB.nn = nn;
+            machine_learning_networks.AB.dbn = dbn;
+        end
 
     end
 
