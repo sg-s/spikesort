@@ -66,7 +66,11 @@ for i = 2:length(allfiles)
 				% merge spikes
 				fn = fieldnames(spikes);
 				for k = 1:length(fn)
-					eval(strcat('merged_spikes(j).',fn{k},'= [merged_spikes(j).',fn{k} ,' ; spikes(j).',fn{k},'];'))
+					try
+						eval(strcat('merged_spikes(j).',fn{k},'= [merged_spikes(j).',fn{k} ,' ; spikes(j).',fn{k},'];'))
+					catch er
+						disp(er.message)
+					end
 				end
 
 			end

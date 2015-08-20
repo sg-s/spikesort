@@ -1004,8 +1004,8 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
         uicontrol(mlpanel,'units','normalized','Position',[.55 .1 .2 .1],'Style', 'text', 'String', 'Size:','FontSize',16);
         ml_ui.sizeControl = uicontrol(mlpanel,'units','normalized','Position',[.75 .1 .2 .1],'Style', 'edit', 'String', '10','FontSize',16);
 
-        ml_ui.testControl = uicontrol(ml_ui.fig,'units','normalized','Position',[.05 .1 .2 .1],'Style', 'pushbutton', 'String', 'Test','FontSize',20);
-        ml_ui.sortControl = uicontrol(ml_ui.fig,'units','normalized','Position',[.55 .1 .2 .1],'Style', 'pushbutton', 'String', 'Sort','FontSize',20);
+        ml_ui.testControl = uicontrol(ml_ui.fig,'units','normalized','Position',[.05 .1 .2 .1],'Style', 'pushbutton', 'String', 'Test','FontSize',20,'Callback',@deepSort);
+        ml_ui.sortControl = uicontrol(ml_ui.fig,'units','normalized','Position',[.55 .1 .2 .1],'Style', 'pushbutton', 'String', 'Sort','FontSize',20,'Callback',@deepSort);
 
     end
 
@@ -1159,7 +1159,14 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
 
     end
 
-    function deepSort(~,~)
+    function deepSort(src,~)
+
+        % deep sort works in three steps, based on the three sets of NN that we train.
+        % 1. use a NN to distinguish noise from spikes (we expect very little noise)
+        % 2. use a NN to distnguish simple/compound spikes
+        % 3. use some heuristics to identify missed spikes in complex spike snippets
+        % 4. run all identified spikes through a A/B splitter
+
         % normalise V
         test_data = V;
         test_data = test_data - min(test_data);
