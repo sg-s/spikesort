@@ -1041,6 +1041,8 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
         all_spikes = ([A_spikes B_spikes]);
         try 
             N_spikes = find(spikes(ThisControlParadigm).N(ThisTrial,:));
+            N_spikes(Nspikes<1+before) = [];
+            N_spikes(N_spikes>length(V)-1-after) = [];
         catch
             N_spikes = [];
         end
@@ -1068,15 +1070,22 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
 
             for i = 1:length(all_loc)
                 this_loc = all_loc(i);
-                train_x(i,1:before+after+1) = train_data(this_loc-before:this_loc+after);
+                try
+                    train_x(i,1:before+after+1) = train_data(this_loc-before:this_loc+after);
+                catch er
+                    er
+                    keyboard
+                end
                 train_x(i,before+after+2:2*(before+after+1)) = train_data2(this_loc-before:this_loc+after);
                 train_x(i,2*(before+after+1)+1:end) = train_data2(this_loc-before:this_loc+after);
                 train_y(i,category(i)) = 1;
             end
 
+            train_x = train_x(:,1:200);
+
         case 'Single/Compound Splitter'
-            train_x = zeros(length([all_spikes ]),3*(1+before+after));
-            train_y = zeros(length([all_spikes ]),2);
+            train_x = zeros(length(all_spikes),3*(1+before+after));
+            train_y = zeros(length(all_spikes),4);
             all_loc = [all_spikes ];
 
             for i = 1:length(all_loc)
@@ -1084,8 +1093,7 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
                 train_x(i,1:before+after+1) = train_data(this_loc-before:this_loc+after);
                 train_x(i,before+after+2:2*(before+after+1)) = train_data2(this_loc-before:this_loc+after);
                 train_x(i,2*(before+after+1)+1:end) = train_data2(this_loc-before:this_loc+after);
-                train_y = zeros(length(all_spikes),4);
-
+                
                 % figure out the category
                 preceding_spike =  this_loc - all_loc;
                 preceding_spike(preceding_spike<0)=[];
@@ -1108,6 +1116,10 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
                     train_y(i,4) = 1; % spike before and after identified spike in snippet
                 end
             end
+
+            train_x = train_x(:,1:200);
+
+
         case 'A/B Splitter'
             train_x = zeros(length([all_spikes ]),3*(1+before+after));
             train_y = zeros(length([all_spikes ]),2);
@@ -1127,9 +1139,11 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
         train_y = double(train_y);
         train_x = double(train_x);
 
+        
 
-        % train dbn
+        % train dbn. we want to get less than 1% errors
         rand('state',0)
+        err = 1; c = 1;
         dbn.sizes = [str2double(ml_ui.sizeControl.String) str2double(ml_ui.sizeControl.String)];
         opts.numepochs =   1;
         opts.batchsize = length(train_x);
@@ -1141,13 +1155,22 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
         %unfold dbn to nn
         nn = dbnunfoldtonn(dbn, width(train_y));
         nn.activation_function = 'sigm';
-
+        
         % train nn
         opts.numepochs =  str2double(ml_ui.epochControl.String);
-        opts.momentum = 1;
+        opts.momentum = .5;
         opts.batchsize = length(train_x);
         nn = nntrain(nn, train_x, train_y, opts);
 
+        l = nnpredict(nn,train_x);
+        ll = 0*l;
+
+        for i = 1:length(l)
+            ll(i)=find(train_y(i,:));
+        end
+        err = sum(abs(l-ll))/length(ll);
+        disp('Error is :')
+        disp(err)
 
         set(ml_ui.fig,'Name','Training complete!')
 
@@ -1161,6 +1184,12 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
             set(ml_ui.trainSC,'BackgroundColor',[.5 1 .5])
             machine_learning_networks.SC.nn = nn;
             machine_learning_networks.SC.dbn = dbn;
+
+            % make some plots
+            plot(ax,time(loc(l==2)),V(loc(l==2)),'kx','MarkerSize',20)
+            plot(ax,time(loc(l==3)),V(loc(l==3)),'rx','MarkerSize',20)
+            plot(ax,time(loc(l==4)),V(loc(l==4)),'gx','MarkerSize',20)
+
         case 'A/B Splitter'
             set(ml_ui.trainAB,'BackgroundColor',[.5 1 .5])
             machine_learning_networks.AB.nn = nn;
@@ -1238,9 +1267,11 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
         end
 
         % predict noise vs. spike
-        l = nnpredict(machine_learning_networks.NS.nn,train_x);
+        l = nnpredict(machine_learning_networks.NS.nn,train_x(:,1:200));
 
-        keyboard
+        plot(ax,time(loc(l==1)),V(loc(l==1)),'rx')
+        plot(ax,time(loc(l==2)),V(loc(l==2)),'kx','MarkerSize',20)
+        return
 
 
         % normalise V
