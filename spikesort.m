@@ -1012,6 +1012,9 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
 
     function trainDBN(src,~)
 
+
+        set(ml_ui.fig,'Name','Training...')
+
         % first prepare some data
         % normalise data to train to
         train_data = V; % filtered voltage
@@ -1123,7 +1126,8 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
         % make training data double
         train_y = double(train_y);
         train_x = double(train_x);
-        
+
+
         % train dbn
         rand('state',0)
         dbn.sizes = [str2double(ml_ui.sizeControl.String) str2double(ml_ui.sizeControl.String)];
@@ -1144,17 +1148,54 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
         opts.batchsize = length(train_x);
         nn = nntrain(nn, train_x, train_y, opts);
 
+
+        set(ml_ui.fig,'Name','Training complete!')
+
         % now save them (in memory as needed)
         switch src.String
         case 'Noise/Spike Splitter'
+            set(ml_ui.trainNS,'BackgroundColor',[.5 1 .5])
             machine_learning_networks.NS.nn = nn;
             machine_learning_networks.NS.dbn = dbn;
         case 'Single/Compound Splitter'
+            set(ml_ui.trainSC,'BackgroundColor',[.5 1 .5])
             machine_learning_networks.SC.nn = nn;
             machine_learning_networks.SC.dbn = dbn;
         case 'A/B Splitter'
+            set(ml_ui.trainAB,'BackgroundColor',[.5 1 .5])
             machine_learning_networks.AB.nn = nn;
             machine_learning_networks.AB.dbn = dbn;
+        end
+
+    end
+
+    function saveDBN(~,~)
+        [temp1,temp2] = uiputfile('*.mat');
+        if isempty(temp1) || isempty(temp2)
+            return
+        end
+        save([temp2 temp1],'machine_learning_networks');
+        clear temp1 temp2
+    end
+
+    function loadDBN(~,~)
+        [temp1,temp2] = uigetfile('*.mat');
+        if isempty(temp1) || isempty(temp2)
+            return
+        end
+        machine_learning_networks = [];
+        machine_learning_networks = load([temp2 temp1],'machine_learning_networks');
+        machine_learning_networks = machine_learning_networks.machine_learning_networks;
+        clear temp1 temp2
+        fn = fieldnames(machine_learning_networks);
+        if ~isempty(find(strcmp('NS',fieldnames(machine_learning_networks))))
+            set(ml_ui.trainNS,'BackgroundColor',[.5 1 .5])
+        end
+        if ~isempty(find(strcmp('AB',fieldnames(machine_learning_networks))))
+            set(ml_ui.trainAB,'BackgroundColor',[.5 1 .5])
+        end
+        if ~isempty(find(strcmp('SC',fieldnames(machine_learning_networks))))
+            set(ml_ui.trainSC,'BackgroundColor',[.5 1 .5])
         end
 
     end
@@ -1166,6 +1207,41 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
         % 2. use a NN to distnguish simple/compound spikes
         % 3. use some heuristics to identify missed spikes in complex spike snippets
         % 4. run all identified spikes through a A/B splitter
+
+
+        % first prepare some data
+        % normalise data to train to
+        train_data = V; % filtered voltage
+        train_data = train_data - min(train_data);
+        train_data = train_data/max(train_data);
+        train_data2 = Vf; % raw, unfiltered voltage
+        train_data2 = train_data2 - min(train_data2);
+        train_data2 = train_data2/max(train_data2);
+
+        % also use the stimulus that we're looking at
+        eval(strcat('train_data3=data(ThisControlParadigm).',stim_channel.String{get(stim_channel,'Value')},'(ThisTrial,:);'))
+        train_data3=train_data3 - min(train_data3);
+        train_data3 = train_data3/max(train_data3);
+
+        before = 100;
+        after = 99;
+
+        train_x = zeros(length(loc),3*(1+before+after));
+        train_y = zeros(length(loc),2);
+
+
+        for i = 1:length(loc)
+            this_loc = loc(i);
+            train_x(i,1:before+after+1) = train_data(this_loc-before:this_loc+after);
+            train_x(i,before+after+2:2*(before+after+1)) = train_data2(this_loc-before:this_loc+after);
+            train_x(i,2*(before+after+1)+1:end) = train_data2(this_loc-before:this_loc+after);
+        end
+
+        % predict noise vs. spike
+        l = nnpredict(machine_learning_networks.NS.nn,train_x);
+
+        keyboard
+
 
         % normalise V
         test_data = V;
