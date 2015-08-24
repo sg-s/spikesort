@@ -1671,7 +1671,12 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
                         % yes, have spikes
               
                         A = find(spikes(ThisControlParadigm).A(ThisTrial,:));
-                        B = find(spikes(ThisControlParadigm).B(ThisTrial,:));
+                        try
+                            B = find(spikes(ThisControlParadigm).B(ThisTrial,:));
+                        catch
+                            warning('B spikes missing for this trial...')
+                            B = [];
+                        end
                         loc = [A B];
                         h_scatter1 = scatter(ax,time(A),V(A),'r');
                         h_scatter2 = scatter(ax,time(B),V(B),'b');
@@ -1704,8 +1709,6 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
                 end
             end
   
-
-            
             xlim = get(ax,'XLim');
             if xlim(1) < min(time)
                 xlim(1) = min(time);
@@ -1716,20 +1719,26 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
             end
             xlim(2) = (floor(xlim(2)/deltat))*deltat;
             xlim(1) = (floor(xlim(1)/deltat))*deltat;
-            try
-                ylim(2) = max(V(find(time==xlim(1)):find(time==xlim(2))));
-            catch
-                beep
-                keyboard
-            end
+            
+            ylim(2) = max(V(find(time==xlim(1)):find(time==xlim(2))));
             ylim(1) = min(V(find(time==xlim(1)):find(time==xlim(2))));
             yr = 2*std(V(find(time==xlim(1)):find(time==xlim(2))));
-            if yr==0
-                set(ax,'YLim',[ylim(1)-1 ylim(2)+1]);
-            else
-                set(ax,'YLim',[ylim(1)-yr ylim(2)+yr]);
-            end
 
+
+            if (isnan(yr)) | any(isnan(xlim)) | any(isnan(ylim))
+                xlim(2) = time(find(isnan(V),1,'first')-1);
+                xlim(1) = deltat;
+                ylim(2) = max(V(1:find(isnan(V),1,'first')-1));
+                ylim(1) = min(V(1:find(isnan(V),1,'first')-1));
+                yr = 2*std(V(find(time==xlim(1)):find(time==xlim(2))));
+            else
+
+                if yr==0
+                    set(ax,'YLim',[ylim(1)-1 ylim(2)+1]);
+                else
+                    set(ax,'YLim',[ylim(1)-yr ylim(2)+yr]);
+                end
+            end
 
         else
             % ('No need to find spikes...')
