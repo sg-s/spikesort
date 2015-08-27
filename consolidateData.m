@@ -86,7 +86,7 @@ for i = 1:length(allfiles)
 			% figure out which control paradigm this is
 			this_hash = DataHash(ControlParadigm(j));
 			if isempty(find(strcmp(this_hash,paradigm_hashes)))
-				AllControlParadigms(end+1) = ControlParadigm(j);
+				AllControlParadigms(end+1) = orderfields(ControlParadigm(j));
 				this_paradigm = length(AllControlParadigms);
 				paradigm_hashes{end+1} = this_hash;
 			else
@@ -180,9 +180,13 @@ for i = 1:length(allfiles)
 			orn = [orn  i*ones(1,width(this_PID))];
 
 			% also add the sequence 
+			try
 			this_sequence = find(timestamps(1,:)==j);
 			if length(rm_this) 
 				this_sequence(rm_this) = [];	
+			end
+			catch
+				warning('Error in assembling sequence info.')
 			end
 			sequence = [sequence this_sequence];
 
