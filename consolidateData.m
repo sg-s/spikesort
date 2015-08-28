@@ -9,11 +9,12 @@
 % This work is licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License. 
 % To view a copy of this license, visit http://creativecommons.org/licenses/by-nc-sa/4.0/.
 
-function [PID, LFP, fA, paradigm, orn, AllControlParadigms, paradigm_hashes, sequence] = consolidateData(pathname,use_cache)
+function [PID, LFP, fA, paradigm, orn, fly, AllControlParadigms, paradigm_hashes, sequence] = consolidateData(pathname,use_cache)
 
 
 PID = [];
 LFP = [];
+fly = [];
 spiketimes = [];
 fA = [];
 paradigm = [];
@@ -53,6 +54,7 @@ if use_cache
 		AllControlParadigms = cached_data.AllControlParadigms;
 		paradigm_hashes = cached_data.paradigm_hashes;
 		orn = cached_data.orn;
+		fly = cached_data.fly;
 		sequence = cached_data.sequence;
 		return
 	end
@@ -179,6 +181,13 @@ for i = 1:length(allfiles)
 			paradigm = [paradigm  this_paradigm*ones(1,width(this_PID))];
 			orn = [orn  i*ones(1,width(this_PID))];
 
+			% figure out the fly # from the file name
+			us = strfind(allfiles(i).name,'_'); % underscores
+			this_fly = str2double(allfiles(i).name(strfind(allfiles(i).name,'_F')+2:us(find(us>strfind(allfiles(i).name,'_F')+2,1,'first'))-1));
+			this_fly = str2double(strrep(allfiles(i).name(1:us(3)-1),'_','')) + this_fly;
+			fly = [fly; this_fly*ones(width(this_PID),1)];
+
+
 			% also add the sequence 
 			try
 			this_sequence = find(timestamps(1,:)==j);
@@ -204,6 +213,7 @@ cached_data.paradigm = paradigm;
 cached_data.AllControlParadigms = AllControlParadigms;
 cached_data.paradigm_hashes = paradigm_hashes;
 cached_data.orn = orn;
+cached_data.fly = fly;
 cached_data.sequence = sequence;
 save([pathname 'consolidated_data.mat'],'cached_data');
 

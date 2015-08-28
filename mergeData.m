@@ -141,4 +141,14 @@ data = merged_data;
 spikes = merged_spikes;
 ControlParadigm = merged_ControlParadigm;
 
-save('merged_data.mat','ControlParadigm','data','spikes','timestamps','metadata','SamplingRate','OutputChannelNames')
+l = Inf;
+use_this = 1;
+for i = 1:length(allfiles)
+	if length(allfiles(i).name) < l
+		l = min([l length(allfiles(i).name)]);
+		use_this = i;
+	end
+
+end
+
+save([allfiles(use_this).name(1:end-4) '_merged.mat'],'ControlParadigm','data','spikes','timestamps','metadata','SamplingRate','OutputChannelNames')
