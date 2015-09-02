@@ -54,7 +54,9 @@ if use_cache
 		AllControlParadigms = cached_data.AllControlParadigms;
 		paradigm_hashes = cached_data.paradigm_hashes;
 		orn = cached_data.orn;
-		fly = cached_data.fly;
+		try
+			fly = cached_data.fly;
+		end
 		sequence = cached_data.sequence;
 		return
 	end
@@ -184,7 +186,7 @@ for i = 1:length(allfiles)
 			% figure out the fly # from the file name
 			us = strfind(allfiles(i).name,'_'); % underscores
 			this_fly = str2double(allfiles(i).name(strfind(allfiles(i).name,'_F')+2:us(find(us>strfind(allfiles(i).name,'_F')+2,1,'first'))-1));
-			this_fly = str2double(strrep(allfiles(i).name(1:us(3)-1),'_','')) + this_fly;
+			this_fly = 100*str2double(strrep(allfiles(i).name(1:us(3)-1),'_','')) + this_fly;
 			fly = [fly; this_fly*ones(width(this_PID),1)];
 
 

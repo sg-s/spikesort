@@ -31,7 +31,7 @@ And here is another example showing how the `normalised PCA` method deals with a
 3. Relative Spike Amplitudes 
 4. Fractional Amplitudes and Inter-Spike Intervals 
 5. Principal Components Analysis 
-6. Normalised PCA
+6. [t-SNE](https://lvdmaaten.github.io/tsne/) (t-distributed Stochastic Neighbourhood Embedding)
 
 ### Several algorithms for data clustering
 
@@ -133,11 +133,13 @@ This powerful input architecture means you need to know what variables are calle
 * `ax`, `ax2` handles to the two main axes. Useful if your plugin does some fancy plotting.  
 * `V_snippets` a matrix containing snippets around `loc` from `Vf`. Useful if you just want to work with the spike shapes, and don't really care where they are. 
 
-#### Function Summary
-
-
 
 # License 
 
 [GPL v2](http://choosealicense.com/licenses/gpl-2.0/#)
+
+`spikesort` also includes the following code from third parties:
+
+1. [t-SNE](https://lvdmaaten.github.io/tsne/) from Laurens van der Maaten
+2. sparsePCA from Thomas Buehler and Matthias Hein
 
