@@ -51,9 +51,7 @@ When SmartScroll is enabled, `spikesort` will keep a constant number of spikes i
 
 ![](images/kontroller.png)
 
-### export all traces to EPS figures.
-
-### Tag files on UNIX systems
+### Tag files on *nix systems
 
 `spikesort` supports the awesome [tag](https://github.com/jdberry/tag) command line file-tagging utility, allowing you to arbitrarily tag files with as many tags as you want.
 
@@ -71,8 +69,9 @@ The best way to install spikesort is through my package manager:
 ```
 >> urlwrite('http://srinivas.gs/install.m','install.m'); 
 >> install spikesort
->> install srinivas.gs_mtools # spikesort needs this package to run
->> install kontroller # needs a few functions from this package
+>> install srinivas.gs_mtools   # spikesort needs this package to run
+>> install kontroller           # needs a few functions from this package
+>> install bhtsne               # Barnes-Hut t-SNE
 ```
 
 This script grabs the code and fixes your path. 
@@ -84,6 +83,16 @@ git clone git@github.com:sg-s/spikesort.git
 ````
 
 or use [this link](https://github.com/sg-s/spikesort/archive/master.zip). Don't forget to install the other packages too. 
+
+### install [bhtsne](https://github.com/lvdmaaten/bhtsne)
+
+If you used `install.m` to install spikesort, you already have this toolbox. However, you need to compile to run. On *nix-like systems, navigate to the folder it is in (should be `~/code/bhtsne/`) and run the following:
+
+```
+g++ sptree.cpp tsne.cpp -o bh_tsne -O2
+```
+
+Note that my fork of `bhtsne` may have modifications, and this is what you should use with `spikesort`. 
 
 ### install tag
 

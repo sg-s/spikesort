@@ -21,6 +21,11 @@ function ydata = tsne(X, labels, no_dims, initial_dims, perplexity,figure_handle
 % University of California, San Diego
 
 
+    if ~exist('figure_handle','var')
+        figure_handle = [];
+    end
+
+
     if ~exist('labels', 'var')
         labels = [];
     end
@@ -51,7 +56,11 @@ function ydata = tsne(X, labels, no_dims, initial_dims, perplexity,figure_handle
     
     % Perform preprocessing using PCA
     if ~initial_solution
-        disp('Preprocessing data using PCA...');
+        if isempty(figure_handle)
+            disp('Preprocessing data using PCA...');
+        else
+            set(figure_handle,'Name','Preprocessing data using PCA...')
+        end
         if size(X, 2) < size(X, 1)
             C = X' * X;
         else

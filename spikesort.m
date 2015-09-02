@@ -171,11 +171,19 @@ if ispc
 else
     tag_control = uicontrol(metadata_panel,'Style','edit','String','+Tag, or -Tag','units','normalized','Position',[.5 .035 .45 .2],'Callback',@addTag);
 
-    % add homebrew path
+    % modify environment to get paths for non-matlab code right
     path1 = getenv('PATH');
-    path1 = [path1 ':/usr/local/bin'];
+    if isempty(strfind(path1,':/usr/local/bin'))
+        path1 = [path1 ':/usr/local/bin'];
+    end
+    if isempty(strfind(path1,[':' fileparts(which('fast_tsne'))]))
+        path1 = [path1 ':' fileparts(which('fast_tsne'))];
+    end
+    
     setenv('PATH', path1);
+
 end
+
 
 % other options
 nitems = 10;

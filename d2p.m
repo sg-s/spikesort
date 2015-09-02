@@ -33,7 +33,7 @@ function [P, beta] = d2p(D, u, tol)
     for i=1:n
         
         if ~rem(i, 500)
-            disp(['Computed P-values ' num2str(i) ' of ' num2str(n) ' datapoints...']);
+            %disp(['Computed P-values ' num2str(i) ' of ' num2str(n) ' datapoints...']);
         end
         
         % Set minimum and maximum values for precision
