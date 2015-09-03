@@ -7,12 +7,9 @@
 % This work is licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License. 
 % To view a copy of this license, visit http://creativecommons.org/licenses/by-nc-sa/4.0/.
 function [] = spikesort()
-ssDebug = false;
-h = GitHash(mfilename('fullpath'));
-versionname = strcat('spikesort for Kontroller (Build-',h(1:6),')');
 
 % check dependencies 
-dependencies = {'PrettyFig','manualCluster','mean2'};
+dependencies = {'PrettyFig','manualCluster','mean2','ComputeOnsOffs','DataHash','GitHash','arginnames','cache','filter_trace','oss','raster2','sem','rsquare','spiketimes2f','strkat','tsne','fast_tsne'};
 for i = 1:length(dependencies)
     err_message = ['spikesort needs ' dependencies{i} ' to run, which was not found. Read the docs. to make sure you have installed all dependencies.'];
     assert(exist(dependencies{i})==2,err_message)
@@ -26,6 +23,11 @@ end
 if verLessThan('signal','6.22')
     error('Need Signal Processing toolbox version 6.22 or higher')
 end
+
+ssDebug = false;
+h = GitHash(mfilename('fullpath'));
+versionname = strcat('spikesort for Kontroller (Build-',h(1:6),')');
+
 
 % support for Kontroller
 ControlParadigm = [];

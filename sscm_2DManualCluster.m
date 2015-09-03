@@ -15,6 +15,22 @@ function [A,B,N] = sscm_2DManualCluster(R,V_snippets,loc)
 
 idx = manualCluster(R,V_snippets,{'A neuron','B neuron','Noise','Doublet','Coincident Spikes'});
 
+% handle doublets 
+if any(idx == 4)
+    doublet_spikes = find(idx==4);
+    for i = 1:length(doublet_spikes)
+        if length(find(loc > loc(doublet_spikes(i))-22 & loc < loc(doublet_spikes(i)) + 22)) > 1
+            disp('Spikes found in doublet, need to handle this case')
+            keyboard
+        else
+            loc = [loc loc(doublet_spikes(i))+1];
+            idx = [idx 2];
+            idx(doublet_spikes(i)) = 1;
+        end
+    end
+end
+
+
 A = loc(idx==1);
 B = loc(idx==2);
 N = loc(idx==3);
@@ -23,8 +39,6 @@ N = loc(idx==3);
 A = unique([A loc(idx==5)]);
 B = unique([B loc(idx==5)]);
 
-
-% handle doublets 
 
 
 
