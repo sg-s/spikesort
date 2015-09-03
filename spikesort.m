@@ -12,12 +12,14 @@ h = GitHash(mfilename('fullpath'));
 versionname = strcat('spikesort for Kontroller (Build-',h(1:6),')');
 
 % check dependencies 
-p=path;
-if isempty(strfind(p,'srinivas.gs_mtools'))
-    error('Needs srinivas.gs_mtools, available here: https://github.com/sg-s/srinivas.gs_mtools')
+dependencies = {'PrettyFig','manualCluster','mean2'};
+for i = 1:length(dependencies)
+    err_message = ['spikesort needs ' dependencies{i} ' to run, which was not found. Read the docs. to make sure you have installed all dependencies.'];
+    assert(exist(dependencies{i})==2,err_message)
 end
+
 if verLessThan('matlab', '8.0.1')
-    error('Need MATLAB 2014b to run')
+    error('Need MATLAB 2014b or better to run')
 end
 
 % check the signal processing toolbox version

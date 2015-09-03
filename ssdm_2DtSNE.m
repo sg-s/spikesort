@@ -12,11 +12,10 @@ V_snippets = V_snippets';
 
 % some parameters
 no_dims = 2;
-init_dims = 30;
-perplexity = 30;
+init_dims = 10;
+perplexity = 60;
+
 labels = ones(size(V_snippets,1),1);
-
-
 
 % based on size of data, use vanilla t-SNE or Barnes-Hut version
 if size(V_snippets,1) > 1200

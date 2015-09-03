@@ -74,9 +74,9 @@ function [P, beta] = d2p(D, u, tol)
         % Set the final row of P
         P(i, [1:i - 1, i + 1:end]) = thisP;
     end    
-    disp(['Mean value of sigma: ' num2str(mean(sqrt(1 ./ beta)))]);
-    disp(['Minimum value of sigma: ' num2str(min(sqrt(1 ./ beta)))]);
-    disp(['Maximum value of sigma: ' num2str(max(sqrt(1 ./ beta)))]);
+    % disp(['Mean value of sigma: ' num2str(mean(sqrt(1 ./ beta)))]);
+    % disp(['Minimum value of sigma: ' num2str(min(sqrt(1 ./ beta)))]);
+    % disp(['Maximum value of sigma: ' num2str(max(sqrt(1 ./ beta)))]);
 end
     
 
