@@ -75,7 +75,7 @@ end
 %%
 % In the next figure, we compare how PCA and t-SNE achieve dimensionality reduction on the same data. As can be seen, the clusters overlap significantly in PCA, while the clusters are well separated in t-SNE. The three main clusters correspond to noise, the B-neuron and the A-neuron. Smaller clusters correspond to simultaneous or otherwise co-mingled spikes. 
 %
-% <<dim-red.png>>
+% <</code/spikesort/tests/dim-red.png>>
 % 
 
 %% Quantification of Errors: A spike
