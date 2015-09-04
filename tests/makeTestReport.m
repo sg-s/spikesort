@@ -193,7 +193,7 @@ for i = 1:length(B_loc)
 	end
 end
 %%
-% The fraction of A spikes correctly identified by the t-SNE algorithm is:
+% The fraction of B spikes correctly identified by the t-SNE algorithm is:
 
 disp(oval(c/length(B_loc)*100,3))
 
