@@ -159,9 +159,9 @@ find_spike_panel = uipanel('Title','Spike Detection','Position',[.29 .73 .21 .17
 uicontrol(find_spike_panel,'Style','text','String','MinPeakProminence','units','normalized','Position',[0 .73 .8 .2],'Callback',@plotResp)
 mpp_control = uicontrol(find_spike_panel,'Style','edit','String','.03','units','normalized','Position',[.77 .75 .2 .2],'Callback',@plotResp);
 uicontrol(find_spike_panel,'Style','text','String','MinPeakWidth','units','normalized','Position',[0 .53 .8 .2])
-mpw_control = uicontrol(find_spike_panel,'Style','edit','String','15','units','normalized','Position',[.77 .55 .2 .2],'Callback',@plotResp);
+mpw_control = uicontrol(find_spike_panel,'Style','edit','String','1','units','normalized','Position',[.77 .55 .2 .2],'Callback',@plotResp);
 uicontrol(find_spike_panel,'Style','text','String','MinPeakDistance','units','normalized','Position',[0 .33 .8 .2])
-mpd_control = uicontrol(find_spike_panel,'Style','edit','String','10','units','normalized','Position',[.77 .35 .2 .2],'Callback',@plotResp);
+mpd_control = uicontrol(find_spike_panel,'Style','edit','String','1','units','normalized','Position',[.77 .35 .2 .2],'Callback',@plotResp);
 uicontrol(find_spike_panel,'Style','text','String','V Cutoff','units','normalized','Position',[0 .13 .8 .2])
 V_cutoff_control = uicontrol(find_spike_panel,'Style','edit','String','-1','units','normalized','Position',[.77 .15 .2 .2],'Callback',@plotResp);
 
@@ -193,7 +193,7 @@ end
 nitems = 10;
 options_panel = uipanel('Title','Options','Position',[.51 .56 .16 .34]);
 remove_doublets_control = uicontrol(options_panel,'Style','checkbox','String','-Doublets','units','normalized','Position',[.01 9/nitems .4 1/(nitems+1)],'Value',0);
-refractory_time_control = uicontrol(options_panel,'Style','edit','String','10','units','normalized','Position',[.5 9/nitems .3 1/(nitems+1)],'Value',0);
+refractory_time_control = uicontrol(options_panel,'Style','edit','String','90','units','normalized','Position',[.5 9/nitems .3 1/(nitems+1)],'Value',0);
 template_match_control = uicontrol(options_panel,'Style','checkbox','String','-Template','units','normalized','Position',[.01 8/nitems .5 1/(nitems+1)],'Callback',@templateMatch,'Value',0);
 template_width_control = uicontrol(options_panel,'Style','edit','units','normalized','Position',[.35 7/nitems+.004 .3 1/(nitems+1)],'Callback',@templateMatch,'String','50');
 uicontrol(options_panel,'Style','text','units','normalized','Position',[.01 7/nitems .3 1/(nitems+1)],'String','width:');
