@@ -75,6 +75,7 @@ The best way to install spikesort is through my package manager:
 >> install spikesort
 >> install srinivas.gs_mtools   # spikesort needs this package to run
 >> install kontroller           # needs a few functions from this package
+>> install t-sne                # t-distributed SNE
 >> install bhtsne               # Barnes-Hut t-SNE
 ```
 
