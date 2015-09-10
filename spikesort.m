@@ -463,7 +463,7 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
         try
             eval(es);
         catch exc
-            ms = strkat(methodname, ' ran into an error: ', exc.message);
+            ms = strcat(methodname, ' ran into an error: ', exc.message);
             msgbox(ms,'spikesort');
             return
         end
