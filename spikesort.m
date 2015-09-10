@@ -9,7 +9,7 @@
 function [] = spikesort()
 
 % check dependencies 
-dependencies = {'PrettyFig','manualCluster','mean2','ComputeOnsOffs','DataHash','GitHash','arginnames','cache','filter_trace','oss','raster2','sem','rsquare','spiketimes2f','strkat','tsne','fast_tsne'};
+dependencies = {'prettyFig','manualCluster','mean2','computeOnsOffs','dataHash','gitHash','argInNames','cache','filter_trace','oss','raster2','sem','rsquare','spiketimes2f','strkat','tsne','fast_tsne'};
 for i = 1:length(dependencies)
     err_message = ['spikesort needs ' dependencies{i} ' to run, which was not found. Read the docs. to make sure you have installed all dependencies.'];
     assert(exist(dependencies{i})==2,err_message)
@@ -25,7 +25,7 @@ if verLessThan('signal','6.22')
 end
 
 ssDebug = false;
-h = GitHash(mfilename('fullpath'));
+h = gitHash(mfilename('fullpath'));
 versionname = strcat('spikesort for Kontroller (Build-',h(1:6),')');
 
 
@@ -451,7 +451,7 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
         methodname = get(cluster_control,'String');
         method = get(cluster_control,'Value');
         methodname = strcat('sscm_',methodname{method});
-        req_arg = arginnames(methodname); % find out what arguments the external method needs
+        req_arg = argInNames(methodname); % find out what arguments the external method needs
         % start constructing the eval string
         es = strcat('[A,B,N]=',methodname,'(');
         for ri =  1:length(req_arg)
@@ -573,7 +573,7 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
                 % do A
                 time = (1:length(spikes(haz_data(i)).A))/SamplingRate;
                 % cache data to speed up
-                hash = DataHash(full(spikes(haz_data(i)).A));
+                hash = dataHash(full(spikes(haz_data(i)).A));
                 if isempty(cache(hash))
                     [fA,tA] = spiketimes2f(spikes(haz_data(i)).A,time);
                     % remove trials with no spikes
@@ -606,7 +606,7 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
                        l(i) = plot(sp(1),tA,mean2(fA),'Color',c(i,:));
                     end
                     if get(r2_plot_control,'Value')
-                        hash = DataHash(fA);
+                        hash = dataHash(fA);
                         cached_data = (cache(hash));
                         if isempty(cached_data)
                             r2 = rsquare(fA);
@@ -633,7 +633,7 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
                 % do B    
                 time = (1:length(spikes(haz_data(i)).B))/SamplingRate;
                 % cache data to speed up
-                hash = DataHash(full(spikes(haz_data(i)).B));
+                hash = dataHash(full(spikes(haz_data(i)).B));
                 if isempty(cache(hash))
                     [fB,tB] = spiketimes2f(spikes(haz_data(i)).B,time);
                     % remove trials with no spikes
@@ -652,7 +652,7 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
                        l(i) = plot(sp(2),tB,mean2(fB),'Color',c(i,:));
                     end
                     if get(r2_plot_control,'Value')
-                        hash = DataHash(fB);
+                        hash = dataHash(fB);
                         cached_data = (cache(hash));
                         if isempty(cached_data)
                             r2 = rsquare(fB);
@@ -683,7 +683,7 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
         legend(l,L)
         close(f_waitbar)
         linkaxes(sp(1:2))
-        PrettyFig;
+        prettyFig;
         console('Made a firing rate plot.')
     end
 
@@ -728,7 +728,7 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
             % find the next digital channel switch in any channel
             for i = 1:length(digital_channels)
                 this_channel = ControlParadigm(ThisControlParadigm).Outputs(digital_channels(i),:);
-                [ons] = ComputeOnsOffs(this_channel);
+                [ons] = computeOnsOffs(this_channel);
                 ons(ons<xl(2)) = [];
                 next_on = min([next_on(:); ons(:)]);
             end
@@ -741,7 +741,7 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
             % find the prev digital channel switch in any channel
             for i = 1:length(digital_channels)
                 this_channel = ControlParadigm(ThisControlParadigm).Outputs(digital_channels(i),:);
-                [ons] = ComputeOnsOffs(this_channel);
+                [ons] = computeOnsOffs(this_channel);
                 ons(ons>xl(1)-1) = [];
                 prev_on = max([prev_on(:); ons(:)]);
             end
@@ -1934,7 +1934,7 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
         % now do different things based on the method chosen
         methodname = get(method_control,'String');
         methodname = strcat('ssdm_',methodname{method});
-        req_arg = arginnames(methodname); % find out what arguments the external method needs
+        req_arg = argInNames(methodname); % find out what arguments the external method needs
         % start constructing the eval string
         es = strcat('R=',methodname,'(');
         for ri =  1:length(req_arg)
