@@ -83,6 +83,11 @@ temp(14).CData = f.f;
 temp(14).ClickedCallback = @firingRatePlot;
 temp(14).TooltipString = 'Generate Firing Rates';
 clear r f
+
+
+temp(9).ClickedCallback = @resetZoom;
+temp(9).TooltipString = 'Reset Zoom';
+
 delete(temp([1:7 11 12]))
 clear temp
 % callback for export figs
@@ -192,7 +197,7 @@ end
 % other options
 nitems = 10;
 options_panel = uipanel('Title','Options','Position',[.51 .56 .16 .34]);
-remove_doublets_control = uicontrol(options_panel,'Style','checkbox','String','-Doublets','units','normalized','Position',[.01 9/nitems .4 1/(nitems+1)],'Value',0);
+remove_doublets_control = uicontrol(options_panel,'Style','checkbox','String','-Doublets','units','normalized','Position',[.01 9/nitems .4 1/(nitems+1)],'Value',1);
 refractory_time_control = uicontrol(options_panel,'Style','edit','String','90','units','normalized','Position',[.5 9/nitems .3 1/(nitems+1)],'Value',0);
 template_match_control = uicontrol(options_panel,'Style','checkbox','String','-Template','units','normalized','Position',[.01 8/nitems .5 1/(nitems+1)],'Callback',@templateMatch,'Value',0);
 template_width_control = uicontrol(options_panel,'Style','edit','units','normalized','Position',[.35 7/nitems+.004 .3 1/(nitems+1)],'Callback',@templateMatch,'String','50');
@@ -1025,6 +1030,10 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
 
     end
 
+
+    function resetZoom(~,~)
+        set(ax,'XLim',[min(time) max(time)]);
+    end
 
     function trainDBN(src,~)
 
@@ -1914,6 +1923,8 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
         end
         loc(1) = []; V_snippets(:,1) = []; 
         loc(end) = []; V_snippets(:,end) = [];
+
+        
 
         % save('X_spikesort.mat','V_snippets')
 

@@ -11,9 +11,14 @@
 % This work C licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License. 
 % To view a copy of this license, visit http://creativecommons.org/licenses/by-nc-sa/4.0/.
 % largely built out of legacy code I wrote in 2011 for Carlotta's spike sorting
-function [A,B,N] = sscm_2DManualCluster(R,V_snippets,loc)
+function [A,B,N] = sscm_2DManualCluster(R,V_snippets,loc,V,ax)
 
-idx = manualCluster(R,V_snippets,{'A neuron','B neuron','Noise','Coincident Spikes'});
+temp = struct;
+temp.ax = ax;
+temp.loc = loc;
+temp.V = V;
+
+idx = manualCluster(R,V_snippets,{'A neuron','B neuron','Noise','Coincident Spikes'},@showSpikeInContext,temp);
 
 
 A = loc(idx==1);
