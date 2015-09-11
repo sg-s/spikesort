@@ -38,7 +38,7 @@ if ~isempty(rm_this)
 end
 
 % always be caching. 
-hash = DataHash(allfiles);
+hash = dataHash(allfiles);
 if use_cache
 	cached_data = [];
 	try
@@ -88,7 +88,7 @@ for i = 1:length(allfiles)
 		if ~isempty(data(j).PID)
 			clear this_paradigm 
 			% figure out which control paradigm this is
-			this_hash = DataHash(ControlParadigm(j));
+			this_hash = dataHash(ControlParadigm(j));
 			if isempty(find(strcmp(this_hash,paradigm_hashes)))
 				AllControlParadigms(end+1) = orderfields(ControlParadigm(j));
 				this_paradigm = length(AllControlParadigms);
