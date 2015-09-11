@@ -9,7 +9,7 @@
 function [] = spikesort()
 
 % check dependencies 
-dependencies = {'prettyFig','manualCluster','mean2','computeOnsOffs','dataHash','gitHash','argInNames','cache','filter_trace','oss','raster2','sem','rsquare','spiketimes2f','strkat','tsne','fast_tsne'};
+dependencies = {'prettyFig','manualCluster','mean2','computeOnsOffs','dataHash','gitHash','argInNames','cache','bandPass','oss','raster2','sem','rsquare','spiketimes2f','strkat','tsne','fast_tsne'};
 for i = 1:length(dependencies)
     err_message = ['spikesort needs ' dependencies{i} ' to run, which was not found. Read the docs. to make sure you have installed all dependencies.'];
     assert(exist(dependencies{i})==2,err_message)
@@ -157,7 +157,7 @@ machineLearningUIControl = uicontrol(mlpanel,'Style','pushbutton','String','Laun
 % spike find parameters
 find_spike_panel = uipanel('Title','Spike Detection','Position',[.29 .73 .21 .17]);
 uicontrol(find_spike_panel,'Style','text','String','MinPeakProminence','units','normalized','Position',[0 .73 .8 .2],'Callback',@plotResp)
-mpp_control = uicontrol(find_spike_panel,'Style','edit','String','.03','units','normalized','Position',[.77 .75 .2 .2],'Callback',@plotResp);
+mpp_control = uicontrol(find_spike_panel,'Style','edit','String','auto','units','normalized','Position',[.77 .75 .2 .2],'Callback',@plotResp);
 uicontrol(find_spike_panel,'Style','text','String','MinPeakWidth','units','normalized','Position',[0 .53 .8 .2])
 mpw_control = uicontrol(find_spike_panel,'Style','edit','String','1','units','normalized','Position',[.77 .55 .2 .2],'Callback',@plotResp);
 uicontrol(find_spike_panel,'Style','text','String','MinPeakDistance','units','normalized','Position',[0 .33 .8 .2])
@@ -202,7 +202,7 @@ template_match_slider = uicontrol(options_panel,'Style','edit','units','normaliz
 uicontrol(options_panel,'Style','text','units','normalized','Position',[.01 6/nitems+.04 .3 1/(nitems+1)],'String','amount:');
 
 
-flip_V_control = uicontrol(options_panel,'Style','checkbox','String','Find spikes in -V','units','normalized','Position',[.1 .07+(5/nitems) .8 1/(nitems+1)],'Value',1);
+flip_V_control = uicontrol(options_panel,'Style','checkbox','String','Find spikes in -V','units','normalized','Position',[.1 .07+(5/nitems) .8 1/(nitems+1)],'Value',0,'Callback',@plotResp);
 smart_scroll_control = uicontrol(options_panel,'Style','checkbox','String','Smart Scroll','units','normalized','Position',[.1 .1+(4/nitems) .8 1/(nitems+1)],'Value',0);
 plot_control_control = uicontrol(options_panel,'Style','checkbox','String','Plot Control','units','normalized','Position',[.1 .1+(3/nitems) .8 1/(nitems+1)],'Value',0);
 r2_plot_control = uicontrol(options_panel,'Style','checkbox','String','Show reproducibility','units','normalized','Position',[.1 .1+(2/nitems) .8 1/(nitems+1)]);
@@ -512,6 +512,10 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
         % get param
         % disp('ssDebug-1403')
         mpp = str2double(get(mpp_control,'String'));
+        if isnan(mpp)
+            % guess some nice value
+            mpp = std(V)/2;
+        end
         mpd = str2double(get(mpd_control,'String'));
         mpw = str2double(get(mpw_control,'String'));
         v_cutoff = str2double(get(V_cutoff_control,'String'));
@@ -1607,7 +1611,7 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
             lc = floor(lc/deltat);
             hc = 1/str2double(get(high_cutoff_control,'String'));
             hc = floor(hc/deltat);
-            [V,Vf] = filter_trace(V,lc,hc);
+            [V,Vf] = bandPass(V,lc,hc);
         else
            
         end 
