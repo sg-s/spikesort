@@ -37,40 +37,34 @@ for i = 1:length(allfiles)
 				this_data = eval(['(data(j).' variable_name ')']);
 				for k = 1:width(this_data)
 					try
-						if find_spikes_in_positive_V
-							V = bandPass(this_data(k,:),100,10);
-						else
-							V = -bandPass(this_data(k,:),100,10);
-						end
-						[~,loc] = findpeaks(V,'MinPeakProminence',std(V)/2,'MinPeakDistance',1,'MinPeakWidth',1);
+						v_cutoff = -1;
+						mpw = 1;
+						mpd = 1;
+						V = bandPass(this_data(k,:),100,10);
+						mpp = std(V)/2;
+						
+						% find peaks and remove spikes beyond v_cutoff
+				        if ~find_spikes_in_positive_V
+				            [~,loc] = findpeaks(-V,'MinPeakProminence',mpp,'MinPeakDistance',mpd,'MinPeakWidth',mpw);
+				            loc(V(loc) < -abs(v_cutoff)) = [];
+				        else
+				            [~,loc] = findpeaks(V,'MinPeakProminence',mpp,'MinPeakDistance',mpd,'MinPeakWidth',mpw);
+				            loc(V(loc) > abs(v_cutoff)) = [];
+				        end
 
 						% take snippets for each putative spike
-					    t_before = 20;
-					    t_after = 25; % assumes dt = 1e-4
-					    V_snippets = NaN(t_before+t_after,length(loc));
-					    for i = 2:length(loc)-1
-					        V_snippets(:,i) = V(loc(i)-t_before+1:loc(i)+t_after);
-					    end
-					    loc(1) = []; V_snippets(:,1) = []; 
-					    loc(end) = []; V_snippets(:,end) = [];
+				        t_before = 20;
+				        t_after = 25; % assumes dt = 1e-4
+				        V_snippets = NaN(t_before+t_after,length(loc));
+				        for i = 2:length(loc)-1
+				            V_snippets(:,i) = V(loc(i)-t_before+1:loc(i)+t_after);
+				        end
+				        loc(1) = []; V_snippets(:,1) = []; 
+				        loc(end) = []; V_snippets(:,end) = [];
 
-					    % remove noise and artifacts
-					    v_cutoff = -1;
-
-					    if ~find_spikes_in_positive_V
-					        v_cutoff =  -abs(v_cutoff);
-					        temp = find(max(V_snippets)<v_cutoff);
-					    else
-					        v_cutoff = abs(v_cutoff);
-					        temp = find(max(V_snippets)>v_cutoff);
-					    end
-
-					    
-					    V_snippets(:,temp) = [];
-					    loc(temp) = [];
-
+				        disp(length(V_snippets))
 					    % run the fast tSNE algorithm on this
-					    fast_tsne(V_snippets);
+					    fast_tsne(V_snippets,2,10,60);
 					catch err
 						err
 					end

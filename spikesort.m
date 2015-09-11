@@ -1915,20 +1915,7 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
         loc(1) = []; V_snippets(:,1) = []; 
         loc(end) = []; V_snippets(:,end) = [];
 
-        % remove noise and artifacts
-        v_cutoff = str2double(get(V_cutoff_control,'String'));
-
-        if get(flip_V_control,'Value')
-            v_cutoff =  -abs(v_cutoff);
-            temp = find(max(V_snippets)<v_cutoff);
-        else
-            v_cutoff = abs(v_cutoff);
-            temp = find(max(V_snippets)>v_cutoff);
-        end
-
-        
-        V_snippets(:,temp) = [];
-        loc(temp) = [];
+        % save('X_spikesort.mat','V_snippets')
 
         % update the spike markings
         delete(h_scatter1)
