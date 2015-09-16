@@ -7,14 +7,15 @@
 
 function showSpikeInContext(data,idx,this_pt)
 
-cla(data.ax)
+handles = data.handles;
+
 t = 1e-4*(1:length(data.V));
-plot(data.ax,t,data.V,'k')
-set(data.ax,'XLim',[data.loc(this_pt)*1e-4 - .2 data.loc(this_pt)*1e-4 + .2]);
-yy = get(data.ax,'YLim');
-plot(data.ax,[data.loc(this_pt) data.loc(this_pt)]*1e-4,yy,'r')
+set(handles.ax1_data,'XData',t,'YData',data.V,'k')
+set(handles.ax1,'XLim',[data.loc(this_pt)*1e-4 - .2 data.loc(this_pt)*1e-4 + .2]);
+yy = get(handles.ax1,'YLim');
+set(handles.ax1_spike_marker,'XData',[data.loc(this_pt) data.loc(this_pt)]*1e-4,'YData',yy,'Color','r')
 
 % plot A and B
-plot(data.ax,data.loc(idx == 1)*1e-4,data.V(data.loc(idx == 1)),'ro')
-plot(data.ax,data.loc(idx == 2)*1e-4,data.V(data.loc(idx == 2)),'bo')
-plot(data.ax,data.loc(idx == 3)*1e-4,data.V(data.loc(idx == 3)),'kx')
+set(handles.ax1_A_spikes,'XData',data.loc(idx == 1)*1e-4,'YData',data.V(data.loc(idx == 1)),'Color','r','LineStyle','none','Marker','o');
+set(handles.ax1_B_spikes,'XData',data.loc(idx == 2)*1e-4,'YData',data.V(data.loc(idx == 2)),'Color','b','LineStyle','none','Marker','o');
+set(handles.ax1_all_spikes,'XData',data.loc(idx == 3)*1e-4,'YData',data.V(data.loc(idx == 3)),'Color','k','LineStyle','none','Marker','x');

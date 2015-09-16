@@ -11,10 +11,10 @@
 % This work C licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License. 
 % To view a copy of this license, visit http://creativecommons.org/licenses/by-nc-sa/4.0/.
 % largely built out of legacy code I wrote in 2011 for Carlotta's spike sorting
-function [A,B,N] = sscm_2DManualCluster(R,V_snippets,loc,V,ax)
+function [A,B,N] = sscm_2DManualCluster(R,V_snippets,loc,V,handles)
 
 temp = struct;
-temp.ax = ax;
+temp.handles = handles;
 temp.loc = loc;
 temp.V = V;
 

@@ -38,6 +38,7 @@ metadata = [];
 timestamps = [];
 
 % core variables and parameters
+marker_size = 5; % how big the spike indicators are
 deltat = 1e-4;
 ThisControlParadigm = 1;
 ThisTrial = 1;
@@ -64,14 +65,16 @@ nn = [];
 machine_learning_networks = []; % stores all networks we generate
 
 % handles
-valve_channel = [];
-load_waitbar = [];
-h_scatter1 = [];
-h_scatter2 = [];
+handles.valve_channel = [];
+handles.load_waitbar = [];
+handles.h_scatter1 = [];
+handles.h_scatter2 = [];
+handles.main_fig = [];
+
 
 % make the master figure, and the axes to plot the voltage traces
-fig = figure('position',[50 50 1200 700], 'Toolbar','figure','Menubar','none','Name',versionname,'NumberTitle','off','IntegerHandle','off','WindowButtonDownFcn',@mousecallback,'WindowScrollWheelFcn',@scroll,'CloseRequestFcn',@closess);
-temp =  findall(gcf,'Type','uitoggletool','-or','Type','uipushtool');
+handles.main_fig = figure('position',[50 50 1200 700], 'Toolbar','figure','Menubar','none','Name',versionname,'NumberTitle','off','IntegerHandle','off','WindowButtonDownFcn',@mousecallback,'WindowScrollWheelFcn',@scroll,'CloseRequestFcn',@closess);
+temp =  findall(handles.main_fig,'Type','uitoggletool','-or','Type','uipushtool');
 % modify buttons for raster and firing rate 
 r = load('r.mat');
 f = load('f.mat');
@@ -94,18 +97,33 @@ clear temp
 menubuttons = findall(gcf,'Type','uitoggletool','-or','Type','uipushtool');
 set(menubuttons(4),'ClickedCallback',@exportFigs,'Enable','off')
 
-ax = axes('parent',fig,'Position',[0.07 0.05 0.87 0.29]); hold on
-jump_back = uicontrol(fig,'units','normalized','Position',[0 .04 .04 .50],'Style', 'pushbutton', 'String', '<','callback',@jump);
-jump_fwd = uicontrol(fig,'units','normalized','Position',[.96 .04 .04 .50],'Style', 'pushbutton', 'String', '>','callback',@jump);
-ax2 = axes('parent',fig,'Position',[0.07 0.37 0.87 0.18]); hold on
-linkaxes([ax2,ax],'x')
+% make the two axes
+handles.ax1 = axes('parent',handles.main_fig,'Position',[0.07 0.05 0.87 0.29]); hold on
+jump_back = uicontrol(handles.main_fig,'units','normalized','Position',[0 .04 .04 .50],'Style', 'pushbutton', 'String', '<','callback',@jump);
+jump_fwd = uicontrol(handles.main_fig,'units','normalized','Position',[.96 .04 .04 .50],'Style', 'pushbutton', 'String', '>','callback',@jump);
+handles.ax2 = axes('parent',handles.main_fig,'Position',[0.07 0.37 0.87 0.18]); hold on
+linkaxes([handles.ax2,handles.ax1],'x')
+
+% make dummy plots on these axes, for placeholders later on
+handles.ax1_data = plot(handles.ax1,NaN,NaN);
+handles.ax1_A_spikes = plot(handles.ax1,NaN,NaN);
+handles.ax1_B_spikes = plot(handles.ax1,NaN,NaN);
+handles.ax1_all_spikes = plot(handles.ax1,NaN,NaN);
+handles.ax1_ignored_data = plot(handles.ax1,NaN,NaN);
+
+% now some for ax1
+handles.ax2_data = plot(handles.ax2,NaN,NaN);
+for i = 1:10
+    handles.ax2_control_signals(i) = plot(handles.ax2,NaN,NaN);
+end
+
 
 % make all the panels
 
 % datapanel (allows you to choose what to plot where)
 datapanel = uipanel('Title','Data','Position',[.8 .57 .16 .4]);
 uicontrol(datapanel,'units','normalized','Position',[.02 .9 .510 .10],'Style', 'text', 'String', 'Control Signal','FontSize',fs,'FontWeight','bold');
-valve_channel = uicontrol(datapanel,'units','normalized','Position',[.03 .68 .910 .25],'Style', 'listbox', 'String', '','FontSize',fs,'FontWeight','bold','Callback',@plotValve,'Min',0,'Max',2);
+handles.valve_channel = uicontrol(datapanel,'units','normalized','Position',[.03 .68 .910 .25],'Style', 'listbox', 'String', '','FontSize',fs,'FontWeight','bold','Callback',@plotValve,'Min',0,'Max',2);
 uicontrol(datapanel,'units','normalized','Position',[.01 .56 .510 .10],'Style', 'text', 'String', 'Stimulus','FontSize',fs,'FontWeight','bold');
 stim_channel = uicontrol(datapanel,'units','normalized','Position',[.03 .38 .910 .20],'Style', 'listbox', 'String', '','FontSize',fs,'FontWeight','bold','Callback',@plotStim);
 
@@ -114,9 +132,9 @@ resp_channel = uicontrol(datapanel,'units','normalized','Position',[.01 .01 .910
 
 
 % file I/O
-uicontrol(fig,'units','normalized','Position',[.10 .92 .07 .07],'Style', 'pushbutton', 'String', 'Load File','FontSize',fs,'FontWeight','bold','callback',@loadFileCallback);
-uicontrol(fig,'units','normalized','Position',[.05 .93 .03 .05],'Style', 'pushbutton', 'String', '<','FontSize',fs,'FontWeight','bold','callback',@loadFileCallback);
-uicontrol(fig,'units','normalized','Position',[.19 .93 .03 .05],'Style', 'pushbutton', 'String', '>','FontSize',fs,'FontWeight','bold','callback',@loadFileCallback);
+uicontrol(handles.main_fig,'units','normalized','Position',[.10 .92 .07 .07],'Style', 'pushbutton', 'String', 'Load File','FontSize',fs,'FontWeight','bold','callback',@loadFileCallback);
+uicontrol(handles.main_fig,'units','normalized','Position',[.05 .93 .03 .05],'Style', 'pushbutton', 'String', '<','FontSize',fs,'FontWeight','bold','callback',@loadFileCallback);
+uicontrol(handles.main_fig,'units','normalized','Position',[.19 .93 .03 .05],'Style', 'pushbutton', 'String', '>','FontSize',fs,'FontWeight','bold','callback',@loadFileCallback);
 
 % paradigms and trials
 datachooserpanel = uipanel('Title','Paradigms and Trials','Position',[.03 .75 .25 .16]);
@@ -157,7 +175,7 @@ cluster_control = uicontrol(cluster_panel,'Style','popupmenu','String',avail_met
 
 % add a button for machine learning
 mlpanel = uipanel('Title','Machine Learning','Position',[.61 .92 .17 .07]);
-machineLearningUIControl = uicontrol(mlpanel,'Style','pushbutton','String','Launch DeepNN...','units','normalized','Position',[.02 .1 .9 .9],'Callback',@makeMachineLearningUI,'Enable','on');
+machineLearningUIControl = uicontrol(mlpanel,'Style','pushbutton','String','Launch DeepNN...','units','normalized','Position',[.02 .1 .9 .9],'Callback',@makeMachineLearningUI,'Enable','off');
 
 % spike find parameters
 find_spike_panel = uipanel('Title','Spike Detection','Position',[.29 .73 .21 .17]);
@@ -223,7 +241,7 @@ uicontrol(options_panel,'Style','text','String','Hz','units','normalized','Posit
 
 
 % manual override panel
-manualpanel = uibuttongroup(fig,'Title','Manual Override','Position',[.68 .56 .11 .34]);
+manualpanel = uibuttongroup(handles.main_fig,'Title','Manual Override','Position',[.68 .56 .11 .34]);
 uicontrol(manualpanel,'units','normalized','Position',[.1 7/8 .8 1/9],'Style','pushbutton','String','Mark All in View','Callback',@markAllCallback);
 mode_new_A = uicontrol(manualpanel,'units','normalized','Position',[.1 6/8 .8 1/9], 'Style', 'radiobutton', 'String', '+A','FontSize',fs);
 mode_new_B = uicontrol(manualpanel,'units','normalized','Position',[.1 5/8 .8 1/9], 'Style', 'radiobutton', 'String', '+B','FontSize',fs);
@@ -235,20 +253,21 @@ uicontrol(manualpanel,'units','normalized','Position',[.1 0/8 .8 1/9],'Style','p
 
 
 % various toggle switches and pushbuttons
-filtermode = uicontrol(fig,'units','normalized','Position',[.03 .69 .12 .05],'Style','togglebutton','String','Filter','Value',1,'Callback',@plotResp,'Enable','off');
-findmode = uicontrol(fig,'units','normalized','Position',[.16 .69 .12 .05],'Style','togglebutton','String','Find Spikes','Value',1,'Callback',@plotResp,'Enable','off');
+filtermode = uicontrol(handles.main_fig,'units','normalized','Position',[.03 .69 .12 .05],'Style','togglebutton','String','Filter','Value',1,'Callback',@plotResp,'Enable','off');
+findmode = uicontrol(handles.main_fig,'units','normalized','Position',[.16 .69 .12 .05],'Style','togglebutton','String','Find Spikes','Value',1,'Callback',@plotResp,'Enable','off');
 
-redo_control = uicontrol(fig,'units','normalized','Position',[.03 .64 .12 .05],'Style','pushbutton','String','Redo','Value',0,'Callback',@redo,'Enable','off');
-autosort_control = uicontrol(fig,'units','normalized','Position',[.16 .64 .12 .05],'Style','togglebutton','String','Autosort','Value',0,'Enable','off');
+redo_control = uicontrol(handles.main_fig,'units','normalized','Position',[.03 .64 .12 .05],'Style','pushbutton','String','Redo','Value',0,'Callback',@redo,'Enable','off');
+autosort_control = uicontrol(handles.main_fig,'units','normalized','Position',[.16 .64 .12 .05],'Style','togglebutton','String','Autosort','Value',0,'Enable','off');
 
-sine_control = uicontrol(fig,'units','normalized','Position',[.03 .59 .12 .05],'Style','togglebutton','String',' Kill Ringing','Value',0,'Callback',@plotResp,'Enable','off');
-discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05],'Style','togglebutton','String',' Discard','Value',0,'Callback',@discard,'Enable','off');
+sine_control = uicontrol(handles.main_fig,'units','normalized','Position',[.03 .59 .12 .05],'Style','togglebutton','String',' Kill Ringing','Value',0,'Callback',@plotResp,'Enable','off');
+discard_control = uicontrol(handles.main_fig,'units','normalized','Position',[.16 .59 .12 .05],'Style','togglebutton','String',' Discard','Value',0,'Callback',@discard,'Enable','off');
 
 
 %% begin subfunctions
 % all subfunctions here are listed alphabetically
 
     function addTag(src,~)
+        % matlab wrapper for tag, which adds BSD tags to the file we are working on. *nix only. 
         tag = get(src,'String');
         temp = whos('FileName');
         if ~isempty(FileName) && strcmp(temp.class,'char')
@@ -262,13 +281,14 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
     end
 
     function [A,B,N] = autosort()
+        % automatically sorts data, if possible. 
         reduceDimensionsCallback;
         [A,B,N]=findCluster;
 
     end
 
     function chooseParadigmCallback(src,~)
-        cla(ax); cla(ax2)
+        % callback that is run when we pick a new paradigm, either through the buttons or the drop down menu
         paradigms_with_data = find(Kontroller_ntrials(data)); 
         if src == paradigm_chooser
             ThisControlParadigm = paradigms_with_data(get(paradigm_chooser,'Value'));
@@ -308,7 +328,6 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
     end
 
     function chooseTrialCallback(src,~)
-        cla(ax); cla(ax2)
         n = Kontroller_ntrials(data); 
         if length(n) < ThisControlParadigm
             return
@@ -341,13 +360,6 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
             else
                 % fake a call
                 chooseParadigmCallback(prev_paradigm);
-                % go to the last trial--fake another call
-                % n = Kontroller_ntrials(data); 
-                % n = n(ThisControlParadigm);
-                % if n
-                %     set(trial_chooser,'Value',n);
-                %     chooseTrialCallback(trial_chooser);
-                % end
             end
         else
             error('unknown source of callback 173. probably being incorrectly being called by something.')
@@ -356,7 +368,7 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
     end
 
     function closess(~,~)
-        % save everything
+        % close everything and save everything
         try
             if ~isempty(PathName) && ~isempty(FileName) 
                 if ischar(PathName) && ischar(FileName)
@@ -364,9 +376,10 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
                 end
             end
         catch
+            warning('Error saving data!')
         end
 
-        delete(fig)
+        delete(handles.main_fig)
 
     end
 
@@ -405,8 +418,8 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
 
     function exportFigs(~,~)
         % cache current state
-        c.ax2 = ax2;
-        c.ax = ax;
+        c.handles.ax2 = handles.ax2;
+        c.handles.ax1 = handles.ax1;
         c.ThisControlParadigm = ThisControlParadigm;
         c.ThisTrial = ThisTrial;
 
@@ -416,21 +429,21 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
                 if length(spikes(i).A(j,:)) > 1
                     % haz data
                     figure('outerposition',[0 0 1200 700],'PaperUnits','points','PaperSize',[1200 700]); hold on
-                    ax2 = subplot(2,1,1); hold on
-                    ax = subplot(2,1,2); hold on
+                    handles.ax2 = subplot(2,1,1); hold on
+                    handles.ax1 = subplot(2,1,2); hold on
                     ThisControlParadigm = i;
                     ThisTrial = j;
                     plotStim;
                     plotResp;
-                    title(ax2,strrep(FileName,'_','-'));
+                    title(handles.ax2,strrep(FileName,'_','-'));
                     tstr = strcat(ControlParadigm(ThisControlParadigm).Name,'_Trial:',mat2str(ThisTrial));
                     tstr = strrep(tstr,'_','-');
-                    title(ax,tstr)
-                    xlabel(ax,'Time (s)')
+                    title(handles.ax1,tstr)
+                    xlabel(handles.ax1,'Time (s)')
 
                     
                     %set(gcf,'renderer','painters')
-                    tstr = strcat(FileName,'_',tstr,'.fig');
+                    tstr = strcat(FileName,'_',tstr,'.handles.main_fig');
                     tstr = strrep(tstr,'_','-');
                     % print(gcf,tstr,'-depsc2','-opengl')
                    
@@ -443,8 +456,8 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
             end
         end
         % return to state
-        ax2 = c.ax2;
-        ax = c.ax;
+        handles.ax2 = c.handles.ax2;
+        handles.ax1 = c.handles.ax1;
         ThisControlParadigm = c.ThisControlParadigm;
         ThisTrial = c.ThisTrial;
         clear c
@@ -480,10 +493,9 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
         end
 
         % mark them
-        delete(h_scatter1)
-        delete(h_scatter2)
-        h_scatter1 = scatter(ax,time(A),V(A),'r');
-        h_scatter2 = scatter(ax,time(B),V(B),'b');
+        set(handles.ax1_A_spikes,'XData',time(A),'YData',V(A),'Marker','o','MarkerSize',marker_size,'Parent',handles.ax1,'MarkerEdgeColor','r','LineStyle','none');
+        set(handles.ax1_B_spikes,'XData',time(B),'YData',V(B),'Marker','o','MarkerSize',marker_size,'Parent',handles.ax1,'MarkerEdgeColor','b','LineStyle','none');
+        set(handles.ax1_all_spikes,'XData',NaN,'YData',NaN);
 
         % save them
         try
@@ -725,10 +737,10 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
 
     function jump(src,~)
         % get the digital channels
-        digital_channels = get(valve_channel,'Value');
+        digital_channels = get(handles.valve_channel,'Value');
 
         % find out where we are
-        xl= floor(get(ax,'XLim')/deltat);
+        xl= floor(get(handles.ax1,'XLim')/deltat);
         
 
         if src == jump_fwd
@@ -742,7 +754,7 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
                 next_on = min([next_on(:); ons(:)]);
             end
             if ~isinf(next_on)
-                set(ax,'Xlim',[time(next_on) time(next_on+diff(xl))]);
+                set(handles.ax1,'Xlim',[time(next_on) time(next_on+diff(xl))]);
             end
         elseif src == jump_back
             prev_on = -Inf;
@@ -755,7 +767,7 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
                 prev_on = max([prev_on(:); ons(:)]);
             end
             if ~isinf(-prev_on)
-                set(ax,'Xlim',[time(prev_on) time(prev_on+diff(xl))]);
+                set(handles.ax1,'Xlim',[time(prev_on) time(prev_on+diff(xl))]);
             end
         else
             error('Unknown source of call to jump');
@@ -826,7 +838,7 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
         loc =0; % holds current spike times
 
         console(strcat('Loading file:',PathName,'/',FileName))
-        load_waitbar = waitbar(0.2, 'Loading data...');
+        handles.load_waitbar = waitbar(0.2, 'Loading data...');
         temp=load(strcat(PathName,FileName));
         ControlParadigm = temp.ControlParadigm;
         data = temp.data;
@@ -844,9 +856,9 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
 
         
 
-        waitbar(0.3,load_waitbar,'Updating listboxes...')
+        waitbar(0.3,handles.load_waitbar,'Updating listboxes...')
         % update control signal listboxes with OutputChannelNames
-        set(valve_channel,'String',OutputChannelNames)
+        set(handles.valve_channel,'String',OutputChannelNames)
 
         % update stimulus listbox with all input channel names
         fl = fieldnames(data);
@@ -889,7 +901,7 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
             ThisTrial = NaN;
         end
 
-        waitbar(0.4,load_waitbar,'Guessing control signals...')
+        waitbar(0.4,handles.load_waitbar,'Guessing control signals...')
         % automatically default to picking the digital signals as the control signals
         digital_channels = zeros(1,length(OutputChannelNames));
         for i = 1:length(ControlParadigm)
@@ -902,10 +914,10 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
             end
         end
         digital_channels = find(digital_channels);
-        set(valve_channel,'Value',digital_channels);
+        set(handles.valve_channel,'Value',digital_channels);
 
 
-        waitbar(0.5,load_waitbar,'Guessing stimulus and response...')
+        waitbar(0.5,handles.load_waitbar,'Guessing stimulus and response...')
         temp = find(strcmp('PID', fl));
         if ~isempty(temp)
             set(stim_channel,'Value',temp);
@@ -916,10 +928,10 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
 
         end
 
-        set(fig,'Name',strcat(versionname,'--',FileName))
+        set(handles.main_fig,'Name',strcat(versionname,'--',FileName))
 
         % enable all controls
-        waitbar(.7,load_waitbar,'Enabling UI...')
+        waitbar(.7,handles.load_waitbar,'Enabling UI...')
         set(sine_control,'Enable','on');
         set(autosort_control,'Enable','on');
         set(redo_control,'Enable','on');
@@ -937,7 +949,7 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
         set(metadata_text_control,'Enable','on')
 
         % check for amplitudes 
-        waitbar(.7,load_waitbar,'Checking to see amplitude data exists...')
+        waitbar(.7,handles.load_waitbar,'Checking to see amplitude data exists...')
         % check if we have spike_amplitude data
         if length(spikes)
             for i = 1:length(spikes)
@@ -1004,7 +1016,7 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
         end
 
         % clean up
-        close(load_waitbar)
+        close(handles.load_waitbar)
 
         plotStim;
         plotResp(@loadFileCallback);
@@ -1012,10 +1024,10 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
 
 
     function makeMachineLearningUI(~,~)
-        ml_ui.fig = figure('Position',[60 500 450 450],'Toolbar','none','Menubar','none','Name','Deep Learning','NumberTitle','off','Resize','on','HandleVisibility','on');
+        ml_ui.handles.main_fig = figure('Position',[60 500 450 450],'Toolbar','none','Menubar','none','Name','Deep Learning','NumberTitle','off','Resize','on','HandleVisibility','on');
 
-        ml_ui.loadButton = uicontrol(ml_ui.fig,'units','normalized','Position',[.05 .85 .4 .10],'Style', 'pushbutton', 'String', 'Load DBN','FontSize',20,'Callback',@loadDBN);
-        ml_ui.saveButton = uicontrol(ml_ui.fig,'units','normalized','Position',[.55 .85 .4 .10],'Style', 'pushbutton', 'String', 'Save DBN','FontSize',20,'Callback',@saveDBN);
+        ml_ui.loadButton = uicontrol(ml_ui.handles.main_fig,'units','normalized','Position',[.05 .85 .4 .10],'Style', 'pushbutton', 'String', 'Load DBN','FontSize',20,'Callback',@loadDBN);
+        ml_ui.saveButton = uicontrol(ml_ui.handles.main_fig,'units','normalized','Position',[.55 .85 .4 .10],'Style', 'pushbutton', 'String', 'Save DBN','FontSize',20,'Callback',@saveDBN);
         mlpanel = uipanel('Title','Train Network','Position',[.05 .3 .9 .5],'FontSize',16);
         ml_ui.trainNS = uicontrol(mlpanel,'units','normalized','Position',[.05 .7 .6 .2],'Style', 'pushbutton', 'String', 'Noise/Spike Splitter','FontSize',20,'Callback',@trainDBN);
         ml_ui.trainSC = uicontrol(mlpanel,'units','normalized','Position',[.05 .5 .6 .2],'Style', 'pushbutton', 'String', 'Single/Compound Splitter','FontSize',20,'Callback',@trainDBN);
@@ -1025,329 +1037,20 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
         uicontrol(mlpanel,'units','normalized','Position',[.55 .1 .2 .1],'Style', 'text', 'String', 'Size:','FontSize',16);
         ml_ui.sizeControl = uicontrol(mlpanel,'units','normalized','Position',[.75 .1 .2 .1],'Style', 'edit', 'String', '10','FontSize',16);
 
-        ml_ui.testControl = uicontrol(ml_ui.fig,'units','normalized','Position',[.05 .1 .2 .1],'Style', 'pushbutton', 'String', 'Test','FontSize',20,'Callback',@deepSort);
-        ml_ui.sortControl = uicontrol(ml_ui.fig,'units','normalized','Position',[.55 .1 .2 .1],'Style', 'pushbutton', 'String', 'Sort','FontSize',20,'Callback',@deepSort);
+        ml_ui.testControl = uicontrol(ml_ui.handles.main_fig,'units','normalized','Position',[.05 .1 .2 .1],'Style', 'pushbutton', 'String', 'Test','FontSize',20,'Callback',@deepSort);
+        ml_ui.sortControl = uicontrol(ml_ui.handles.main_fig,'units','normalized','Position',[.55 .1 .2 .1],'Style', 'pushbutton', 'String', 'Sort','FontSize',20,'Callback',@deepSort);
 
     end
 
 
     function resetZoom(~,~)
-        set(ax,'XLim',[min(time) max(time)]);
+        set(handles.ax1,'XLim',[min(time) max(time)]);
     end
 
-    function trainDBN(src,~)
-
-
-        set(ml_ui.fig,'Name','Training...')
-
-        % first prepare some data
-        % normalise data to train to
-        train_data = V; % filtered voltage
-        train_data = train_data - min(train_data);
-        train_data = train_data/max(train_data);
-        train_data2 = Vf; % raw, unfiltered voltage
-        train_data2 = train_data2 - min(train_data2);
-        train_data2 = train_data2/max(train_data2);
-
-        % also use the stimulus that we're looking at
-        eval(strcat('train_data3=data(ThisControlParadigm).',stim_channel.String{get(stim_channel,'Value')},'(ThisTrial,:);'))
-        train_data3=train_data3 - min(train_data3);
-        train_data3 = train_data3/max(train_data3);
-
-        before = 100;
-        after = 99;
-
-        A_spikes = find(spikes(ThisControlParadigm).A(ThisTrial,:));
-        B_spikes = find(spikes(ThisControlParadigm).B(ThisTrial,:));
-        A_spikes(A_spikes<1+before) = [];
-        A_spikes(A_spikes>length(V)-after-1) = [];
-        B_spikes(B_spikes<1+before) = [];
-        B_spikes(B_spikes>length(V)-after-1) = [];
-        all_spikes = ([A_spikes B_spikes]);
-        try 
-            N_spikes = find(spikes(ThisControlParadigm).N(ThisTrial,:));
-            N_spikes(Nspikes<1+before) = [];
-            N_spikes(N_spikes>length(V)-1-after) = [];
-        catch
-            N_spikes = [];
-        end
-        if length(N_spikes) == 0
-            % sample "not spikes" intelligently 
-            ok_spots = 1+0*V;
-            for i = 1:length(all_spikes)
-                this_loc = all_spikes(i);
-                ok_spots(this_loc-before:this_loc+after) = 0;
-            end
-            ok_spots(1:before+1) = 0;
-            ok_spots(length(V)-after-1:end)=0;
-            ok_spots = find(ok_spots);
-            N_spikes = ok_spots(randperm(length(ok_spots),length(all_spikes)));
-        end
-
-        % figure out where this is coming from, and act appropriately 
-        switch src.String
-        case 'Noise/Spike Splitter'
-            train_x = zeros(length([all_spikes N_spikes]),3*(1+before+after));
-            train_y = zeros(length([all_spikes N_spikes]),2);
-            all_loc = [all_spikes N_spikes];
-            category = [ones(length(all_spikes),1); 2*ones(length(N_spikes),1)];
-
-
-            for i = 1:length(all_loc)
-                this_loc = all_loc(i);
-                try
-                    train_x(i,1:before+after+1) = train_data(this_loc-before:this_loc+after);
-                catch er
-                    er
-                    keyboard
-                end
-                train_x(i,before+after+2:2*(before+after+1)) = train_data2(this_loc-before:this_loc+after);
-                train_x(i,2*(before+after+1)+1:end) = train_data2(this_loc-before:this_loc+after);
-                train_y(i,category(i)) = 1;
-            end
-
-            train_x = train_x(:,1:200);
-
-        case 'Single/Compound Splitter'
-            train_x = zeros(length(all_spikes),3*(1+before+after));
-            train_y = zeros(length(all_spikes),4);
-            all_loc = [all_spikes ];
-
-            for i = 1:length(all_loc)
-                this_loc = all_loc(i);
-                train_x(i,1:before+after+1) = train_data(this_loc-before:this_loc+after);
-                train_x(i,before+after+2:2*(before+after+1)) = train_data2(this_loc-before:this_loc+after);
-                train_x(i,2*(before+after+1)+1:end) = train_data2(this_loc-before:this_loc+after);
-                
-                % figure out the category
-                preceding_spike =  this_loc - all_loc;
-                preceding_spike(preceding_spike<0)=[];
-                preceding_spike(preceding_spike>before)=[];
-                preceding_spike(preceding_spike==0)=[];
-
-                following_spike =  this_loc - all_loc;
-                following_spike(following_spike>0)=[];
-                following_spike=abs(following_spike);
-                following_spike(following_spike>after)=[];
-                following_spike(following_spike==0)=[];
-                
-                if isempty(preceding_spike) && isempty(following_spike)
-                    train_y(i,1) = 1; % only one isolated spike
-                elseif ~isempty(preceding_spike) && isempty(following_spike)
-                    train_y(i,2) = 1; % spike before identified spike in snippet
-                elseif isempty(preceding_spike) && ~isempty(following_spike)
-                    train_y(i,3) = 1; % spike after identified spike in snippet
-                else
-                    train_y(i,4) = 1; % spike before and after identified spike in snippet
-                end
-            end
-
-            train_x = train_x(:,1:200);
-
-
-        case 'A/B Splitter'
-            train_x = zeros(length([all_spikes ]),3*(1+before+after));
-            train_y = zeros(length([all_spikes ]),2);
-            all_loc = [all_spikes ];
-            category = [ones(length(A_spikes),1); 2*ones(length(B_spikes),1)];
-
-            for i = 1:length(all_loc)
-                this_loc = all_loc(i);
-                train_x(i,1:before+after+1) = train_data(this_loc-before:this_loc+after);
-                train_x(i,before+after+2:2*(before+after+1)) = train_data2(this_loc-before:this_loc+after);
-                train_x(i,2*(before+after+1)+1:end) = train_data2(this_loc-before:this_loc+after);
-                train_y(i,category(i)) = 1;
-            end
-        end
-
-        % make training data double
-        train_y = double(train_y);
-        train_x = double(train_x);
-
-        
-
-        % train dbn. we want to get less than 1% errors
-        rand('state',0)
-        err = 1; c = 1;
-        dbn.sizes = [str2double(ml_ui.sizeControl.String) str2double(ml_ui.sizeControl.String)];
-        opts.numepochs =   1;
-        opts.batchsize = length(train_x);
-        opts.momentum  =   0;
-        opts.alpha     =   1;
-        dbn = dbnsetup(dbn, train_x, opts);
-        dbn = dbntrain(dbn, train_x, opts);
-
-        %unfold dbn to nn
-        nn = dbnunfoldtonn(dbn, width(train_y));
-        nn.activation_function = 'sigm';
-        
-        % train nn
-        opts.numepochs =  str2double(ml_ui.epochControl.String);
-        opts.momentum = .5;
-        opts.batchsize = length(train_x);
-        nn = nntrain(nn, train_x, train_y, opts);
-
-        l = nnpredict(nn,train_x);
-        ll = 0*l;
-
-        for i = 1:length(l)
-            ll(i)=find(train_y(i,:));
-        end
-        err = sum(abs(l-ll))/length(ll);
-        disp('Error is :')
-        disp(err)
-
-        set(ml_ui.fig,'Name','Training complete!')
-
-        % now save them (in memory as needed)
-        switch src.String
-        case 'Noise/Spike Splitter'
-            set(ml_ui.trainNS,'BackgroundColor',[.5 1 .5])
-            machine_learning_networks.NS.nn = nn;
-            machine_learning_networks.NS.dbn = dbn;
-        case 'Single/Compound Splitter'
-            set(ml_ui.trainSC,'BackgroundColor',[.5 1 .5])
-            machine_learning_networks.SC.nn = nn;
-            machine_learning_networks.SC.dbn = dbn;
-
-            % make some plots
-            plot(ax,time(loc(l==2)),V(loc(l==2)),'kx','MarkerSize',20)
-            plot(ax,time(loc(l==3)),V(loc(l==3)),'rx','MarkerSize',20)
-            plot(ax,time(loc(l==4)),V(loc(l==4)),'gx','MarkerSize',20)
-
-        case 'A/B Splitter'
-            set(ml_ui.trainAB,'BackgroundColor',[.5 1 .5])
-            machine_learning_networks.AB.nn = nn;
-            machine_learning_networks.AB.dbn = dbn;
-        end
-
-    end
-
-    function saveDBN(~,~)
-        [temp1,temp2] = uiputfile('*.mat');
-        if isempty(temp1) || isempty(temp2)
-            return
-        end
-        save([temp2 temp1],'machine_learning_networks');
-        clear temp1 temp2
-    end
-
-    function loadDBN(~,~)
-        [temp1,temp2] = uigetfile('*.mat');
-        if isempty(temp1) || isempty(temp2)
-            return
-        end
-        machine_learning_networks = [];
-        machine_learning_networks = load([temp2 temp1],'machine_learning_networks');
-        machine_learning_networks = machine_learning_networks.machine_learning_networks;
-        clear temp1 temp2
-        fn = fieldnames(machine_learning_networks);
-        if ~isempty(find(strcmp('NS',fieldnames(machine_learning_networks))))
-            set(ml_ui.trainNS,'BackgroundColor',[.5 1 .5])
-        end
-        if ~isempty(find(strcmp('AB',fieldnames(machine_learning_networks))))
-            set(ml_ui.trainAB,'BackgroundColor',[.5 1 .5])
-        end
-        if ~isempty(find(strcmp('SC',fieldnames(machine_learning_networks))))
-            set(ml_ui.trainSC,'BackgroundColor',[.5 1 .5])
-        end
-
-    end
-
-    function deepSort(src,~)
-
-        % deep sort works in three steps, based on the three sets of NN that we train.
-        % 1. use a NN to distinguish noise from spikes (we expect very little noise)
-        % 2. use a NN to distnguish simple/compound spikes
-        % 3. use some heuristics to identify missed spikes in complex spike snippets
-        % 4. run all identified spikes through a A/B splitter
-
-
-        % first prepare some data
-        % normalise data to train to
-        train_data = V; % filtered voltage
-        train_data = train_data - min(train_data);
-        train_data = train_data/max(train_data);
-        train_data2 = Vf; % raw, unfiltered voltage
-        train_data2 = train_data2 - min(train_data2);
-        train_data2 = train_data2/max(train_data2);
-
-        % also use the stimulus that we're looking at
-        eval(strcat('train_data3=data(ThisControlParadigm).',stim_channel.String{get(stim_channel,'Value')},'(ThisTrial,:);'))
-        train_data3=train_data3 - min(train_data3);
-        train_data3 = train_data3/max(train_data3);
-
-        before = 100;
-        after = 99;
-
-        train_x = zeros(length(loc),3*(1+before+after));
-        train_y = zeros(length(loc),2);
-
-
-        for i = 1:length(loc)
-            this_loc = loc(i);
-            train_x(i,1:before+after+1) = train_data(this_loc-before:this_loc+after);
-            train_x(i,before+after+2:2*(before+after+1)) = train_data2(this_loc-before:this_loc+after);
-            train_x(i,2*(before+after+1)+1:end) = train_data2(this_loc-before:this_loc+after);
-        end
-
-        % predict noise vs. spike
-        l = nnpredict(machine_learning_networks.NS.nn,train_x(:,1:200));
-
-        plot(ax,time(loc(l==1)),V(loc(l==1)),'rx')
-        plot(ax,time(loc(l==2)),V(loc(l==2)),'kx','MarkerSize',20)
-        return
-
-
-        % normalise V
-        test_data = V;
-        test_data = test_data - min(test_data);
-        test_data = test_data/max(test_data);
-
-        eval(strcat('this_stim=data(ThisControlParadigm).',stim_channel.String{get(stim_channel,'Value')},'(ThisTrial,:);'))
-        this_stim=this_stim - min(this_stim);
-        this_stim = this_stim/max(this_stim);
-        
-        before = 100;
-        after = 99;
-
-        ok_loc = loc;
-        ok_loc(ok_loc<before+1) = [];
-        ok_loc(ok_loc>length(V)-1-after) = [];
-
-        % get all putative spike locations
-        test_x = zeros(length(ok_loc),2*(1+before+after));
-
-        for i = 1:length(ok_loc)
-            this_loc = ok_loc(i);
-            test_x(i,1:(before+after+1)) = test_data(this_loc-before:this_loc+after);
-            test_x(i,before+after+2:end) = this_stim(this_loc-before:this_loc+after);
-        end
-
-        test_x = double(test_x);
-
-        % figure out which NN to use
-        temp = char(ml_ui.chooseDBN.String(get(ml_ui.chooseDBN,'Value')));
-        temp2 = strfind(temp,':');
-        temp2 = nnpredict(spikes(str2double(temp(temp2(1)+1:strfind(temp,'Trial')-1))).nn{str2double(temp(strfind(temp,'Trial:')+6:end))},test_x);
-
-        spikes(ThisControlParadigm).A(ThisTrial,ok_loc(temp2 == 1)) = 1;
-        spikes(ThisControlParadigm).B(ThisTrial,ok_loc(temp2 == 2)) = 1;
-        spikes(ThisControlParadigm).A(ThisTrial,ok_loc(temp2 == 3)) = 0;
-        spikes(ThisControlParadigm).B(ThisTrial,ok_loc(temp2 == 3)) = 0;
-
-        clear temp temp2
-
-        plotResp;
-
-
-
-
-    end
 
     function markAllCallback(~,~)
         % get view
-        xmin = get(ax,'XLim');
+        xmin = get(handles.ax1,'XLim');
         xmin = xmin/deltat;
         xmax = xmin(2); xmin=xmin(1);
 
@@ -1376,12 +1079,12 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
 
     function modify(p)
         % check that the point is within the axes
-        ylimits = get(ax,'YLim');
+        ylimits = get(handles.ax1,'YLim');
         if p(2) > ylimits(2) || p(2) < ylimits(1)
             console('Rejecting point: Y exceeded')
             return
         end
-        xlimits = get(ax,'XLim');
+        xlimits = get(handles.ax1,'XLim');
         if p(1) > xlimits(2) || p(1) < xlimits(1)
             console('Rejecting point: X exceeded')
             return
@@ -1466,7 +1169,7 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
 
     function modifyTraceDiscard(src,~)
         % first get the viewport
-        xl = get(ax,'XLim');
+        xl = get(handles.ax1,'XLim');
         xl = floor(xl/deltat);
         if xl(1) < 1
             xl(1) = 1;
@@ -1507,17 +1210,20 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
     end
 
     function mousecallback(~,~)
-        p=get(ax,'CurrentPoint');
+        p=get(handles.ax1,'CurrentPoint');
         p=p(1,1:2);
         modify(p)
     end
 
     function plotResp(src,~)
+
+        % clear some old stuff
+        set(handles.ax1_ignored_data,'XData',NaN,'YData',NaN);
+
         % plot the response
         clear time V Vf % flush old variables 
         n = Kontroller_ntrials(data); 
-        cla(ax)
-        hold(ax,'on')
+        
         if n(ThisControlParadigm)
             plotwhat = get(resp_channel,'String');
             plotthis = plotwhat{get(resp_channel,'Value')};
@@ -1534,7 +1240,7 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
                 if spikes(ThisControlParadigm).discard(ThisTrial) == 1
                     % set the control
                     set(discard_control,'Value',1);
-                    plot(ax,time,temp,'k')
+                    set(handles.ax1_data,'XData',time,'YData',temp,'Color','k','Parent',handles.ax1);
                     return
                 else
 
@@ -1549,9 +1255,9 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
 
         if get(template_match_control,'Value')
             % template match
-            plotwhat = get(valve_channel,'String');
-            nchannels = length(get(valve_channel,'Value'));
-            plot_these = get(valve_channel,'Value');
+            plotwhat = get(handles.valve_channel,'String');
+            nchannels = length(get(handles.valve_channel,'Value'));
+            plot_these = get(handles.valve_channel,'Value');
             if length(plot_these) > 1
                 plot_these = plot_these(1);
             end
@@ -1609,9 +1315,8 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
                 end
 
             end
+
         end
-
-
         if get(filtermode,'Value') == 1
             if ssDebug 
                 disp('plotResp 1251: filtering trace...')
@@ -1621,10 +1326,7 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
             hc = 1/str2double(get(high_cutoff_control,'String'));
             hc = floor(hc/deltat);
             [V,Vf] = bandPass(V,lc,hc);
-        else
-           
         end 
- 
 
 
         if get(sine_control,'Value') ==1
@@ -1636,11 +1338,7 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
             V = V - temp(time);
         end
 
-
-
-
-        plot(ax,time,V,'k'); 
-
+        set(handles.ax1_data,'XData',time,'YData',V,'Color','k','Parent',handles.ax1); 
 
         % check if we are discarding part of the trace
         ignored_fragments = 0*V;
@@ -1651,7 +1349,7 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
                     if width(spikes(ThisControlParadigm).use_trace_fragment) < ThisTrial
                     else
                         ignored_fragments = ~spikes(ThisControlParadigm).use_trace_fragment(ThisTrial,:);
-                        plot(ax,time(ignored_fragments),V(ignored_fragments),'Color',[.5 .5 .5])
+                        set(handles.ax1_ignored_data,'XData',time(ignored_fragments),'YData',V(ignored_fragments),'Color',[.5 .5 .5],'Parent',handles.ax1);
                     end
                 end
             end
@@ -1680,11 +1378,13 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
                     % sort spikes and show them
                    
                     [A,B] = autosort;
-                    h_scatter1 = scatter(ax,time(A),V(A),'r');
-                    h_scatter2 = scatter(ax,time(B),V(B),'b');
+                    set(handles.ax1_A_spikes,'XData',time(A),'YData',V(A),'Marker','o','MarkerSize',marker_size,'Parent',handles.ax1,'MarkerEdgeColor','r','LineStyle','none');
+                    set(handles.ax1_B_spikes,'XData',time(B),'YData',V(B),'Marker','o','MarkerSize',marker_size,'Parent',handles.ax1,'MarkerEdgeColor','b','LineStyle','none');
                 else
-                  
-                    h_scatter1 = scatter(ax,time(loc),V(loc));
+                    set(handles.ax1_all_spikes,'XData',time(loc),'YData',V(loc),'Marker','o','MarkerSize',marker_size,'Parent',handles.ax1,'MarkerEdgeColor','m','LineStyle','none');
+                    set(handles.ax1_A_spikes,'XData',NaN,'YData',NaN);
+                    set(handles.ax1_B_spikes,'XData',NaN,'YData',NaN);
+
                 end
             else
            
@@ -1703,38 +1403,42 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
                             B = [];
                         end
                         loc = [A B];
-                        h_scatter1 = scatter(ax,time(A),V(A),'r');
-                        h_scatter2 = scatter(ax,time(B),V(B),'b');
+                        set(handles.ax1_A_spikes,'XData',time(A),'YData',V(A),'Marker','o','MarkerSize',marker_size,'Parent',handles.ax1,'MarkerEdgeColor','r','LineStyle','none');
+                        set(handles.ax1_B_spikes,'XData',time(B),'YData',V(B),'Marker','o','MarkerSize',marker_size,'Parent',handles.ax1,'MarkerEdgeColor','b','LineStyle','none');
                     else
     
                         if get(autosort_control,'Value') == 1
                             % sort spikes and show them
                             [A,B] = autosort;
-                            h_scatter1 = scatter(ax,time(A),V(A),'r');
-                            h_scatter2 = scatter(ax,time(B),V(B),'b');
+                            set(handles.ax1_A_spikes,'XData',time(A),'YData',V(A),'Marker','o','MarkerSize',marker_size,'Parent',handles.ax1,'MarkerEdgeColor','r','LineStyle','none');
+                            set(handles.ax1_B_spikes,'XData',time(B),'YData',V(B),'Marker','o','MarkerSize',marker_size,'Parent',handles.ax1,'MarkerEdgeColor','b','LineStyle','none');
                         else
                             console('No need to autosort')
-                            % no need to autosort
-                            h_scatter1 = scatter(ax,time(loc),V(loc));
+                            % no need to autosort, just show the identified peaks
+                            set(handles.ax1_A_spikes,'XData',NaN,'YData',NaN);
+                            set(handles.ax1_B_spikes,'XData',NaN,'YData',NaN);
+                            set(handles.ax1_all_spikes,'XData',time(loc),'YData',V(loc),'Marker','o','MarkerSize',marker_size,'Parent',handles.ax1,'MarkerEdgeColor','m','LineStyle','none');
                         end
                     end
                 else
                     % no spikes
-        
                     if get(autosort_control,'Value') == 1
                         % sort spikes and show them
                         [A,B] = autosort;
-                        h_scatter1 = scatter(ax,time(A),V(A),'r');
-                        h_scatter2 = scatter(ax,time(B),V(B),'b');
+                        set(handles.ax1_A_spikes,'XData',time(A),'YData',V(A),'Marker','o','MarkerSize',marker_size,'Parent',handles.ax1,'MarkerEdgeColor','r','LineStyle','none');
+                            set(handles.ax1_B_spikes,'XData',time(B),'YData',V(B),'Marker','o','MarkerSize',marker_size,'Parent',handles.ax1,'MarkerEdgeColor','b','LineStyle','none');
                     else
-                    
-                        % no need to autosort
-                        h_scatter1 = scatter(ax,time(loc),V(loc));
+                        % no need to autosort, no spikes to show
+                        set(handles.ax1_A_spikes,'XData',NaN,'YData',NaN);
+                            set(handles.ax1_B_spikes,'XData',NaN,'YData',NaN);
+                            set(handles.ax1_all_spikes,'XData',time(loc),'YData',V(loc),'Marker','o','MarkerSize',marker_size,'Parent',handles.ax1,'MarkerEdgeColor','m','LineStyle','none');
                     end
                 end
             end
+
+
   
-            xlim = get(ax,'XLim');
+            xlim = get(handles.ax1,'XLim');
             if xlim(1) < min(time)
                 xlim(1) = min(time);
             end
@@ -1759,38 +1463,36 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
             else
 
                 if yr==0
-                    set(ax,'YLim',[ylim(1)-1 ylim(2)+1]);
+                    set(handles.ax1,'YLim',[ylim(1)-1 ylim(2)+1]);
                 else
-                    set(ax,'YLim',[ylim(1)-yr ylim(2)+yr]);
+                    set(handles.ax1,'YLim',[ylim(1)-yr ylim(2)+yr]);
                 end
             end
 
         else
             % ('No need to find spikes...')
-            set(ax,'YLim',[min(V) max(V)]);
+            set(handles.ax1,'YLim',[min(V) max(V)]);
             set(method_control,'Enable','off')
         end
 
         % this exception exists because XLimits weirdly go to [0 1] and "manual" even though I don't set them. 
-        xl  =get(ax,'XLim');
+        xl  =get(handles.ax1,'XLim');
         if xl(2) == 1
-            set(ax,'XLim',[min(time) max(time)]);
-            set(ax,'XLimMode','auto')
+            set(handles.ax1,'XLim',[min(time) max(time)]);
+            set(handles.ax1,'XLimMode','auto')
         else
             % unless the X-limits have been manually changed, fix them
-            if strcmp(get(ax,'XLimMode'),'auto')
-                set(ax,'XLim',[min(time) max(time)]);
+            if strcmp(get(handles.ax1,'XLimMode'),'auto')
+                set(handles.ax1,'XLim',[min(time) max(time)]);
                 % we spoof this because we want to distinguish this case from when the user zooms
-                set(ax,'XLimMode','auto')
+                set(handles.ax1,'XLimMode','auto')
             end
         end
-        
     end
 
     function plotStim(~,~)
-        % plot the stimulus
+        % plot the stimulus and other things in handles.ax2
         n = Kontroller_ntrials(data); 
-        cla(ax2)
         miny = Inf; maxy = -Inf;
         if n(ThisControlParadigm)
             plotwhat = get(stim_channel,'String');
@@ -1810,7 +1512,8 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
                     temp = temp(ThisTrial,:);
                 end
                 time = deltat*(1:length(temp));
-                plot(ax2,time,temp,'Color',c(i,:)); hold on;
+
+                set(handles.ax2_data,'XData',time,'YData',temp,'Color',c(i,:),'Parent',handles.ax2);
                 miny  =min([miny min(temp)]);
                 maxy  =max([maxy max(temp)]);
             end
@@ -1819,53 +1522,57 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
         % rescale the Y axis appropriately
         if ~isinf(sum(abs([maxy miny])))
             if maxy > miny
-                set(ax2,'YLim',[miny maxy+.1*(maxy-miny)]);
+                set(handles.ax2,'YLim',[miny maxy+.1*(maxy-miny)]);
             end
         end
 
         % plot the control signals using thick lines
         if n(ThisControlParadigm)
-            plotwhat = get(valve_channel,'String');
-            nchannels = length(get(valve_channel,'Value'));
-            plot_these = get(valve_channel,'Value');
+            plotwhat = get(handles.valve_channel,'String');
+            nchannels = length(get(handles.valve_channel,'Value'));
+            plot_these = get(handles.valve_channel,'Value');
             c = jet(nchannels);
             if nchannels == 1
                 c = [0 0 0];
             end
 
-            ymax = get(ax2,'YLim');
+            ymax = get(handles.ax2,'YLim');
             ymin = ymax(1); ymax = ymax(2); 
             y0 = (ymax- .1*(ymax-ymin));
             dy = (ymax-y0)/nchannels;
             thisy = ymax;
+
+            % first try to erase all the old stuff
+            for i = 1:10
+                set(handles.ax2_control_signals(i),'XData',NaN,'YData',NaN);
+            end
 
             for i = 1:nchannels
                 temp=ControlParadigm(ThisControlParadigm).Outputs(plot_these(i),:);
                 if get(plot_control_control,'Value')
                     % plot the control signal directly
                     time = deltat*(1:length(temp));
-                    cla(ax2);
-                    plot(ax2,time,temp,'LineWidth',1); hold on;
-                    set(ax2,'YLim',[min(temp) max(temp)]);
+                    set(handles.ax2_data,'XData',time,'YData',temp,'LineWidth',1); hold on;
+                    set(handles.ax2,'YLim',[min(temp) max(temp)]);
                 else
                     temp(temp>0)=1;
                     time = deltat*(1:length(temp));
                     thisy = thisy - dy;
                     temp = temp*thisy;
                     temp(temp==0) = NaN;
-                    plot(ax2,time,temp,'Color',c(i,:),'LineWidth',5); hold on;
+                    set(handles.ax2_control_signals(i),'XData',time,'YData',temp,'Color',c(i,:),'LineWidth',5,'Parent',handles.ax2); hold on;
                 end
             end
         end
-
+        
     end
 
     function plotValve(~,~)
         % get the channels to plot
-        valve_channels = get(valve_channel,'Value');
-        c = jet(length(valve_channels));
-        for i = 1:length(valve_channels)
-            this_valve = ControlParadigm(ThisControlParadigm).Outputs(valve_channels(i),:);
+        handles.valve_channels = get(handles.valve_channel,'Value');
+        c = jet(length(handles.valve_channels));
+        for i = 1:length(handles.valve_channels)
+            this_valve = ControlParadigm(ThisControlParadigm).Outputs(handles.valve_channels(i),:);
         end
     end
 
@@ -1924,14 +1631,8 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
         loc(1) = []; V_snippets(:,1) = []; 
         loc(end) = []; V_snippets(:,end) = [];
 
-        
-
-        % save('X_spikesort.mat','V_snippets')
-
         % update the spike markings
-        delete(h_scatter1)
-        h_scatter1 = scatter(ax,time(loc),V(loc));
-
+        set(handles.ax1_all_spikes,'XData',time(loc),'YData',V(loc),'Marker','o','MarkerSize',marker_size,'Parent',handles.ax1,'MarkerEdgeColor','g','LineStyle','none');
 
         % now do different things based on the method chosen
         methodname = get(method_control,'String');
@@ -2019,7 +1720,7 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
     end
 
     function scroll(~,event)
-        xlimits = get(ax,'XLim');
+        xlimits = get(handles.ax1,'XLim');
         xrange = (xlimits(2) - xlimits(1));
         scroll_amount = event.VerticalScrollCount;
         if ~get(smart_scroll_control,'Value')
@@ -2057,11 +1758,11 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
         end
         
         try
-            set(ax,'Xlim',newlim)
+            set(handles.ax1,'Xlim',newlim)
         catch
         end
 
-        xlim = get(ax,'XLim');
+        xlim = get(handles.ax1,'XLim');
         if xlim(1) < min(time)
             xlim(1) = min(time);
         end
@@ -2074,9 +1775,9 @@ discard_control = uicontrol(fig,'units','normalized','Position',[.16 .59 .12 .05
         ylim(1) = min(V(find(time==xlim(1)):find(time==xlim(2))));
         yr = 2*std(V(find(time==xlim(1)):find(time==xlim(2))));
         if yr==0
-            set(ax,'YLim',[ylim(1)-1 ylim(2)+1]);
+            set(handles.ax1,'YLim',[ylim(1)-1 ylim(2)+1]);
         else
-            set(ax,'YLim',[ylim(1)-yr ylim(2)+yr]);
+            set(handles.ax1,'YLim',[ylim(1)-yr ylim(2)+yr]);
         end
 
     end
