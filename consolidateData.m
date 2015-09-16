@@ -11,6 +11,12 @@
 
 function [PID, LFP, fA, paradigm, orn, fly, AllControlParadigms, paradigm_hashes, sequence] = consolidateData(pathname,use_cache)
 
+if ~nargin
+	pathname = pwd;
+end
+if nargin < 2
+	use_cache = false;
+end
 
 PID = [];
 LFP = [];
