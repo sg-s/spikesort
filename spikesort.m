@@ -1674,7 +1674,7 @@ discard_control = uicontrol(handles.main_fig,'units','normalized','Position',[.1
         xlimits = get(handles.ax1,'XLim');
         xrange = (xlimits(2) - xlimits(1));
         scroll_amount = event.VerticalScrollCount;
-        if ~get(smart_scroll_control,'Value')
+        if pref.smart_scroll
             if scroll_amount < 0
                 if xlimits(1) <= min(time)
                     return
