@@ -340,12 +340,17 @@ discard_control = uicontrol(handles.main_fig,'units','normalized','Position',[.1
     end
 
     function discard(~,~)
+
+
         if get(discard_control,'Value') == 0
             % reset discard
             if isfield(spikes,'discard')
                 spikes(ThisControlParadigm).discard(ThisTrial) = 0;
             end
+            set(discard_control,'String','Discard','FontWeight','normal')
         else
+            set(discard_control,'String','Discarded!','FontWeight','bold')
+            
             % need to reset spikes
             if length(spikes) >= ThisControlParadigm
                 if width(spikes(ThisControlParadigm).A) >= ThisTrial
@@ -1176,6 +1181,9 @@ discard_control = uicontrol(handles.main_fig,'units','normalized','Position',[.1
 
         % clear some old stuff
         set(handles.ax1_ignored_data,'XData',NaN,'YData',NaN);
+        set(handles.ax1_all_spikes,'XData',NaN,'YData',NaN);
+        set(handles.ax1_B_spikes,'XData',NaN,'YData',NaN);
+        set(handles.ax1_A_spikes,'XData',NaN,'YData',NaN);
 
         % plot the response
         clear time V Vf % flush old variables 

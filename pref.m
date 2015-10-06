@@ -9,7 +9,7 @@
 
 
 % general preferences
-ssDebug = false; % should spikesort run in debug mode?
+ssDebug = true; % should spikesort run in debug mode?
 
 % display preferences
 marker_size = 5; % how big the spike indicators are

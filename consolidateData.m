@@ -87,6 +87,7 @@ PID = zeros(ll,0);
 fA = zeros(ll,0);
 
 for i = 1:length(allfiles)
+	clear spikes data
 	load(strcat(pathname,allfiles(i).name));
 	disp(strcat(pathname,allfiles(i).name));
 	for j = 1:length(data)
@@ -112,8 +113,10 @@ for i = 1:length(allfiles)
 			else
 
 
-				if length(spikes(j).A) > 1
+				if length(spikes(j).A) > 10 & max(max(spikes(j).A)) > 0
 					this_fA = spiketimes2f(spikes(j).A,1e-4*(1:length(spikes(j).A)),1e-3,3e-2);
+				else
+					
 				end
 				
 
@@ -179,6 +182,13 @@ for i = 1:length(allfiles)
 				end
 			end
 
+
+			% check that PID and fA match
+			if width(this_PID) ~= width(this_fA)
+				warning('Non matching PID and fA widths')
+				keyboard
+			end
+
 			% consolidate
 			try
 				LFP = [LFP this_LFP];
@@ -194,11 +204,14 @@ for i = 1:length(allfiles)
 			orn = [orn  i*ones(1,width(this_PID))];
 
 			% figure out the fly # from the file name
-			us = strfind(allfiles(i).name,'_'); % underscores
-			this_fly = str2double(allfiles(i).name(strfind(allfiles(i).name,'_F')+2:us(find(us>strfind(allfiles(i).name,'_F')+2,1,'first'))-1));
-			this_fly = 100*str2double(strrep(allfiles(i).name(1:us(3)-1),'_','')) + this_fly;
-			fly = [fly; this_fly*ones(width(this_PID),1)];
-
+			try
+				us = strfind(allfiles(i).name,'_'); % underscores
+				this_fly = str2double(allfiles(i).name(strfind(allfiles(i).name,'_F')+2:us(find(us>strfind(allfiles(i).name,'_F')+2,1,'first'))-1));
+				this_fly = 100*str2double(strrep(allfiles(i).name(1:us(3)-1),'_','')) + this_fly;
+				fly = [fly; this_fly*ones(width(this_PID),1)];
+			catch
+				warning('Error in determining fly ID. Fly IDs may not match data.')
+			end
 
 			% also add the sequence 
 			try
