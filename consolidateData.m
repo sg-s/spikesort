@@ -166,13 +166,17 @@ for i = 1:length(allfiles)
 				this_fA = this_fA(1:length(this_LFP),:);
 			end
 
-			if length(this_LFP) < size(LFP,1)
+			if length(this_LFP) < size(LFP,1) % this is to account for shorter paradigms, and pad them
 				padding = NaN(size(LFP,1)-length(this_LFP),width(this_LFP));
 				this_LFP = [this_LFP; padding];
 				padding = NaN(size(PID,1)-length(this_PID),width(this_PID));
 				this_PID = [this_PID; padding];
 				padding = NaN(size(fA,1)-length(this_fA),width(this_fA));
-				this_fA = [this_fA; padding];
+				try
+					this_fA = [this_fA; padding];
+				catch
+					this_fA = [this_fA(:); padding];
+				end
 			end
 
 			% consolidate
