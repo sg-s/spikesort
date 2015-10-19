@@ -22,7 +22,7 @@ plot_control = false; % should spikesort plot the control signals?
 smart_scroll = true; 				% intelligently scroll so we keep # visible spikes constant 
 
 % spike detection
-minimum_peak_prominence = 'auto'; 	% minimum peak prominence for peak detection
+minimum_peak_prominence = 'auto'; 	% minimum peak prominence for peak detection. you can also specify a scalar value
 minimim_peak_width = 1;
 minimim_peak_distance = 1; 			% how separated should the peaks be?
 V_cutoff = -1; 						% ignore peaks beyond this limit 

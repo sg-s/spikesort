@@ -495,7 +495,7 @@ discard_control = uicontrol(handles.main_fig,'units','normalized','Position',[.1
         mpp = pref.minimum_peak_prominence;
         if isstr(mpp)
             % guess some nice value
-            mpp = std(V)/2;
+            mpp = nanstd(V)/2;
         end
         mpd = pref.minimim_peak_distance;
         mpw = pref.minimim_peak_width;
