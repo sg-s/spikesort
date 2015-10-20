@@ -9,14 +9,14 @@
 
 
 % general preferences
-ssDebug = true; % should spikesort run in debug mode?
+ssDebug = false; 			% should spikesort run in debug mode?
 
 % display preferences
-marker_size = 5; % how big the spike indicators are
+marker_size = 5; 			% how big the spike indicators are
 deltat = 1e-4;
-fs = 14; 			% UI font size
-fw = 'bold'; 		% UI font weight
-plot_control = false; % should spikesort plot the control signals?
+fs = 14; 					% UI font size
+fw = 'bold'; 				% UI font weight
+plot_control = false; 		% should spikesort plot the control signals?
 
 % UI
 smart_scroll = true; 				% intelligently scroll so we keep # visible spikes constant 

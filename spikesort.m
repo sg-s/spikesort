@@ -453,7 +453,7 @@ discard_control = uicontrol(handles.main_fig,'units','normalized','Position',[.1
         clear es
         
         % try to remove doublets
-        if get(remove_doublets_control,'Value')
+        if pref.remove_doublets
             [A,B]=removeDoublets(A,B);
         end
 
@@ -482,8 +482,8 @@ discard_control = uicontrol(handles.main_fig,'units','normalized','Position',[.1
         spikes(ThisControlParadigm).N(ThisTrial,N) = 1;
 
         % also save spike amplitudes
-        spikes(ThisControlParadigm).amplitudes_A(ThisTrial,A)  =  ssdm_1DAmplitudes(V,pref.deltat,A,flip_V_control);
-        spikes(ThisControlParadigm).amplitudes_B(ThisTrial,B)  =  ssdm_1DAmplitudes(V,pref.deltat,B,flip_V_control);
+        spikes(ThisControlParadigm).amplitudes_A(ThisTrial,A)  =  ssdm_1DAmplitudes(V,pref.deltat,A,pref.invert_V);
+        spikes(ThisControlParadigm).amplitudes_B(ThisTrial,B)  =  ssdm_1DAmplitudes(V,pref.deltat,B,pref.invert_V);
 
         % save them
         save(strcat(PathName,FileName),'spikes','-append')
@@ -1178,7 +1178,6 @@ discard_control = uicontrol(handles.main_fig,'units','normalized','Position',[.1
     end
 
     function plotResp(src,~)
-
         % clear some old stuff
         set(handles.ax1_ignored_data,'XData',NaN,'YData',NaN);
         set(handles.ax1_all_spikes,'XData',NaN,'YData',NaN);
@@ -1624,10 +1623,8 @@ discard_control = uicontrol(handles.main_fig,'units','normalized','Position',[.1
     function [A,B] = removeDoublets(A,B)
         % remove B doublets and assign one of them to A
         % get the refractory time 
-        refractory_time = str2double(get(refractory_time_control,'String'));
-
-        B2A_cand = B(diff(B) < refractory_time);
-        B2A_alt = B(find(diff(B) < refractory_time)+1);
+        B2A_cand = B(diff(B) < pref.doublet_distance);
+        B2A_alt = B(find(diff(B) < pref.doublet_distance)+1);
         B2A = NaN*B2A_cand;
         
         % for each candidate, find the one in the pair that is further away from adjacent A spikes
@@ -1650,8 +1647,8 @@ discard_control = uicontrol(handles.main_fig,'units','normalized','Position',[.1
         B = setdiff(B,B2A);
 
         % remove A doublets and assign one of them to B
-        A2B_cand = A(diff(A) < refractory_time);
-        A2B_alt = A(find(diff(A) < refractory_time)+1);
+        A2B_cand = A(diff(A) < pref.doublet_distance);
+        A2B_alt = A(find(diff(A) < pref.doublet_distance)+1);
 
         % don't undo what we just did
         temp = ismember(A2B_alt,unique([B2A_cand B2A_alt])) | ismember(A2B_cand,unique([B2A_cand B2A_alt]));
