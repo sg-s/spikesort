@@ -109,51 +109,52 @@ for i = 1:length(allfiles)
 			this_LFP = data(j).voltage;
 			this_fA = NaN*this_LFP(:,1:10:end)';
 
-			if length(spikes) < j
-			else
-
-
-				if length(spikes(j).A) > 10 & max(max(spikes(j).A)) > 0
-					this_fA = spiketimes2f(spikes(j).A,1e-4*(1:length(spikes(j).A)),1e-3,3e-2);
+			if exist('spikes','var')
+				if length(spikes) < j
 				else
-					
-				end
-				
 
-				% censor trace use use_trace_fragment
-				use_trace_fragment = [];
-				try
-					use_trace_fragment = spikes(j).use_trace_fragment;
-				catch
-				end
 
-				if ~isempty(use_trace_fragment)
-					if width(use_trace_fragment) == width(this_PID)
-						this_LFP(~logical(use_trace_fragment)) = NaN;
+					if length(spikes(j).A) > 10 & max(max(spikes(j).A)) > 0
+						this_fA = spiketimes2f(spikes(j).A,1e-4*(1:length(spikes(j).A)),1e-3,3e-2);
 					else
-						for k = 1:width(use_trace_fragment)
-							this_LFP(k,~logical(use_trace_fragment(k,:))) = NaN;
-						end
+						
 					end
-				end
+					
 
-
-				rm_this = [];
-				try
-					rm_this = find(spikes(j).discard);
-				end
-				if ~isempty(rm_this)
-					this_PID(rm_this,:) = [];
-					this_LFP(rm_this,:) = [];
+					% censor trace use use_trace_fragment
+					use_trace_fragment = [];
 					try
-						this_fA(:,rm_this) = [];
+						use_trace_fragment = spikes(j).use_trace_fragment;
 					catch
 					end
-				else
+
+					if ~isempty(use_trace_fragment)
+						if width(use_trace_fragment) == width(this_PID)
+							this_LFP(~logical(use_trace_fragment)) = NaN;
+						else
+							for k = 1:width(use_trace_fragment)
+								this_LFP(k,~logical(use_trace_fragment(k,:))) = NaN;
+							end
+						end
+					end
+
+
+					rm_this = [];
+					try
+						rm_this = find(spikes(j).discard);
+					end
+					if ~isempty(rm_this)
+						this_PID(rm_this,:) = [];
+						this_LFP(rm_this,:) = [];
+						try
+							this_fA(:,rm_this) = [];
+						catch
+						end
+					else
+
+					end
 
 				end
-
-			
 			end
 
 			this_PID = this_PID(:,1:10:end)';
