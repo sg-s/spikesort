@@ -101,6 +101,7 @@ linkaxes([handles.ax2,handles.ax1],'x')
 
 % make dummy plots on these axes, for placeholders later on
 handles.ax1_data = plot(handles.ax1,NaN,NaN);
+handles.ax1_spike_marker = plot(handles.ax1,NaN,NaN);
 handles.ax1_A_spikes = plot(handles.ax1,NaN,NaN);
 handles.ax1_B_spikes = plot(handles.ax1,NaN,NaN);
 handles.ax1_all_spikes = plot(handles.ax1,NaN,NaN);

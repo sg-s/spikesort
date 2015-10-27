@@ -9,13 +9,17 @@ function showSpikeInContext(data,idx,this_pt)
 
 handles = data.handles;
 
-t = 1e-4*(1:length(data.V));
-set(handles.ax1_data,'XData',t,'YData',data.V,'k')
-set(handles.ax1,'XLim',[data.loc(this_pt)*1e-4 - .2 data.loc(this_pt)*1e-4 + .2]);
+pref = readPref;
+
+t = pref.deltat*(1:length(data.V));
+set(handles.ax1_data,'XData',t,'YData',data.V)
+set(handles.ax1,'XLim',[data.loc(this_pt)*pref.deltat - pref.context_width data.loc(this_pt)*pref.deltat + pref.context_width]);
 yy = get(handles.ax1,'YLim');
-set(handles.ax1_spike_marker,'XData',[data.loc(this_pt) data.loc(this_pt)]*1e-4,'YData',yy,'Color','r')
+
+% show clicked point with a vertical red line
+set(handles.ax1_spike_marker,'XData',[data.loc(this_pt) data.loc(this_pt)]*pref.deltat,'YData',yy,'Color','r')
 
 % plot A and B
-set(handles.ax1_A_spikes,'XData',data.loc(idx == 1)*1e-4,'YData',data.V(data.loc(idx == 1)),'Color','r','LineStyle','none','Marker','o');
-set(handles.ax1_B_spikes,'XData',data.loc(idx == 2)*1e-4,'YData',data.V(data.loc(idx == 2)),'Color','b','LineStyle','none','Marker','o');
-set(handles.ax1_all_spikes,'XData',data.loc(idx == 3)*1e-4,'YData',data.V(data.loc(idx == 3)),'Color','k','LineStyle','none','Marker','x');
+set(handles.ax1_A_spikes,'XData',data.loc(idx == 1)*pref.deltat,'YData',data.V(data.loc(idx == 1)),'Color','r','LineStyle','none','Marker','o');
+set(handles.ax1_B_spikes,'XData',data.loc(idx == 2)*pref.deltat,'YData',data.V(data.loc(idx == 2)),'Color','b','LineStyle','none','Marker','o');
+set(handles.ax1_all_spikes,'XData',data.loc(idx == 3)*pref.deltat,'YData',data.V(data.loc(idx == 3)),'Color','k','LineStyle','none','Marker','x');

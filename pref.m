@@ -38,3 +38,6 @@ template_match_artifacts = false;  	% use templates to kill artifacts?
 template_width = 50;
 template_amount = 2; 
 
+% context width: window around the spike to show when clicked on in a reduced representation
+context_width = .2; % seconds. 
+
