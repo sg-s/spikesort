@@ -590,14 +590,14 @@ discard_control = uicontrol(handles.main_fig,'units','normalized','Position',[.1
                 end
 
                 if width(fA) > 1
-                    if get(firing_rate_trial_control,'Value')
+                    if pref.show_firing_rate_trials
                         for j = 1:width(fA)
                             l(i) = plot(sp(1),tA,fA(:,j),'Color',c(i,:));
                         end
                     else
                        l(i) = plot(sp(1),tA,mean2(fA),'Color',c(i,:));
                     end
-                    if get(r2_plot_control,'Value')
+                    if pref.show_firing_rate_r2
                         hash = dataHash(fA);
                         cached_data = (cache(hash));
                         if isempty(cached_data)
@@ -636,14 +636,14 @@ discard_control = uicontrol(handles.main_fig,'units','normalized','Position',[.1
                     tB = (1:length(fB))*1e-3;
                 end
                 if width(fB) > 1
-                    if get(firing_rate_trial_control,'Value')
+                    if pref.show_firing_rate_trials
                         for j = 1:width(fB)
                             l(i) = plot(sp(2),tA,fB(:,j),'Color',c(i,:));
                         end
                     else
                        l(i) = plot(sp(2),tB,mean2(fB),'Color',c(i,:));
                     end
-                    if get(r2_plot_control,'Value')
+                    if pref.show_firing_rate_r2
                         hash = dataHash(fB);
                         cached_data = (cache(hash));
                         if isempty(cached_data)
@@ -683,6 +683,9 @@ discard_control = uicontrol(handles.main_fig,'units','normalized','Position',[.1
         allfiles = dir(strcat(PathName,'*.mat'));
         if any(find(strcmp('cached.mat',{allfiles.name})))
             allfiles(find(strcmp('cached.mat',{allfiles.name}))) = [];
+        end
+        if any(find(strcmp('cached_log.mat',{allfiles.name})))
+            allfiles(find(strcmp('cached_log.mat',{allfiles.name}))) = [];
         end
         summary_string = '';
         fileID = fopen('summary.log','w');

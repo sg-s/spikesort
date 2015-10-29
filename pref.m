@@ -21,6 +21,10 @@ fs = 14; 					% UI font size
 fw = 'bold'; 				% UI font weight
 plot_control = false; 		% should spikesort plot the control signals?
 
+% firing rate estimation
+show_firing_rate_trials = false; % calculate firing rate on a trial-by-trial basis?
+show_firing_rate_r2 = false; 	% show r-square of firing rates?
+
 % UI
 smart_scroll = true; 				% intelligently scroll so we keep # visible spikes constant 
 
