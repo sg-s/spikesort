@@ -10,9 +10,9 @@ function [] = spikesort()
 
 % check dependencies 
 dependencies = {'prettyFig','manualCluster','mean2','computeOnsOffs','dataHash','gitHash','argInNames','cache','bandPass','oss','raster2','sem','rsquare','spiketimes2f','strkat','tsne','fast_tsne'};
-for i = 1:length(dependencies)
-    err_message = ['spikesort needs ' dependencies{i} ' to run, which was not found. Read the docs. to make sure you have installed all dependencies.'];
-    assert(exist(dependencies{i})==2,err_message)
+for si = 1:length(dependencies)
+    err_message = ['spikesort needs ' dependencies{si} ' to run, which was not found. Read the docs. to make sure you have installed all dependencies.'];
+    assert(exist(dependencies{si},'file')==2,err_message)
 end
 
 if verLessThan('matlab', '8.0.1')
@@ -109,8 +109,8 @@ handles.ax1_ignored_data = plot(handles.ax1,NaN,NaN);
 
 % now some for ax1
 handles.ax2_data = plot(handles.ax2,NaN,NaN);
-for i = 1:10
-    handles.ax2_control_signals(i) = plot(handles.ax2,NaN,NaN);
+for si = 1:10
+    handles.ax2_control_signals(si) = plot(handles.ax2,NaN,NaN);
 end
 
 
@@ -170,14 +170,14 @@ cluster_panel = uipanel('Title','Clustering','Position',[.43 .92 .17 .07]);
 cluster_control = uicontrol(cluster_panel,'Style','popupmenu','String',avail_methods,'units','normalized','Position',[.02 .6 .9 .2],'Callback',@findCluster,'Enable','off');
 
 % add a button for machine learning
-mlpanel = uipanel('Title','Machine Learning','Position',[.61 .92 .17 .07]);
-machineLearningUIControl = uicontrol(mlpanel,'Style','pushbutton','String','Launch DeepNN...','units','normalized','Position',[.02 .1 .9 .9],'Callback',@makeMachineLearningUI,'Enable','off');
+% mlpanel = uipanel('Title','Machine Learning','Position',[.61 .92 .17 .07]);
+% machineLearningUIControl = uicontrol(mlpanel,'Style','pushbutton','String','Launch DeepNN...','units','normalized','Position',[.02 .1 .9 .9],'Callback',@makeMachineLearningUI,'Enable','off');
 
 
 % metadata panel
 metadata_panel = uipanel('Title','Metadata','Position',[.29 .57 .21 .15]);
 metadata_text_control = uicontrol(metadata_panel,'Style','edit','String','','units','normalized','Position',[.03 .3 .94 .7],'Callback',@updateMetadata,'Enable','off','Max',5,'Min',1,'HorizontalAlignment','left');
-metadata_summary_control = uicontrol(metadata_panel,'Style','pushbutton','String','Generate Summary','units','normalized','Position',[.03 .035 .45 .2],'Callback',@generateSummary);
+uicontrol(metadata_panel,'Style','pushbutton','String','Generate Summary','units','normalized','Position',[.03 .035 .45 .2],'Callback',@generateSummary);
 
 % disable tagging on non unix systems
 if ispc
@@ -281,6 +281,9 @@ discard_control = uicontrol(handles.main_fig,'units','normalized','Position',[.1
         % update the plots
         plotStim;
         plotResp(@chooseParadigmCallback);
+
+        % update Discard control
+        updateDiscardControl;
                
     end
 
@@ -321,6 +324,9 @@ discard_control = uicontrol(handles.main_fig,'units','normalized','Position',[.1
         else
             error('unknown source of callback 173. probably being incorrectly being called by something.')
         end    
+
+        % update Discard control
+        updateDiscardControl;
 
     end
 
@@ -382,52 +388,52 @@ discard_control = uicontrol(handles.main_fig,'units','normalized','Position',[.1
         pref = readPref;
     end
 
-    function exportFigs(~,~)
-        % cache current state
-        c.handles.ax2 = handles.ax2;
-        c.handles.ax1 = handles.ax1;
-        c.ThisControlParadigm = ThisControlParadigm;
-        c.ThisTrial = ThisTrial;
+    % function exportFigs(~,~)
+    %     % cache current state
+    %     c.handles.ax2 = handles.ax2;
+    %     c.handles.ax1 = handles.ax1;
+    %     c.ThisControlParadigm = ThisControlParadigm;
+    %     c.ThisTrial = ThisTrial;
 
-        % export all figs
-        for i = 1:length(spikes)
-            for j = 1:width(spikes(i).A)
-                if length(spikes(i).A(j,:)) > 1
-                    % haz data
-                    figure('outerposition',[0 0 1200 700],'PaperUnits','points','PaperSize',[1200 700]); hold on
-                    handles.ax2 = subplot(2,1,1); hold on
-                    handles.ax1 = subplot(2,1,2); hold on
-                    ThisControlParadigm = i;
-                    ThisTrial = j;
-                    plotStim;
-                    plotResp;
-                    title(handles.ax2,strrep(FileName,'_','-'));
-                    tstr = strcat(ControlParadigm(ThisControlParadigm).Name,'_Trial:',mat2str(ThisTrial));
-                    tstr = strrep(tstr,'_','-');
-                    title(handles.ax1,tstr)
-                    xlabel(handles.ax1,'Time (s)')
+    %     % export all figs
+    %     for i = 1:length(spikes)
+    %         for j = 1:width(spikes(i).A)
+    %             if length(spikes(i).A(j,:)) > 1
+    %                 % haz data
+    %                 figure('outerposition',[0 0 1200 700],'PaperUnits','points','PaperSize',[1200 700]); hold on
+    %                 handles.ax2 = subplot(2,1,1); hold on
+    %                 handles.ax1 = subplot(2,1,2); hold on
+    %                 ThisControlParadigm = i;
+    %                 ThisTrial = j;
+    %                 plotStim;
+    %                 plotResp;
+    %                 title(handles.ax2,strrep(FileName,'_','-'));
+    %                 tstr = strcat(ControlParadigm(ThisControlParadigm).Name,'_Trial:',mat2str(ThisTrial));
+    %                 tstr = strrep(tstr,'_','-');
+    %                 title(handles.ax1,tstr)
+    %                 xlabel(handles.ax1,'Time (s)')
 
                     
-                    %set(gcf,'renderer','painters')
-                    tstr = strcat(FileName,'_',tstr,'.handles.main_fig');
-                    tstr = strrep(tstr,'_','-');
-                    % print(gcf,tstr,'-depsc2','-opengl')
+    %                 %set(gcf,'renderer','painters')
+    %                 tstr = strcat(FileName,'_',tstr,'.handles.main_fig');
+    %                 tstr = strrep(tstr,'_','-');
+    %                 % print(gcf,tstr,'-depsc2','-opengl')
                    
 
-                    savefig(gcf,tstr);
-                    delete(gcf);
+    %                 savefig(gcf,tstr);
+    %                 delete(gcf);
 
 
-                end
-            end
-        end
-        % return to state
-        handles.ax2 = c.handles.ax2;
-        handles.ax1 = c.handles.ax1;
-        ThisControlParadigm = c.ThisControlParadigm;
-        ThisTrial = c.ThisTrial;
-        clear c
-    end
+    %             end
+    %         end
+    %     end
+    %     % return to state
+    %     handles.ax2 = c.handles.ax2;
+    %     handles.ax1 = c.handles.ax1;
+    %     ThisControlParadigm = c.ThisControlParadigm;
+    %     ThisTrial = c.ThisTrial;
+    %     clear c
+    % end
 
 
     function [A,B,N] = findCluster(~,~)
@@ -521,7 +527,7 @@ discard_control = uicontrol(handles.main_fig,'units','normalized','Position',[.1
     end
 
     function firingRatePlot(~,~)
-        if get(r2_plot_control,'Value')
+        if pref.show_r2
             figure('outerposition',[0 0 1200 800],'PaperUnits','points','PaperSize',[1200 800]); hold on
             sp(1)=subplot(2,4,1:3); hold on
             sp(2)=subplot(2,4,5:7); hold on
@@ -787,7 +793,6 @@ discard_control = uicontrol(handles.main_fig,'units','normalized','Position',[.1
 
         % reset some pushbuttons and other things
         set(discard_control,'Value',0)
-        pref.deltat = 1e-4;
         ThisControlParadigm = 1;
         ThisTrial = 1;
         temp = [];
@@ -1184,6 +1189,7 @@ discard_control = uicontrol(handles.main_fig,'units','normalized','Position',[.1
         set(handles.ax1_all_spikes,'XData',NaN,'YData',NaN);
         set(handles.ax1_B_spikes,'XData',NaN,'YData',NaN);
         set(handles.ax1_A_spikes,'XData',NaN,'YData',NaN);
+        set(handles.ax1_spike_marker,'XData',NaN,'YData',NaN);
 
         % plot the response
         clear time V Vf % flush old variables 
@@ -1581,11 +1587,10 @@ discard_control = uicontrol(handles.main_fig,'units','normalized','Position',[.1
     function [R,V_snippets] = reduceDimensions(method)
 
         % take snippets for each putative spike
-        t_before = 20;
-        t_after = 25; % assumes dt = 1e-4
-        V_snippets = NaN(t_before+t_after,length(loc));
+
+        V_snippets = NaN(pref.t_before+pref.t_after,length(loc));
         for i = 2:length(loc)-1
-            V_snippets(:,i) = V(loc(i)-t_before+1:loc(i)+t_after);
+            V_snippets(:,i) = V(loc(i)-pref.t_before+1:loc(i)+pref.t_after);
         end
         loc(1) = []; V_snippets(:,1) = []; 
         loc(end) = []; V_snippets(:,end) = [];
@@ -1739,7 +1744,7 @@ discard_control = uicontrol(handles.main_fig,'units','normalized','Position',[.1
 
     end
 
-    function templateMatch(src,event)
+    function templateMatch(~,~)
         plotResp(@templateMatch);
     end
 
@@ -1748,6 +1753,23 @@ discard_control = uicontrol(handles.main_fig,'units','normalized','Position',[.1
         save(strcat(PathName,FileName),'metadata','-append')
     end
 
+    function updateDiscardControl(~,~)
+        if isfield(spikes,'discard')
+            discard_this = false;
+            try
+                discard_this = spikes(ThisControlParadigm).discard(ThisTrial);
+            catch
+            end
+            if discard_this
+                set(discard_control,'Value',1,'String','Discarded!','FontWeight','bold')
+            else
+                set(discard_control,'Value',0,'String','Discard','FontWeight','normal')
+            end
+        else
+            % nothing has been discarded
+            set(discard_control,'Value',0,'String','Discard','FontWeight','normal')
+        end
+    end
 
 
 

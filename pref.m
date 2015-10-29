@@ -8,12 +8,15 @@
 % To view a copy of this license, visit http://creativecommons.org/licenses/by-nc-sa/4.0/.
 
 
-% general preferences
+% general
+deltat = 1e-4; % what is the time step of the data?
+
+% debug preferences
 ssDebug = false; 			% should spikesort run in debug mode?
 
 % display preferences
 marker_size = 5; 			% how big the spike indicators are
-deltat = 1e-4;
+show_r2 = false;			% show r2 in firing rate plot
 fs = 14; 					% UI font size
 fw = 'bold'; 				% UI font weight
 plot_control = false; 		% should spikesort plot the control signals?
@@ -22,6 +25,8 @@ plot_control = false; 		% should spikesort plot the control signals?
 smart_scroll = true; 				% intelligently scroll so we keep # visible spikes constant 
 
 % spike detection
+t_before = 20; 		% should be an integer, in units of data samples
+t_after = 25; 		% should be an integer, in units of data samples 
 minimum_peak_prominence = 'auto'; 	% minimum peak prominence for peak detection. you can also specify a scalar value
 minimim_peak_width = 1;
 minimim_peak_distance = 1; 			% how separated should the peaks be?
