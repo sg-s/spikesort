@@ -31,7 +31,7 @@ load(allfiles(1).name)
 data = orderfields(data);
 ControlParadigm = orderfields(ControlParadigm);
 
-hash = DataHash(ControlParadigm);
+hash = dataHash(ControlParadigm);
 
 merged_data = data;
 merged_spikes = spikes;
@@ -43,15 +43,15 @@ for i = 2:length(allfiles)
 	data = orderfields(data);
 	ControlParadigm = orderfields(ControlParadigm);
 
-	if ~strcmp(DataHash(fieldnames(data)),DataHash(fieldnames(merged_data)))
+	if ~strcmp(dataHash(fieldnames(data)),dataHash(fieldnames(merged_data)))
 		error('data that I just loaded has variables that I did not expect.')
 	end
 
-	if ~strcmp(DataHash(fieldnames(spikes)),DataHash(fieldnames(merged_spikes)))
+	if ~strcmp(dataHash(fieldnames(spikes)),dataHash(fieldnames(merged_spikes)))
 		warning('spikes that I just loaded has variables that I did not expect.')
 	end
 
-	if strcmp(hash,DataHash(ControlParadigm))
+	if strcmp(hash,dataHash(ControlParadigm))
 		haz_data = find(Kontroller_ntrials(data));
 		for j = haz_data
 			if j > length(merged_data)
@@ -80,12 +80,12 @@ for i = 2:length(allfiles)
 		disp('ControlParadigm mismatch. Attempting to fit as best as I can...')
 		haz_data = find(Kontroller_ntrials(data));
 		for j = haz_data
-			this_hash = DataHash(ControlParadigm(j));
+			this_hash = dataHash(ControlParadigm(j));
 
 			% check if this belongs somewhere in the merged master
 			m = [];
 			for k = 1:length(merged_ControlParadigm)
-				if strcmp(DataHash(merged_ControlParadigm(k)),this_hash)
+				if strcmp(dataHash(merged_ControlParadigm(k)),this_hash)
 					m = k;
 					disp('Matched')
 					disp(ControlParadigm(j).Name)

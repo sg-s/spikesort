@@ -60,6 +60,15 @@ handles.h_scatter1 = [];
 handles.h_scatter2 = [];
 handles.main_fig = [];
 
+%               ##     ##    ###    ##    ## ########    ##     ## #### 
+%               ###   ###   ## ##   ##   ##  ##          ##     ##  ##  
+%               #### ####  ##   ##  ##  ##   ##          ##     ##  ##  
+%               ## ### ## ##     ## #####    ######      ##     ##  ##  
+%               ##     ## ######### ##  ##   ##          ##     ##  ##  
+%               ##     ## ##     ## ##   ##  ##          ##     ##  ##  
+%               ##     ## ##     ## ##    ## ########     #######  #### 
+
+
 
 % make the master figure, and the axes to plot the voltage traces
 handles.main_fig = figure('position',[50 50 1200 700], 'Toolbar','figure','Menubar','none','Name',versionname,'NumberTitle','off','IntegerHandle','off','WindowButtonDownFcn',@mousecallback,'WindowScrollWheelFcn',@scroll,'CloseRequestFcn',@closess);
