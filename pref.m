@@ -27,6 +27,9 @@ show_firing_rate_r2 = false; 	% show r-square of firing rates?
 
 % UI
 smart_scroll = true; 				% intelligently scroll so we keep # visible spikes constant 
+% context width: window around the spike to show when clicked on in a reduced representation
+context_width = .2; % seconds. 
+
 
 % spike detection
 t_before = 20; 		% should be an integer, in units of data samples
@@ -37,8 +40,6 @@ minimim_peak_distance = 1; 			% how separated should the peaks be?
 V_cutoff = -1; 						% ignore peaks beyond this limit 
 invert_V = false; 					% sometimes, it is easier to find spikes if you invert V
 band_pass = [100 1000]; 			% in Hz. band pass V to find spikes more easily 
-
-% doublets
 remove_doublets = true;				% resolve doublet peaks, which are very likely AB or BA, not AA or BB
 doublet_distance = 90; 				% how far out should you look for doublets? 
 
@@ -47,6 +48,5 @@ template_match_artifacts = false;  	% use templates to kill artifacts?
 template_width = 50;
 template_amount = 2; 
 
-% context width: window around the spike to show when clicked on in a reduced representation
-context_width = .2; % seconds. 
+
 
