@@ -38,7 +38,7 @@ end
 
 allfiles = dir([pathname '*.mat']);
 % remove the consolidated data from this
-rm_this = [find(strcmp('consolidated_data.mat',{allfiles.name})) find(strcmp('cached.mat',{allfiles.name}))];
+rm_this = [find(strcmp('cached_log.mat',{allfiles.name})) find(strcmp('consolidated_data.mat',{allfiles.name})) find(strcmp('cached.mat',{allfiles.name}))];
 if ~isempty(rm_this)
 	allfiles(rm_this) = [];
 end
