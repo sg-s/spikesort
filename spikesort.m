@@ -50,8 +50,8 @@ Vf = 0; % filtered V
 V_snippets = [];
 time = 0;
 loc =0; % holds current spike times
-FileName = [];
-PathName = [];
+file_name = [];
+path_name = [];
 
 % handles
 handles.valve_channel = [];
@@ -235,13 +235,13 @@ discard_control = uicontrol(handles.main_fig,'units','normalized','Position',[.1
     function addTag(src,~)
         % matlab wrapper for tag, which adds BSD tags to the file we are working on. *nix only. 
         tag = get(src,'String');
-        temp = whos('FileName');
-        if ~isempty(FileName) && strcmp(temp.class,'char')
+        temp = whos('file_name');
+        if ~isempty(file_name) && strcmp(temp.class,'char')
             % tag the file with the given tag
             clear es
             es{1} = 'tag -a ';
             es{2} = tag;
-            es{3} = strcat(PathName,FileName);
+            es{3} = strcat(path_name,file_name);
             unix(strjoin(es));
         end
     end
@@ -342,9 +342,9 @@ discard_control = uicontrol(handles.main_fig,'units','normalized','Position',[.1
     function closess(~,~)
         % close everything and save everything
         try
-            if ~isempty(PathName) && ~isempty(FileName) 
-                if ischar(PathName) && ischar(FileName)
-                    save(strcat(PathName,FileName),'spikes','-append')
+            if ~isempty(path_name) && ~isempty(file_name) 
+                if ischar(path_name) && ischar(file_name)
+                    save(strcat(path_name,file_name),'spikes','-append')
                 end
             end
         catch
@@ -384,7 +384,7 @@ discard_control = uicontrol(handles.main_fig,'units','normalized','Position',[.1
 
             % mark as discarded
             spikes(ThisControlParadigm).discard(ThisTrial) = 1;
-            save(strcat(PathName,FileName),'spikes','-append')
+            save(strcat(path_name,file_name),'spikes','-append')
             
         end
         
@@ -416,7 +416,7 @@ discard_control = uicontrol(handles.main_fig,'units','normalized','Position',[.1
     %                 ThisTrial = j;
     %                 plotStim;
     %                 plotResp;
-    %                 title(handles.ax2,strrep(FileName,'_','-'));
+    %                 title(handles.ax2,strrep(file_name,'_','-'));
     %                 tstr = strcat(ControlParadigm(ThisControlParadigm).Name,'_Trial:',mat2str(ThisTrial));
     %                 tstr = strrep(tstr,'_','-');
     %                 title(handles.ax1,tstr)
@@ -424,7 +424,7 @@ discard_control = uicontrol(handles.main_fig,'units','normalized','Position',[.1
 
                     
     %                 %set(gcf,'renderer','painters')
-    %                 tstr = strcat(FileName,'_',tstr,'.handles.main_fig');
+    %                 tstr = strcat(file_name,'_',tstr,'.handles.main_fig');
     %                 tstr = strrep(tstr,'_','-');
     %                 % print(gcf,tstr,'-depsc2','-opengl')
                    
@@ -502,7 +502,7 @@ discard_control = uicontrol(handles.main_fig,'units','normalized','Position',[.1
         spikes(ThisControlParadigm).amplitudes_B(ThisTrial,B)  =  ssdm_1DAmplitudes(V,pref.deltat,B,pref.invert_V);
 
         % save them
-        save(strcat(PathName,FileName),'spikes','-append')
+        save(strcat(path_name,file_name),'spikes','-append')
 
     end
 
@@ -689,7 +689,7 @@ discard_control = uicontrol(handles.main_fig,'units','normalized','Position',[.1
     end
 
     function generateSummary(~,~)
-        allfiles = dir(strcat(PathName,'*.mat'));
+        allfiles = dir(strcat(path_name,'*.mat'));
         if any(find(strcmp('cached.mat',{allfiles.name})))
             allfiles(find(strcmp('cached.mat',{allfiles.name}))) = [];
         end
@@ -759,45 +759,39 @@ discard_control = uicontrol(handles.main_fig,'units','normalized','Position',[.1
     
     function loadFileCallback(src,~)
         if strcmp(src.String,'Load File')
-            [FileName,PathName] = uigetfile('.mat');
-            if ~FileName
+            [file_name,path_name] = uigetfile('.mat');
+            if ~file_name
                 return
             end
         elseif strcmp(src.String,'<')
-            if isempty(FileName)
+            if isempty(file_name)
                 return
             else
                 % first save what we had before
-                save(strcat(PathName,FileName),'spikes','-append')
+                save(strcat(path_name,file_name),'spikes','-append')
 
-                allfiles = dir(strcat(PathName,'*.mat'));
-                if any(find(strcmp('cached.mat',{allfiles.name})))
-                    allfiles(find(strcmp('cached.mat',{allfiles.name}))) = [];
-                end
-                thisfile = find(strcmp(FileName,{allfiles.name}))-1;
+                allfiles = dir(strcat(path_name,'*.mat'));
+                thisfile = find(strcmp(file_name,{allfiles.name}))-1;
                 if thisfile < 1
-                    FileName = allfiles(end).name;
+                    file_name = allfiles(end).name;
                 else
-                    FileName = allfiles(thisfile).name;    
+                    file_name = allfiles(thisfile).name;    
                 end
                 
             end
         else
-            if isempty(FileName)
+            if isempty(file_name)
                 return
             else
                 % first save what we had before
-                save(strcat(PathName,FileName),'spikes','-append')
+                save(strcat(path_name,file_name),'spikes','-append')
                 
-                allfiles = dir(strcat(PathName,'*.mat'));
-                if any(find(strcmp('cached.mat',{allfiles.name})))
-                    allfiles(find(strcmp('cached.mat',{allfiles.name}))) = [];
-                end
-                thisfile = find(strcmp(FileName,{allfiles.name}))+1;
+                allfiles = dir(strcat(path_name,'*.mat'));
+                thisfile = find(strcmp(file_name,{allfiles.name}))+1;
                 if thisfile > length(allfiles)
-                    FileName = allfiles(1).name;
+                    file_name = allfiles(1).name;
                 else
-                    FileName = allfiles(thisfile).name;
+                    file_name = allfiles(thisfile).name;
                 end
                 
             end
@@ -819,187 +813,197 @@ discard_control = uicontrol(handles.main_fig,'units','normalized','Position',[.1
         time = 0;
         loc =0; % holds current spike times
 
-        console(strcat('Loading file:',PathName,'/',FileName))
+        console(strcat('Loading file:',path_name,'/',file_name))
         handles.load_waitbar = waitbar(0.2, 'Loading data...');
-        temp=load(strcat(PathName,FileName));
-        ControlParadigm = temp.ControlParadigm;
-        data = temp.data;
-        SamplingRate = temp.SamplingRate;
-        OutputChannelNames = temp.OutputChannelNames;
+        temp=load(strcat(path_name,file_name));
         try
-          metadata = temp.metadata;
-          timestamps = temp.timestamps;
-        catch
-        end
-        if isfield(temp,'spikes')
-            spikes = temp.spikes;
-        end
-        clear temp
-
-        
-
-        waitbar(0.3,handles.load_waitbar,'Updating listboxes...')
-        % update control signal listboxes with OutputChannelNames
-        set(handles.valve_channel,'String',OutputChannelNames)
-
-        % update stimulus listbox with all input channel names
-        fl = fieldnames(data);
-
-        % also add all the control signals
-        set(stim_channel,'String',[fl(:); OutputChannelNames(:)]);
-
-        % update response listbox with all the input channel names
-        set(resp_channel,'String',fl);
-
-        % some sanity checks
-        if length(data) > length(ControlParadigm)
-            error('Something is wrong with this file: more data than control paradigms.')
-        end
-
-        % find out which paradigms have data 
-        n = Kontroller_ntrials(data); 
-
-        % only show the paradigms with data
-        temp = {ControlParadigm.Name};
-        set(paradigm_chooser,'String',temp(find(n)),'Value',1);
-
-
-        % go to the first paradigm with data. 
-        ThisControlParadigm = find(n);
-        ThisControlParadigm = ThisControlParadigm(1);
-
-
-        n = n(ThisControlParadigm);
-        if n
-            temp  ={};
-            for i = 1:n
-                temp{i} = strcat('Trial-',mat2str(i));
+            ControlParadigm = temp.ControlParadigm;
+            data = temp.data;
+            SamplingRate = temp.SamplingRate;
+            OutputChannelNames = temp.OutputChannelNames;
+            try
+              metadata = temp.metadata;
+              timestamps = temp.timestamps;
+            catch
             end
-            set(trial_chooser,'String',temp);
-            ThisTrial = 1;
-            set(trial_chooser,'String',temp);
-        else
-            set(trial_chooser,'String','No data');
-            ThisTrial = NaN;
-        end
+            if isfield(temp,'spikes')
+                spikes = temp.spikes;
+            end
+            clear temp
 
-        waitbar(0.4,handles.load_waitbar,'Guessing control signals...')
-        % automatically default to picking the digital signals as the control signals
-        digital_channels = zeros(1,length(OutputChannelNames));
-        for i = 1:length(ControlParadigm)
-            for j = 1:width(ControlParadigm(i).Outputs)
-                uv = (unique(ControlParadigm(i).Outputs(j,:)));
-                if length(uv) == 2 && sum(uv) == 1
-                    digital_channels(j) = 1;
+            
+
+            waitbar(0.3,handles.load_waitbar,'Updating listboxes...')
+            % update control signal listboxes with OutputChannelNames
+            set(handles.valve_channel,'String',OutputChannelNames)
+
+            % update stimulus listbox with all input channel names
+            fl = fieldnames(data);
+
+            % also add all the control signals
+            set(stim_channel,'String',[fl(:); OutputChannelNames(:)]);
+
+            % update response listbox with all the input channel names
+            set(resp_channel,'String',fl);
+
+            % some sanity checks
+            if length(data) > length(ControlParadigm)
+                error('Something is wrong with this file: more data than control paradigms.')
+            end
+
+            % find out which paradigms have data 
+            n = Kontroller_ntrials(data); 
+
+            % only show the paradigms with data
+            temp = {ControlParadigm.Name};
+            set(paradigm_chooser,'String',temp(find(n)),'Value',1);
+
+
+            % go to the first paradigm with data. 
+            ThisControlParadigm = find(n);
+            ThisControlParadigm = ThisControlParadigm(1);
+
+
+            n = n(ThisControlParadigm);
+            if n
+                temp  ={};
+                for i = 1:n
+                    temp{i} = strcat('Trial-',mat2str(i));
                 end
-               
+                set(trial_chooser,'String',temp);
+                ThisTrial = 1;
+                set(trial_chooser,'String',temp);
+            else
+                set(trial_chooser,'String','No data');
+                ThisTrial = NaN;
             end
-        end
-        digital_channels = find(digital_channels);
-        set(handles.valve_channel,'Value',digital_channels);
+
+            waitbar(0.4,handles.load_waitbar,'Guessing control signals...')
+            % automatically default to picking the digital signals as the control signals
+            digital_channels = zeros(1,length(OutputChannelNames));
+            for i = 1:length(ControlParadigm)
+                for j = 1:width(ControlParadigm(i).Outputs)
+                    uv = (unique(ControlParadigm(i).Outputs(j,:)));
+                    if length(uv) == 2 && sum(uv) == 1
+                        digital_channels(j) = 1;
+                    end
+                   
+                end
+            end
+            digital_channels = find(digital_channels);
+            set(handles.valve_channel,'Value',digital_channels);
 
 
-        waitbar(0.5,handles.load_waitbar,'Guessing stimulus and response...')
-        temp = find(strcmp('PID', fl));
-        if ~isempty(temp)
-            set(stim_channel,'Value',temp);
-        end
-        temp = find(strcmp('voltage', fl));
-        if ~isempty(temp)
-            set(resp_channel,'Value',temp);
+            waitbar(0.5,handles.load_waitbar,'Guessing stimulus and response...')
+            temp = find(strcmp('PID', fl));
+            if ~isempty(temp)
+                set(stim_channel,'Value',temp);
+            end
+            temp = find(strcmp('voltage', fl));
+            if ~isempty(temp)
+                set(resp_channel,'Value',temp);
 
-        end
+            end
 
-        set(handles.main_fig,'Name',strcat(versionname,'--',FileName))
+            set(handles.main_fig,'Name',strcat(versionname,'--',file_name))
 
-        % enable all controls
-        waitbar(.7,handles.load_waitbar,'Enabling UI...')
-        set(sine_control,'Enable','on');
-        set(autosort_control,'Enable','on');
-        set(redo_control,'Enable','on');
-        set(findmode,'Enable','on');
-        set(filtermode,'Enable','on');
-        set(cluster_control,'Enable','on');
-        set(prev_trial,'Enable','on');
-        set(next_trial,'Enable','on');
-        set(prev_paradigm,'Enable','on');
-        set(next_paradigm,'Enable','on');
-        set(trial_chooser,'Enable','on');
-        set(paradigm_chooser,'Enable','on');
-        set(discard_control,'Enable','on');
-        set(metadata_text_control,'Enable','on')
+            % enable all controls
+            waitbar(.7,handles.load_waitbar,'Enabling UI...')
+            set(sine_control,'Enable','on');
+            set(autosort_control,'Enable','on');
+            set(redo_control,'Enable','on');
+            set(findmode,'Enable','on');
+            set(filtermode,'Enable','on');
+            set(cluster_control,'Enable','on');
+            set(prev_trial,'Enable','on');
+            set(next_trial,'Enable','on');
+            set(prev_paradigm,'Enable','on');
+            set(next_paradigm,'Enable','on');
+            set(trial_chooser,'Enable','on');
+            set(paradigm_chooser,'Enable','on');
+            set(discard_control,'Enable','on');
+            set(metadata_text_control,'Enable','on')
 
-        % check for amplitudes 
-        waitbar(.7,handles.load_waitbar,'Checking to see amplitude data exists...')
-        % check if we have spike_amplitude data
-        if length(spikes)
-            for i = 1:length(spikes)
-                for j = 1:width(spikes(i).A)
-                    haz_data = 0;
-                    if length(spikes(i).A(j,:)) > 2 
-                        if isfield(spikes,'discard')
-                            if length(spikes(i).discard) < j
-                                haz_data = 1;
-                            else
-                                if ~spikes(i).discard(j)
+            % check for amplitudes 
+            waitbar(.7,handles.load_waitbar,'Checking to see amplitude data exists...')
+            % check if we have spike_amplitude data
+            if length(spikes)
+                for i = 1:length(spikes)
+                    for j = 1:width(spikes(i).A)
+                        haz_data = 0;
+                        if length(spikes(i).A(j,:)) > 2 
+                            if isfield(spikes,'discard')
+                                if length(spikes(i).discard) < j
                                     haz_data = 1;
+                                else
+                                    if ~spikes(i).discard(j)
+                                        haz_data = 1;
+                                    end
+                                end
+                            else
+                                haz_data = 1;
+                            end
+                        end
+                        if haz_data
+                            recompute = 0;
+                            if isfield(spikes,'amplitudes_A')
+                                if width(spikes(i).amplitudes_A) < j
+                                    recompute = 1;
+                                    spikes(i).amplitudes_A = [];
+                                    spikes(i).amplitudes_B = [];
+                                elseif length(spikes(i).amplitudes_A(j,:)) < length(spikes(i).A(j,:))
+                                    spikes(i).amplitudes_A = [];
+                                    spikes(i).amplitudes_B = [];
+                                    recompute = 1;
+                                    
                                 end
                             end
-                        else
-                            haz_data = 1;
-                        end
-                    end
-                    if haz_data
-                        recompute = 0;
-                        if isfield(spikes,'amplitudes_A')
-                            if width(spikes(i).amplitudes_A) < j
-                                recompute = 1;
-                                spikes(i).amplitudes_A = [];
-                                spikes(i).amplitudes_B = [];
-                            elseif length(spikes(i).amplitudes_A(j,:)) < length(spikes(i).A(j,:))
-                                spikes(i).amplitudes_A = [];
-                                spikes(i).amplitudes_B = [];
-                                recompute = 1;
-                                
+                            if recompute
+                                A = spikes(i).A(j,:);
+                            
+                                spikes(i).amplitudes_A(j,:) = sparse(1,length(A));
+                                spikes(i).amplitudes_B(j,:) = sparse(1,length(A));
+                                V = data(i).voltage(j,:);
+                                spikes(i).amplitudes_A(j,find(A))  =  ssdm_1DAmplitudes(V,pref.deltat,find(A),pref.invert_V);
+                                B = spikes(i).B(j,:);
+                                spikes(i).amplitudes_B(j,find(B))  =  ssdm_1DAmplitudes(V,pref.deltat,find(B),pref.invert_V);
                             end
                         end
-                        if recompute
-                            A = spikes(i).A(j,:);
-                        
-                            spikes(i).amplitudes_A(j,:) = sparse(1,length(A));
-                            spikes(i).amplitudes_B(j,:) = sparse(1,length(A));
-                            V = data(i).voltage(j,:);
-                            spikes(i).amplitudes_A(j,find(A))  =  ssdm_1DAmplitudes(V,pref.deltat,find(A),pref.invert_V);
-                            B = spikes(i).B(j,:);
-                            spikes(i).amplitudes_B(j,find(B))  =  ssdm_1DAmplitudes(V,pref.deltat,find(B),pref.invert_V);
-                        end
-                    end
 
+                    end
                 end
             end
-        end
 
-        % check to see if metadata exists
-        try
-            set(metadata_text_control,'String',metadata.spikesort_comment)
+            % check to see if metadata exists
+            try
+                set(metadata_text_control,'String',metadata.spikesort_comment)
+            catch
+                set(metadata_text_control,'String','')
+            end
+
+            % check to see if this file is tagged. 
+            if isunix
+                clear es
+                es{1} = 'tag -l ';
+                es{2} = strcat(path_name,file_name);
+                [~,temp] = unix(strjoin(es));
+                set(tag_control,'String',temp(strfind(temp,'.mat')+5:end-1));
+            end
+
+            % clean up
+            close(handles.load_waitbar)
+
+            plotStim;
+            plotResp(@loadFileCallback);
         catch
-            set(metadata_text_control,'String','')
+            close(handles.load_waitbar)
+            if src.String == '>'
+                loadFileCallback(src)
+            elseif src.String == '<'
+                loadFileCallback(src)
+            end
+
         end
-
-        % check to see if this file is tagged. 
-        if isunix
-            clear es
-            es{1} = 'tag -l ';
-            es{2} = strcat(PathName,FileName);
-            [~,temp] = unix(strjoin(es));
-            set(tag_control,'String',temp(strfind(temp,'.mat')+5:end-1));
-        end
-
-        % clean up
-        close(handles.load_waitbar)
-
-        plotStim;
-        plotResp(@loadFileCallback);
     end
 
 
@@ -1592,7 +1596,7 @@ discard_control = uicontrol(handles.main_fig,'units','normalized','Position',[.1
         plotResp;
 
         % save the clear
-        save(strcat(PathName,FileName),'spikes','-append')
+        save(strcat(path_name,file_name),'spikes','-append')
 
     end
 
@@ -1762,7 +1766,7 @@ discard_control = uicontrol(handles.main_fig,'units','normalized','Position',[.1
 
     function updateMetadata(src,~)
         metadata.spikesort_comment = get(src,'String');
-        save(strcat(PathName,FileName),'metadata','-append')
+        save(strcat(path_name,file_name),'metadata','-append')
     end
 
     function updateDiscardControl(~,~)

@@ -146,6 +146,7 @@ for i = 1:length(allfiles)
 					rm_this = [];
 					try
 						rm_this = find(spikes(j).discard);
+					catch
 					end
 					if ~isempty(rm_this)
 						this_PID(rm_this,:) = [];
