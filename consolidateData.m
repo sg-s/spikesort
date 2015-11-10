@@ -9,7 +9,7 @@
 % This work is licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License. 
 % To view a copy of this license, visit http://creativecommons.org/licenses/by-nc-sa/4.0/.
 
-function [PID, LFP, fA, paradigm, orn, fly, AllControlParadigms, paradigm_hashes, sequence] = consolidateData(pathname,use_cache)
+function [PID, LFP, fA, paradigm, orn, fly, AllControlParadigms, paradigm_hashes, sequence, all_spikes] = consolidateData(pathname,use_cache)
 
 if ~nargin
 	pathname = pwd;
@@ -24,6 +24,7 @@ fly = [];
 spiketimes = [];
 fA = [];
 paradigm = [];
+all_spikes = [];
 orn = [];
 AllControlParadigms = struct;
 AllControlParadigms.Name = '';
@@ -60,6 +61,7 @@ if use_cache
 		AllControlParadigms = cached_data.AllControlParadigms;
 		paradigm_hashes = cached_data.paradigm_hashes;
 		orn = cached_data.orn;
+		all_spikes = cached_data.all_spikes;
 		try
 			fly = cached_data.fly;
 		end
@@ -85,6 +87,7 @@ ll = ceil(ll/10);
 LFP = zeros(ll,0);
 PID = zeros(ll,0);
 fA = zeros(ll,0);
+all_spikes = sparse(ll*10,0);
 
 for i = 1:length(allfiles)
 	clear spikes data
@@ -116,6 +119,7 @@ for i = 1:length(allfiles)
 
 					if length(spikes(j).A) > 10 & max(max(spikes(j).A)) > 0
 						this_fA = spiketimes2f(spikes(j).A,1e-4*(1:length(spikes(j).A)),1e-3,3e-2);
+						this_spikes = spikes(j).A;
 					else
 						
 					end
@@ -182,6 +186,10 @@ for i = 1:length(allfiles)
 				catch
 					this_fA = [this_fA(:); padding];
 				end
+
+				% pad spikes too
+				padding = NaN(size(spikes,1)-length(this_spikes),width(this_spikes));
+				this_spikes = [this_spikes; padding];
 			end
 
 
@@ -196,6 +204,7 @@ for i = 1:length(allfiles)
 				LFP = [LFP this_LFP];
 				PID = [PID this_PID];
 				fA =  [fA  this_fA ];
+				all_spikes = [all_spikes; this_spikes];
 			catch er
 				er
 				keyboard
@@ -241,6 +250,7 @@ cached_data.AllControlParadigms = AllControlParadigms;
 cached_data.paradigm_hashes = paradigm_hashes;
 cached_data.orn = orn;
 cached_data.fly = fly;
+cached_data.all_spikes  = all_spikes;
 cached_data.sequence = sequence;
 save([pathname 'consolidated_data.mat'],'cached_data');
 
