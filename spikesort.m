@@ -513,8 +513,8 @@ discard_control = uicontrol(handles.main_fig,'units','normalized','Position',[.1
             % guess some nice value
             mpp = nanstd(V)/2;
         end
-        mpd = pref.minimim_peak_distance;
-        mpw = pref.minimim_peak_width;
+        mpd = pref.minimum_peak_distance;
+        mpw = pref.minimum_peak_width;
         v_cutoff = pref.V_cutoff;
 
 
@@ -814,9 +814,14 @@ discard_control = uicontrol(handles.main_fig,'units','normalized','Position',[.1
         loc =0; % holds current spike times
 
         console(strcat('Loading file:',path_name,'/',file_name))
-        handles.load_waitbar = waitbar(0.2, 'Loading data...');
+        
         temp=load(strcat(path_name,file_name));
         try
+            try
+                delete(handles.load_waitbar)
+            catch
+            end
+            handles.load_waitbar = waitbar(0.2, 'Loading data...');
             ControlParadigm = temp.ControlParadigm;
             data = temp.data;
             SamplingRate = temp.SamplingRate;
@@ -996,7 +1001,6 @@ discard_control = uicontrol(handles.main_fig,'units','normalized','Position',[.1
             plotStim;
             plotResp(@loadFileCallback);
         catch
-            close(handles.load_waitbar)
             if src.String == '>'
                 loadFileCallback(src)
             elseif src.String == '<'
@@ -1564,7 +1568,7 @@ discard_control = uicontrol(handles.main_fig,'units','normalized','Position',[.1
         L ={};
         for i = 1:length(spikes)
             if length(spikes(i).A) > 1
-                raster2(full(spikes(i).A),spikes(i).B,yoffset);
+                raster2(spikes(i).A,spikes(i).B,yoffset);
                 yoffset = yoffset + width(spikes(i).A)*2 + 1;
                 ytick = [ytick yoffset];
                 L = [L strrep(ControlParadigm(i).Name,'_','-')];

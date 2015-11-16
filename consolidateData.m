@@ -39,7 +39,7 @@ end
 
 allfiles = dir([pathname '*.mat']);
 % remove the consolidated data from this
-rm_this = [find(strcmp('cached.mat',{allfiles.name})) find(strcmp('consolidated_data.mat',{allfiles.name})) find(strcmp('cached.mat',{allfiles.name}))];
+rm_this = [find(strcmp('cached_log.mat',{allfiles.name})) find(strcmp('consolidated_data.mat',{allfiles.name})) find(strcmp('cached.mat',{allfiles.name}))];
 if ~isempty(rm_this)
 	allfiles(rm_this) = [];
 end
@@ -61,7 +61,9 @@ if use_cache
 		AllControlParadigms = cached_data.AllControlParadigms;
 		paradigm_hashes = cached_data.paradigm_hashes;
 		orn = cached_data.orn;
-		all_spikes = cached_data.all_spikes;
+		try
+			all_spikes = cached_data.all_spikes;
+		end
 		try
 			fly = cached_data.fly;
 		end
@@ -207,7 +209,7 @@ for i = 1:length(allfiles)
 				all_spikes = [all_spikes; this_spikes];
 			catch er
 				er
-				keyboard
+				
 			end
 			
 
