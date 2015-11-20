@@ -58,17 +58,17 @@ for i = 1:length(allfiles)
 						% take snippets for each putative spike
 				        
 				        V_snippets = NaN(t_before+t_after,length(loc));
-				        for i = 2:length(loc)-1
-				            V_snippets(:,i) = V(loc(i)-t_before+1:loc(i)+t_after);
+				        for l = 2:length(loc)-1
+				            V_snippets(:,l) = V(loc(l)-t_before+1:loc(l)+t_after);
 				        end
-				        loc(1) = []; V_snippets(:,1) = []; 
-				        loc(end) = []; V_snippets(:,end) = [];
+				        V_snippets(:,1) = []; 
+ 						V_snippets(:,end) = [];
 
 				        disp(length(V_snippets))
 					    % run the fast tSNE algorithm on this
 					    fast_tsne(V_snippets,2,10,60);
 					catch err
-						err
+						disp(err)
 					end
 				end
 			end
