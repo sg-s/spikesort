@@ -31,6 +31,9 @@ versionname = strcat('spikesort for Kontroller (Build-',h(1:6),')');
 % load preferences
 pref = readPref;
 
+% add src folder to path
+addpath([fileparts(which(mfilename)) oss 'src'])
+
 % generate placeholder variables
 ControlParadigm = [];
 data = [];
@@ -154,8 +157,8 @@ prev_trial = uicontrol(datachooserpanel,'units','normalized','Position',[.05 .15
 % dimension reduction and clustering panels
 dimredpanel = uipanel('Title','Dimensionality Reduction','Position',[.25 .92 .17 .07]);
 % find the available methods
-look_here = mfilename('fullpath');
-look_here=look_here(1:max(strfind(look_here,oss))); % this is where we should look for methods
+look_here = [fileparts(mfilename('fullpath')) oss 'src' oss];
+ % this is where we should look for methods
 avail_methods=dir(strcat(look_here,'ssdm_*.m'));
 avail_methods={avail_methods.name};
 for oi = 1:length(avail_methods)
@@ -166,8 +169,7 @@ clear oi
 method_control = uicontrol(dimredpanel,'Style','popupmenu','String',avail_methods,'units','normalized','Position',[.02 .6 .9 .2],'Callback',@reduceDimensionsCallback,'Enable','off');
 
 % find the available methods for clustering
-look_here = mfilename('fullpath');
-look_here=look_here(1:max(strfind(look_here,oss))); % this is where we should look for methods
+
 avail_methods=dir(strcat(look_here,'sscm_*.m'));
 avail_methods={avail_methods.name};
 for oi = 1:length(avail_methods)
@@ -506,34 +508,7 @@ discard_control = uicontrol(handles.main_fig,'units','normalized','Position',[.1
 
     end
 
-    function loc = findSpikes(V)
-        % get param
-        mpp = pref.minimum_peak_prominence;
-        if isstr(mpp)
-            % guess some nice value
-            mpp = nanstd(V)/2;
-        end
-        mpd = pref.minimum_peak_distance;
-        mpw = pref.minimum_peak_width;
-        v_cutoff = pref.V_cutoff;
 
-
-        % find peaks and remove spikes beyond v_cutoff
-        if pref.invert_V
-            [~,loc] = findpeaks(-V,'MinPeakProminence',mpp,'MinPeakDistance',mpd,'MinPeakWidth',mpw);
-            loc(V(loc) < -abs(v_cutoff)) = [];
-        else
-            [~,loc] = findpeaks(V,'MinPeakProminence',mpp,'MinPeakDistance',mpd,'MinPeakWidth',mpw);
-            loc(V(loc) > abs(v_cutoff)) = [];
-        end
-        set(method_control,'Enable','on')
-
-        if pref.ssDebug
-            disp('findSpikes 512: found these many spikes:')
-            disp(length(loc))
-        end
-
-    end
 
     function firingRatePlot(~,~)
         if pref.show_r2
@@ -1314,14 +1289,14 @@ discard_control = uicontrol(handles.main_fig,'units','normalized','Position',[.1
         end 
 
 
-        if get(sine_control,'Value') ==1
-            % need to suppress some periodic noise, probably from an electrical fault
-            z = min([length(time) 5e4]); % 5 seconds of data
-            time = time(:); V = V(:);
-            temp = fit(time(1:z),V(1:z),'sin1');
-            [num,den] = iirnotch(temp.b1/length(time),.01*(temp.b1/length(time)));
-            V = V - temp(time);
-        end
+        % if get(sine_control,'Value') ==1
+        %     % need to suppress some periodic noise, probably from an electrical fault
+        %     z = min([length(time) 5e4]); % 5 seconds of data
+        %     time = time(:); V = V(:);
+        %     temp = fit(time(1:z),V(1:z),'sin1');
+        %     [num,den] = iirnotch(temp.b1/length(time),.01*(temp.b1/length(time)));
+        %     V = V - temp(time);
+        % end
 
         set(handles.ax1_data,'XData',time,'YData',V,'Color','k','Parent',handles.ax1); 
 
@@ -1352,6 +1327,7 @@ discard_control = uicontrol(handles.main_fig,'units','normalized','Position',[.1
                 disp('plotResp 1304: invoking findSpikes...')
             end
             loc=findSpikes(V_censored); 
+            set(method_control,'Enable','on')
 
             % do we already have sorted spikes?
             if length(spikes) < ThisControlParadigm
@@ -1359,6 +1335,7 @@ discard_control = uicontrol(handles.main_fig,'units','normalized','Position',[.1
       
 
                 loc = findSpikes(V_censored); % disp('pref.ssDebug-1284')
+                set(method_control,'Enable','on')
                 if get(autosort_control,'Value') == 1
                     % sort spikes and show them
                    

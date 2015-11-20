@@ -9,27 +9,11 @@
 % This work is licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License. 
 % To view a copy of this license, visit http://creativecommons.org/licenses/by-nc-sa/4.0/.
 
-function preCachetSNE(varargin)
+function [] = preCachetSNE()
 
-% defaults
-invert_V = false;
-variable_name = 'voltage';
-V_cutoff = -1;
-minimum_peak_width = 1;
-minimum_peak_distance = 1;
-t_before = 20;
-t_after = 25; % assumes dt = 1e-4
+% use pref.m to change how this function behaves.
+pref = readPref;
 
-if iseven(nargin)
-	for ii = 1:2:length(varargin)-1
-    	temp = varargin{ii};
-    	if ischar(temp)
-        	eval(strcat(temp,'=varargin{ii+1};'));
-    	end
-	end
-else
-    error('Inputs need to be name value pairs')
-end
 
 allfiles = dir('*.mat');
 
@@ -43,17 +27,14 @@ for i = 1:length(allfiles)
 				for k = 1:width(this_data)
 					try
 						
-						V = bandPass(this_data(k,:),100,10);
-						mpp = std(V)/2;
-						
-						% find peaks and remove spikes beyond V_cutoff
-				        if invert_V
-				            [~,loc] = findpeaks(-V,'MinPeakProminence',mpp,'MinPeakDistance',minimum_peak_distance,'MinPeakWidth',minimum_peak_width);
-				            loc(V(loc) < -abs(V_cutoff)) = [];
-				        else
-				            [~,loc] = findpeaks(V,'MinPeakProminence',mpp,'MinPeakDistance',minimum_peak_distance,'MinPeakWidth',minimum_peak_width);
-				            loc(V(loc) > abs(V_cutoff)) = [];
-				        end
+						lc = 1/pref.band_pass(1);
+			            lc = floor(lc/pref.deltat);
+			            hc = 1/pref.band_pass(2);
+			            hc = floor(hc/pref.deltat);
+			            V = bandPass(this_data(k,:),lc,hc);
+
+			            % find spikes
+						loc = findSpikes(V);
 
 						% take snippets for each putative spike
 				        
