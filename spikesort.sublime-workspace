@@ -547,7 +547,7 @@
 			"file": "consolidateData.m",
 			"settings":
 			{
-				"buffer_size": 8028,
+				"buffer_size": 7831,
 				"line_ending": "Unix"
 			}
 		}
@@ -1176,15 +1176,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 8028,
+						"buffer_size": 7831,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								4135,
-								4135
+								6585,
+								6585
 							]
 						],
 						"settings":
@@ -1195,7 +1195,7 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 2642.0,
+						"translation.y": 4841.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 0,

@@ -100,6 +100,7 @@ for i = 1:length(allfiles)
 	for j = 1:length(data)
 		clear this_PID this_LFP this_spikes this_hash this_paradigm 
 		if ~isempty(data(j).PID)
+
 			disp(['Paradigm : ' mat2str(j)]) 
 			% figure out which control paradigm this is
 			this_hash = dataHash(ControlParadigm(j));
@@ -115,6 +116,7 @@ for i = 1:length(allfiles)
 			this_PID = data(j).PID;
 			this_LFP = data(j).voltage;
 			this_fA = NaN*this_LFP(:,1:10:end)';
+
 			disp(['There appear to be ' mat2str(width(this_PID)) ' trials for this paradigm.'])
 
 			if exist('spikes','var')
@@ -186,16 +188,7 @@ for i = 1:length(allfiles)
 			this_LFP = this_LFP(:,1:10:end)';
 
 
-			if width(this_fA) ~= width(this_LFP)
-				this_fA = [this_fA NaN(length(this_fA),width(this_LFP) - width(this_fA))];
-			end
-
-
-			if length(this_fA) > length(this_LFP)
-				this_fA = this_fA(1:length(this_LFP),:);
-			end
-
-			if length(this_LFP) < size(LFP,1) % this is to account for shorter paradigms, and pad them
+			if length(this_LFP) < size(LFP,1) && length(this_LFP) > 1% this is to account for shorter paradigms, and pad them
 				padding = NaN(size(LFP,1)-length(this_LFP),width(this_LFP));
 				this_LFP = [this_LFP; padding];
 				padding = NaN(size(PID,1)-length(this_PID),width(this_PID));
