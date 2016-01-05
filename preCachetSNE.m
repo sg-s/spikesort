@@ -11,8 +11,14 @@
 
 function [] = preCachetSNE()
 
+variable_name = 'voltage';
+
 % use pref.m to change how this function behaves.
 pref = readPref;
+
+% add src to path
+% add src folder to path
+addpath([fileparts(which(mfilename)) oss 'src'])
 
 
 allfiles = dir('*.mat');
@@ -38,9 +44,9 @@ for i = 1:length(allfiles)
 
 						% take snippets for each putative spike
 				        
-				        V_snippets = NaN(t_before+t_after,length(loc));
+				        V_snippets = NaN(pref.t_before+pref.t_after,length(loc));
 				        for l = 2:length(loc)-1
-				            V_snippets(:,l) = V(loc(l)-t_before+1:loc(l)+t_after);
+				            V_snippets(:,l) = V(loc(l)-pref.t_before+1:loc(l)+pref.t_after);
 				        end
 				        V_snippets(:,1) = []; 
  						V_snippets(:,end) = [];

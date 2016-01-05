@@ -9,7 +9,7 @@
 function [] = spikesort()
 
 % check dependencies 
-dependencies = {'prettyFig','manualCluster','mean2','computeOnsOffs','dataHash','gitHash','argInNames','cache','bandPass','oss','raster2','sem','rsquare','spiketimes2f','strkat','tsne','fast_tsne'};
+dependencies = {'prettyFig','manualCluster','mean2','computeOnsOffs','dataHash','gitHash','argInNames','cache','bandPass','oss','raster2','sem','rsquare','spiketimes2f','tsne','fast_tsne'};
 for si = 1:length(dependencies)
     err_message = ['spikesort needs ' dependencies{si} ' to run, which was not found. Read the docs. to make sure you have installed all dependencies.'];
     assert(exist(dependencies{si},'file')==2,err_message)
@@ -1173,8 +1173,8 @@ discard_control = uicontrol(handles.main_fig,'units','normalized','Position',[.1
     end
 
     function mousecallback(~,~)
-        p=get(handles.ax1,'CurrentPoint');
-        p=p(1,1:2);
+        p = get(handles.ax1,'CurrentPoint');
+        p = p(1,1:2);
         modify(p)
     end
 

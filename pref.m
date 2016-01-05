@@ -39,9 +39,9 @@ minimum_peak_width = 1;
 minimum_peak_distance = 1; 			% how separated should the peaks be?
 V_cutoff = -1; 						% ignore peaks beyond this limit 
 invert_V = false; 					% sometimes, it is easier to find spikes if you invert V
-band_pass = [500 1000]; 			% in Hz. band pass V to find spikes more easily 
+band_pass = [100 1000]; 			% in Hz. band pass V to find spikes more easily 
 remove_doublets = true;				% resolve doublet peaks, which are very likely AB or BA, not AA or BB
-doublet_distance = 90; 				% how far out should you look for doublets? 
+doublet_distance = 40; 				% how far out should you look for doublets? 
 
 % artifact removal 
 template_match_artifacts = false;  	% use templates to kill artifacts? 
