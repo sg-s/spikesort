@@ -44,9 +44,11 @@ remove_doublets = true;				% resolve doublet peaks, which are very likely AB or 
 doublet_distance = 40; 				% how far out should you look for doublets? 
 
 % artifact removal 
-template_match_artifacts = false;  	% use templates to kill artifacts? 
+remove_artifacts = 'on'; % or 'off'. 
 template_width = 50;
-template_amount = 2; 
+template_amount = 0; 
+use_off_template = true;
+use_on_template = false;
 
 
 

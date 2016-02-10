@@ -28,16 +28,27 @@ for i = 1:length(allfiles)
 	if ~strcmp(thisfile,'consolidated_data.mat') && ~strcmp(thisfile,'cached.mat')
 		load(thisfile)
 		for j = 1:length(data)
+			this_control = ControlParadigm(j).Outputs;
 			if eval(['~isempty(data(j).' variable_name ')'])
 				this_data = eval(['(data(j).' variable_name ')']);
+
 				for k = 1:width(this_data)
 					try
+						V = this_data(k,:);
+
+						% use templates to remove artifacts
+						if exist('template.mat','file')
+							if pref.use_on_template || pref.use_off_template
+								V = removeArtifactsUsingTemplate(V,this_control,pref);
+							end
+						end
 						
+
 						lc = 1/pref.band_pass(1);
 			            lc = floor(lc/pref.deltat);
 			            hc = 1/pref.band_pass(2);
 			            hc = floor(hc/pref.deltat);
-			            V = bandPass(this_data(k,:),lc,hc);
+			            V = bandPass(V,lc,hc);
 
 			            % find spikes
 						loc = findSpikes(V);

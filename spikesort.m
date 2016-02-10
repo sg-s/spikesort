@@ -77,32 +77,21 @@ handles.main_fig = [];
 handles.main_fig = figure('position',[50 50 1200 700], 'Toolbar','figure','Menubar','none','Name',versionname,'NumberTitle','off','IntegerHandle','off','WindowButtonDownFcn',@mousecallback,'WindowScrollWheelFcn',@scroll,'CloseRequestFcn',@closess);
 temp =  findall(handles.main_fig,'Type','uitoggletool','-or','Type','uipushtool');
 
-% modify buttons for raster and firing rate 
-r = load('r.mat');
-f = load('f.mat');
-temp(15).CData = r.r;
-temp(15).ClickedCallback = @rasterPlot;
-temp(15).TooltipString = 'Generate Raster Plot';
-temp(15).Separator = 'on';
+% make plots menu
+handles.menu1 = uimenu('Label','Make Plots...');
+uimenu(handles.menu1,'Label','Raster','Callback',@rasterPlot);
+uimenu(handles.menu1,'Label','Firing Rate','Callback',@firingRatePlot);
 
-temp(14).CData = f.f;
-temp(14).ClickedCallback = @firingRatePlot;
-temp(14).TooltipString = 'Generate Firing Rates';
-temp(14).Separator = 'on';
-clear r f
+% pre-processing
+handles.menu2 = uimenu('Label','Tools');
+uimenu(handles.menu2,'Label','Template Match','Callback',@matchTemplate);
+handles.remove_artifacts_menu = uimenu(handles.menu2,'Label','Remove Artifacts','Callback',@removeArtifacts,'Checked',pref.remove_artifacts);
+uimenu(handles.menu2,'Label','Reload preferences','Callback',@reloadPreferences,'Separator','on');
+uimenu(handles.menu2,'Label','Reset Zoom','Callback',@resetZoom);
 
-temp(13).TooltipString = 'Reload Preferences';
-temp(13).ClickedCallback = @reloadPreferences;
-temp(13).CData = temp(3).CData;
-temp(14).Separator = 'on';
 
-temp(12).ClickedCallback = @resetZoom;
-temp(12).TooltipString = 'Reset Zoom';
-temp(12).CData = temp(9).CData;
-temp(12).Separator = 'on';
+delete(temp([1:8 11:15]))
 
-delete(temp([1:9 11]))
-clear temp
 
 % make the two axes
 handles.ax1 = axes('parent',handles.main_fig,'Position',[0.07 0.05 0.87 0.29]); hold on
@@ -255,6 +244,80 @@ discard_control = uicontrol(handles.main_fig,'units','normalized','Position',[.1
 
     end
 
+    function [] = matchTemplate(~,~)
+        % template match
+        nchannels = length(get(handles.valve_channel,'Value'));
+        plot_these = get(handles.valve_channel,'Value');
+        control_signal = ControlParadigm(ThisControlParadigm).Outputs(plot_these,:);
+
+        if size(control_signal,2) > size(control_signal,1)
+            control_signal = control_signal';
+        end
+
+
+        % make the template object
+        template.control_signal_channels = plot_these;
+
+        figure, hold on
+        for i = 1:width(control_signal)
+            temp = control_signal(:,i);
+            % find ons and offs and build templates
+            on_transitions = find(diff(temp)==1);
+            off_transitions = find(diff(temp)==-1);
+
+            after = round(pref.template_width);
+            if isnan(after) || after < 11
+                after = 50;
+            end
+
+            if isempty(on_transitions)
+            else
+                % trim some edge cases
+                on_transitions(find(on_transitions+after>(length(V)-1))) = [];
+                off_transitions(find(off_transitions+after>(length(V)-1))) = [];
+
+                on_template = zeros(after+1,length(on_transitions));
+                off_template = zeros(after+1,length(on_transitions));
+                for ti = 1:length(on_transitions)
+                    snippet = V(on_transitions(ti):on_transitions(ti)+after);
+                    snippet = snippet - snippet(1);
+                    on_template(:,ti) = snippet;
+
+                    snippet = V(off_transitions(ti):off_transitions(ti)+after);
+                    snippet = snippet - snippet(1);
+                    off_template(:,ti) = snippet(:);
+                end
+                off_template = (mean(off_template,2));
+                on_template = (mean(on_template,2));
+
+                subplot(width(control_signal),2,2*(i-1)+1);
+                plot(on_template)
+                title('On Template')
+
+                subplot(width(control_signal),2,2*(i-1)+2);
+                plot(off_template)
+                title('Off Template')
+
+                template(i).on_template = on_template;
+                template(i).off_template = off_template;
+
+            end
+
+            save('template.mat','template');    
+        end
+    end
+
+
+    function [] = removeArtifacts(~,~)
+        if strcmp(handles.remove_artifacts_menu.Checked,'off')
+            handles.remove_artifacts_menu.Checked = 'on';
+        else
+            handles.remove_artifacts_menu.Checked = 'off';
+        end
+        plotResp;
+    end
+
+
     function chooseParadigmCallback(src,~)
         % callback that is run when we pick a new paradigm, either through the buttons or the drop down menu
         paradigms_with_data = find(Kontroller_ntrials(data)); 
@@ -398,53 +461,6 @@ discard_control = uicontrol(handles.main_fig,'units','normalized','Position',[.1
     function reloadPreferences(~,~)
         pref = readPref;
     end
-
-    % function exportFigs(~,~)
-    %     % cache current state
-    %     c.handles.ax2 = handles.ax2;
-    %     c.handles.ax1 = handles.ax1;
-    %     c.ThisControlParadigm = ThisControlParadigm;
-    %     c.ThisTrial = ThisTrial;
-
-    %     % export all figs
-    %     for i = 1:length(spikes)
-    %         for j = 1:width(spikes(i).A)
-    %             if length(spikes(i).A(j,:)) > 1
-    %                 % haz data
-    %                 figure('outerposition',[0 0 1200 700],'PaperUnits','points','PaperSize',[1200 700]); hold on
-    %                 handles.ax2 = subplot(2,1,1); hold on
-    %                 handles.ax1 = subplot(2,1,2); hold on
-    %                 ThisControlParadigm = i;
-    %                 ThisTrial = j;
-    %                 plotStim;
-    %                 plotResp;
-    %                 title(handles.ax2,strrep(file_name,'_','-'));
-    %                 tstr = strcat(ControlParadigm(ThisControlParadigm).Name,'_Trial:',mat2str(ThisTrial));
-    %                 tstr = strrep(tstr,'_','-');
-    %                 title(handles.ax1,tstr)
-    %                 xlabel(handles.ax1,'Time (s)')
-
-                    
-    %                 %set(gcf,'renderer','painters')
-    %                 tstr = strcat(file_name,'_',tstr,'.handles.main_fig');
-    %                 tstr = strrep(tstr,'_','-');
-    %                 % print(gcf,tstr,'-depsc2','-opengl')
-                   
-
-    %                 savefig(gcf,tstr);
-    %                 delete(gcf);
-
-
-    %             end
-    %         end
-    %     end
-    %     % return to state
-    %     handles.ax2 = c.handles.ax2;
-    %     handles.ax1 = c.handles.ax1;
-    %     ThisControlParadigm = c.ThisControlParadigm;
-    %     ThisTrial = c.ThisTrial;
-    %     clear c
-    % end
 
 
     function [A,B,N] = findCluster(~,~)
@@ -987,7 +1003,7 @@ discard_control = uicontrol(handles.main_fig,'units','normalized','Position',[.1
 
 
     function makeMachineLearningUI(~,~)
-        ml_ui.handles.main_fig = figure('Position',[60 500 450 450],'Toolbar','none','Menubar','none','Name','Deep Learning','NumberTitle','off','Resize','on','HandleVisibility','on');
+        ml_ui.handles.main_fig = figure('Position',[60 500 450 450],'Toolbar','none','Name','Deep Learning','NumberTitle','off','Resize','on','HandleVisibility','on');
 
         ml_ui.loadButton = uicontrol(ml_ui.handles.main_fig,'units','normalized','Position',[.05 .85 .4 .10],'Style', 'pushbutton', 'String', 'Load DBN','FontSize',20,'Callback',@loadDBN);
         ml_ui.saveButton = uicontrol(ml_ui.handles.main_fig,'units','normalized','Position',[.55 .85 .4 .10],'Style', 'pushbutton', 'String', 'Save DBN','FontSize',20,'Callback',@saveDBN);
@@ -1219,63 +1235,9 @@ discard_control = uicontrol(handles.main_fig,'units','normalized','Position',[.1
 
         V = temp;
 
-        if pref.template_match_artifacts
-            % template match
-            plotwhat = get(handles.valve_channel,'String');
-            nchannels = length(get(handles.valve_channel,'Value'));
-            plot_these = get(handles.valve_channel,'Value');
-            if length(plot_these) > 1
-                plot_these = plot_these(1);
-            end
-            control_signal = ControlParadigm(ThisControlParadigm).Outputs(plot_these,:);
-
-            % find ons and offs and build templates
-            transitions = find(diff(control_signal));
-
-            after = round(pref.template_width);
-            if isnan(after) || after < 11
-                after = 50;
-            end
-            
-            
-            
-            if isempty(transitions)
-            else
-                % trim some edge cases
-                transitions(find(transitions+after>(length(V)-1))) = [];
-
-                Template = zeros(after+1,1);
-                w = zeros(length(transitions),1);
-                dv = zeros(length(transitions),1);
-                for i = 1:length(transitions)
-                    snippet = V(transitions(i):transitions(i)+after);
-                    % scale snippet
-                    w(i) = control_signal(transitions(i)-1) - control_signal(transitions(i)+1);
-                    Template = Template + snippet'*w(i);
-
-                end
-                Template = Template/length(transitions);
-
-
-                % subtract templates from trace
-                if length(unique(w)) == 2
-                    sf = 1;
-                    set(template_match_slider,'Enable','off');
-
-                    for i = 1:length(transitions)
-                        V(transitions(i):transitions(i)+after) = V(transitions(i):transitions(i)+after) - Template'*sf/w(i);
-                    end
-                else
-                    set(template_match_slider,'Enable','on');
-                    sf = (str2double(get(template_match_slider,'String')));
-
-                    for i = 1:length(transitions)
-                        V(transitions(i):transitions(i)+after) = V(transitions(i):transitions(i)+after) - Template'*sf*w(i);
-                    end
-                end
-
-            end
-
+        if strcmp(handles.remove_artifacts_menu.Checked,'on')
+            this_control = ControlParadigm(ThisControlParadigm).Outputs;
+            [V] = removeArtifactsUsingTemplate(V,this_control,pref);
         end
         if get(filtermode,'Value') == 1
             if pref.ssDebug 
@@ -1536,6 +1498,7 @@ discard_control = uicontrol(handles.main_fig,'units','normalized','Position',[.1
         for i = 1:length(handles.valve_channels)
             this_valve = ControlParadigm(ThisControlParadigm).Outputs(handles.valve_channels(i),:);
         end
+        plotStim;
     end
 
     function rasterPlot(~,~)
