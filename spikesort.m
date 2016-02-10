@@ -9,7 +9,7 @@
 function [] = spikesort()
 
 % check dependencies 
-dependencies = {'prettyFig','manualCluster','mean2','computeOnsOffs','dataHash','gitHash','argInNames','cache','bandPass','oss','raster2','sem','rsquare','spiketimes2f','tsne','fast_tsne'};
+dependencies = {'prettyFig','manualCluster','computeOnsOffs','dataHash','gitHash','argInNames','cache','bandPass','oss','raster2','sem','rsquare','spiketimes2f','tsne','fast_tsne'};
 for si = 1:length(dependencies)
     err_message = ['spikesort needs ' dependencies{si} ' to run, which was not found. Read the docs. to make sure you have installed all dependencies.'];
     assert(exist(dependencies{si},'file')==2,err_message)
@@ -564,18 +564,12 @@ discard_control = uicontrol(handles.main_fig,'units','normalized','Position',[.1
 
                 % do A
                 time = (1:length(spikes(haz_data(i)).A))/SamplingRate;
-                % cache data to speed up
-                hash = dataHash(full(spikes(haz_data(i)).A));
-                if isempty(cache(hash))
-                    [fA,tA] = spiketimes2f(spikes(haz_data(i)).A,time);
-                    % remove trials with no spikes
-                    fA(:,sum(fA) == 0) = [];
-                    cache(hash,fA);
-                else
-                    fA = cache(hash);
-                    tA = (1:length(fA))*1e-3;
-                end
+                [fA,tA] = spiketimes2f(spikes(haz_data(i)).A,time,1e-2,3e-2);
+                tA = tA(:);
+                % remove trials with no spikes
+                fA(:,sum(fA) == 0) = [];
 
+            
                 % censor fA when we ignore some data
                 if isfield(spikes,'use_trace_fragment')
                     if any(sum(spikes(haz_data(i)).use_trace_fragment') < length(spikes(haz_data(i)).A))
@@ -595,7 +589,7 @@ discard_control = uicontrol(handles.main_fig,'units','normalized','Position',[.1
                             l(i) = plot(sp(1),tA,fA(:,j),'Color',c(i,:));
                         end
                     else
-                       l(i) = plot(sp(1),tA,mean2(fA),'Color',c(i,:));
+                       l(i) = plot(sp(1),tA,nanmean(fA,2),'Color',c(i,:));
                     end
                     if pref.show_firing_rate_r2
                         hash = dataHash(fA);
@@ -621,27 +615,22 @@ discard_control = uicontrol(handles.main_fig,'units','normalized','Position',[.1
                         % no data, ignore.
                     end
                 end
+                
 
                 % do B    
                 time = (1:length(spikes(haz_data(i)).B))/SamplingRate;
-                % cache data to speed up
-                hash = dataHash(full(spikes(haz_data(i)).B));
-                if isempty(cache(hash))
-                    [fB,tB] = spiketimes2f(spikes(haz_data(i)).B,time);
-                    % remove trials with no spikes
-                    fB(:,sum(fB) == 0) = [];
-                    cache(hash,fB);
-                else
-                    fB = cache(hash);
-                    tB = (1:length(fB))*1e-3;
-                end
+                [fB,tB] = spiketimes2f(spikes(haz_data(i)).B,time);
+                tB = tB(:);
+                % remove trials with no spikes
+                fB(:,sum(fB) == 0) = [];
+
                 if width(fB) > 1
                     if pref.show_firing_rate_trials
                         for j = 1:width(fB)
                             l(i) = plot(sp(2),tA,fB(:,j),'Color',c(i,:));
                         end
                     else
-                       l(i) = plot(sp(2),tB,mean2(fB),'Color',c(i,:));
+                       l(i) = plot(sp(2),tB,nanmean(fB,2),'Color',c(i,:));
                     end
                     if pref.show_firing_rate_r2
                         hash = dataHash(fB);

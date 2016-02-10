@@ -7,6 +7,10 @@
 
 function [VC] = removeArtifactsUsingTemplate(V,this_control,pref)
 
+if pref.ssDebug
+	disp('removing artifacts using template match...')
+end
+
 VC = V;
 
 % read the template file
@@ -24,6 +28,9 @@ off_transitions = find(diff(c)==-1);
 after = length(template.on_template) - 1;
 if isempty(on_transitions)
 else
+	if pref.ssDebug
+		disp('control signal has transitions, using them to find artifacts...')
+	end
     % trim some edge cases
     on_transitions(find(on_transitions+after>(length(V)-1))) = [];
     off_transitions(find(off_transitions+after>(length(V)-1))) = [];
