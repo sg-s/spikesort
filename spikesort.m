@@ -496,6 +496,9 @@ discard_control = uicontrol(handles.main_fig,'units','normalized','Position',[.1
         set(handles.ax1_B_spikes,'XData',time(B),'YData',V(B),'Marker','o','MarkerSize',pref.marker_size,'Parent',handles.ax1,'MarkerEdgeColor','b','LineStyle','none');
         set(handles.ax1_all_spikes,'XData',NaN,'YData',NaN);
 
+        % remove noise spikes from the loc vector
+        loc = setdiff(loc,N);
+
         % save them
         try
             spikes(ThisControlParadigm).A(ThisTrial,:) = sparse(1,length(time));      
@@ -1536,7 +1539,7 @@ discard_control = uicontrol(handles.main_fig,'units','normalized','Position',[.1
     function [R,V_snippets] = reduceDimensions(method)
 
         % take snippets for each putative spike
-
+        R = [];
         V_snippets = NaN(pref.t_before+pref.t_after,length(loc));
         for i = 2:length(loc)-1
             V_snippets(:,i) = V(loc(i)-pref.t_before+1:loc(i)+pref.t_after);
