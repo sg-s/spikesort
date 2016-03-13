@@ -9,7 +9,7 @@
 function [] = spikesort()
 
 % check dependencies 
-dependencies = {'prettyFig','manualCluster','mean2','computeOnsOffs','dataHash','gitHash','argInNames','cache','bandPass','oss','raster2','sem','rsquare','spiketimes2f','strkat','tsne','fast_tsne'};
+dependencies = {'prettyFig','manualCluster','computeOnsOffs','dataHash','gitHash','argInNames','cache','bandPass','oss','raster2','sem','rsquare','spiketimes2f','tsne','fast_tsne'};
 for si = 1:length(dependencies)
     err_message = ['spikesort needs ' dependencies{si} ' to run, which was not found. Read the docs. to make sure you have installed all dependencies.'];
     assert(exist(dependencies{si},'file')==2,err_message)
@@ -30,6 +30,9 @@ versionname = strcat('spikesort for Kontroller (Build-',h(1:6),')');
 
 % load preferences
 pref = readPref;
+
+% add src folder to path
+addpath([fileparts(which(mfilename)) oss 'src'])
 
 % generate placeholder variables
 ControlParadigm = [];
@@ -74,32 +77,21 @@ handles.main_fig = [];
 handles.main_fig = figure('position',[50 50 1200 700], 'Toolbar','figure','Menubar','none','Name',versionname,'NumberTitle','off','IntegerHandle','off','WindowButtonDownFcn',@mousecallback,'WindowScrollWheelFcn',@scroll,'CloseRequestFcn',@closess);
 temp =  findall(handles.main_fig,'Type','uitoggletool','-or','Type','uipushtool');
 
-% modify buttons for raster and firing rate 
-r = load('r.mat');
-f = load('f.mat');
-temp(15).CData = r.r;
-temp(15).ClickedCallback = @rasterPlot;
-temp(15).TooltipString = 'Generate Raster Plot';
-temp(15).Separator = 'on';
+% make plots menu
+handles.menu1 = uimenu('Label','Make Plots...');
+uimenu(handles.menu1,'Label','Raster','Callback',@rasterPlot);
+uimenu(handles.menu1,'Label','Firing Rate','Callback',@firingRatePlot);
 
-temp(14).CData = f.f;
-temp(14).ClickedCallback = @firingRatePlot;
-temp(14).TooltipString = 'Generate Firing Rates';
-temp(14).Separator = 'on';
-clear r f
+% pre-processing
+handles.menu2 = uimenu('Label','Tools');
+uimenu(handles.menu2,'Label','Template Match','Callback',@matchTemplate);
+handles.remove_artifacts_menu = uimenu(handles.menu2,'Label','Remove Artifacts','Callback',@removeArtifacts,'Checked',pref.remove_artifacts);
+uimenu(handles.menu2,'Label','Reload preferences','Callback',@reloadPreferences,'Separator','on');
+uimenu(handles.menu2,'Label','Reset Zoom','Callback',@resetZoom);
 
-temp(13).TooltipString = 'Reload Preferences';
-temp(13).ClickedCallback = @reloadPreferences;
-temp(13).CData = temp(3).CData;
-temp(14).Separator = 'on';
 
-temp(12).ClickedCallback = @resetZoom;
-temp(12).TooltipString = 'Reset Zoom';
-temp(12).CData = temp(9).CData;
-temp(12).Separator = 'on';
+delete(temp([1:8 11:15]))
 
-delete(temp([1:9 11]))
-clear temp
 
 % make the two axes
 handles.ax1 = axes('parent',handles.main_fig,'Position',[0.07 0.05 0.87 0.29]); hold on
@@ -154,8 +146,8 @@ prev_trial = uicontrol(datachooserpanel,'units','normalized','Position',[.05 .15
 % dimension reduction and clustering panels
 dimredpanel = uipanel('Title','Dimensionality Reduction','Position',[.25 .92 .17 .07]);
 % find the available methods
-look_here = mfilename('fullpath');
-look_here=look_here(1:max(strfind(look_here,oss))); % this is where we should look for methods
+look_here = [fileparts(mfilename('fullpath')) oss 'src' oss];
+ % this is where we should look for methods
 avail_methods=dir(strcat(look_here,'ssdm_*.m'));
 avail_methods={avail_methods.name};
 for oi = 1:length(avail_methods)
@@ -166,8 +158,7 @@ clear oi
 method_control = uicontrol(dimredpanel,'Style','popupmenu','String',avail_methods,'units','normalized','Position',[.02 .6 .9 .2],'Callback',@reduceDimensionsCallback,'Enable','off');
 
 % find the available methods for clustering
-look_here = mfilename('fullpath');
-look_here=look_here(1:max(strfind(look_here,oss))); % this is where we should look for methods
+
 avail_methods=dir(strcat(look_here,'sscm_*.m'));
 avail_methods={avail_methods.name};
 for oi = 1:length(avail_methods)
@@ -252,6 +243,80 @@ discard_control = uicontrol(handles.main_fig,'units','normalized','Position',[.1
         [A,B,N]=findCluster;
 
     end
+
+    function [] = matchTemplate(~,~)
+        % template match
+        nchannels = length(get(handles.valve_channel,'Value'));
+        plot_these = get(handles.valve_channel,'Value');
+        control_signal = ControlParadigm(ThisControlParadigm).Outputs(plot_these,:);
+
+        if size(control_signal,2) > size(control_signal,1)
+            control_signal = control_signal';
+        end
+
+
+        % make the template object
+        template.control_signal_channels = plot_these;
+
+        figure, hold on
+        for i = 1:width(control_signal)
+            temp = control_signal(:,i);
+            % find ons and offs and build templates
+            on_transitions = find(diff(temp)==1);
+            off_transitions = find(diff(temp)==-1);
+
+            after = round(pref.template_width);
+            if isnan(after) || after < 11
+                after = 50;
+            end
+
+            if isempty(on_transitions)
+            else
+                % trim some edge cases
+                on_transitions(find(on_transitions+after>(length(V)-1))) = [];
+                off_transitions(find(off_transitions+after>(length(V)-1))) = [];
+
+                on_template = zeros(after+1,length(on_transitions));
+                off_template = zeros(after+1,length(on_transitions));
+                for ti = 1:length(on_transitions)
+                    snippet = V(on_transitions(ti):on_transitions(ti)+after);
+                    snippet = snippet - snippet(1);
+                    on_template(:,ti) = snippet;
+
+                    snippet = V(off_transitions(ti):off_transitions(ti)+after);
+                    snippet = snippet - snippet(1);
+                    off_template(:,ti) = snippet(:);
+                end
+                off_template = (mean(off_template,2));
+                on_template = (mean(on_template,2));
+
+                subplot(width(control_signal),2,2*(i-1)+1);
+                plot(on_template)
+                title('On Template')
+
+                subplot(width(control_signal),2,2*(i-1)+2);
+                plot(off_template)
+                title('Off Template')
+
+                template(i).on_template = on_template;
+                template(i).off_template = off_template;
+
+            end
+
+            save('template.mat','template');    
+        end
+    end
+
+
+    function [] = removeArtifacts(~,~)
+        if strcmp(handles.remove_artifacts_menu.Checked,'off')
+            handles.remove_artifacts_menu.Checked = 'on';
+        else
+            handles.remove_artifacts_menu.Checked = 'off';
+        end
+        plotResp;
+    end
+
 
     function chooseParadigmCallback(src,~)
         % callback that is run when we pick a new paradigm, either through the buttons or the drop down menu
@@ -397,53 +462,6 @@ discard_control = uicontrol(handles.main_fig,'units','normalized','Position',[.1
         pref = readPref;
     end
 
-    % function exportFigs(~,~)
-    %     % cache current state
-    %     c.handles.ax2 = handles.ax2;
-    %     c.handles.ax1 = handles.ax1;
-    %     c.ThisControlParadigm = ThisControlParadigm;
-    %     c.ThisTrial = ThisTrial;
-
-    %     % export all figs
-    %     for i = 1:length(spikes)
-    %         for j = 1:width(spikes(i).A)
-    %             if length(spikes(i).A(j,:)) > 1
-    %                 % haz data
-    %                 figure('outerposition',[0 0 1200 700],'PaperUnits','points','PaperSize',[1200 700]); hold on
-    %                 handles.ax2 = subplot(2,1,1); hold on
-    %                 handles.ax1 = subplot(2,1,2); hold on
-    %                 ThisControlParadigm = i;
-    %                 ThisTrial = j;
-    %                 plotStim;
-    %                 plotResp;
-    %                 title(handles.ax2,strrep(file_name,'_','-'));
-    %                 tstr = strcat(ControlParadigm(ThisControlParadigm).Name,'_Trial:',mat2str(ThisTrial));
-    %                 tstr = strrep(tstr,'_','-');
-    %                 title(handles.ax1,tstr)
-    %                 xlabel(handles.ax1,'Time (s)')
-
-                    
-    %                 %set(gcf,'renderer','painters')
-    %                 tstr = strcat(file_name,'_',tstr,'.handles.main_fig');
-    %                 tstr = strrep(tstr,'_','-');
-    %                 % print(gcf,tstr,'-depsc2','-opengl')
-                   
-
-    %                 savefig(gcf,tstr);
-    %                 delete(gcf);
-
-
-    %             end
-    %         end
-    %     end
-    %     % return to state
-    %     handles.ax2 = c.handles.ax2;
-    %     handles.ax1 = c.handles.ax1;
-    %     ThisControlParadigm = c.ThisControlParadigm;
-    %     ThisTrial = c.ThisTrial;
-    %     clear c
-    % end
-
 
     function [A,B,N] = findCluster(~,~)
         % cluster based on the method
@@ -478,6 +496,9 @@ discard_control = uicontrol(handles.main_fig,'units','normalized','Position',[.1
         set(handles.ax1_B_spikes,'XData',time(B),'YData',V(B),'Marker','o','MarkerSize',pref.marker_size,'Parent',handles.ax1,'MarkerEdgeColor','b','LineStyle','none');
         set(handles.ax1_all_spikes,'XData',NaN,'YData',NaN);
 
+        % remove noise spikes from the loc vector
+        loc = setdiff(loc,N);
+
         % save them
         try
             spikes(ThisControlParadigm).A(ThisTrial,:) = sparse(1,length(time));      
@@ -498,42 +519,15 @@ discard_control = uicontrol(handles.main_fig,'units','normalized','Position',[.1
         spikes(ThisControlParadigm).N(ThisTrial,N) = 1;
 
         % also save spike amplitudes
-        spikes(ThisControlParadigm).amplitudes_A(ThisTrial,A)  =  ssdm_1DAmplitudes(V,pref.deltat,A,pref.invert_V);
-        spikes(ThisControlParadigm).amplitudes_B(ThisTrial,B)  =  ssdm_1DAmplitudes(V,pref.deltat,B,pref.invert_V);
+        spikes(ThisControlParadigm).amplitudes_A(ThisTrial,A)  =  ssdm_1DAmplitudes(V,A);
+        spikes(ThisControlParadigm).amplitudes_B(ThisTrial,B)  =  ssdm_1DAmplitudes(V,B);
 
         % save them
         save(strcat(path_name,file_name),'spikes','-append')
 
     end
 
-    function loc = findSpikes(V)
-        % get param
-        mpp = pref.minimum_peak_prominence;
-        if isstr(mpp)
-            % guess some nice value
-            mpp = nanstd(V)/2;
-        end
-        mpd = pref.minimim_peak_distance;
-        mpw = pref.minimim_peak_width;
-        v_cutoff = pref.V_cutoff;
 
-
-        % find peaks and remove spikes beyond v_cutoff
-        if pref.invert_V
-            [~,loc] = findpeaks(-V,'MinPeakProminence',mpp,'MinPeakDistance',mpd,'MinPeakWidth',mpw);
-            loc(V(loc) < -abs(v_cutoff)) = [];
-        else
-            [~,loc] = findpeaks(V,'MinPeakProminence',mpp,'MinPeakDistance',mpd,'MinPeakWidth',mpw);
-            loc(V(loc) > abs(v_cutoff)) = [];
-        end
-        set(method_control,'Enable','on')
-
-        if pref.ssDebug
-            disp('findSpikes 512: found these many spikes:')
-            disp(length(loc))
-        end
-
-    end
 
     function firingRatePlot(~,~)
         if pref.show_r2
@@ -573,18 +567,12 @@ discard_control = uicontrol(handles.main_fig,'units','normalized','Position',[.1
 
                 % do A
                 time = (1:length(spikes(haz_data(i)).A))/SamplingRate;
-                % cache data to speed up
-                hash = dataHash(full(spikes(haz_data(i)).A));
-                if isempty(cache(hash))
-                    [fA,tA] = spiketimes2f(spikes(haz_data(i)).A,time);
-                    % remove trials with no spikes
-                    fA(:,sum(fA) == 0) = [];
-                    cache(hash,fA);
-                else
-                    fA = cache(hash);
-                    tA = (1:length(fA))*1e-3;
-                end
+                [fA,tA] = spiketimes2f(spikes(haz_data(i)).A,time,1e-2,3e-2);
+                tA = tA(:);
+                % remove trials with no spikes
+                fA(:,sum(fA) == 0) = [];
 
+            
                 % censor fA when we ignore some data
                 if isfield(spikes,'use_trace_fragment')
                     if any(sum(spikes(haz_data(i)).use_trace_fragment') < length(spikes(haz_data(i)).A))
@@ -604,7 +592,7 @@ discard_control = uicontrol(handles.main_fig,'units','normalized','Position',[.1
                             l(i) = plot(sp(1),tA,fA(:,j),'Color',c(i,:));
                         end
                     else
-                       l(i) = plot(sp(1),tA,mean2(fA),'Color',c(i,:));
+                       l(i) = plot(sp(1),tA,nanmean(fA,2),'Color',c(i,:));
                     end
                     if pref.show_firing_rate_r2
                         hash = dataHash(fA);
@@ -630,27 +618,22 @@ discard_control = uicontrol(handles.main_fig,'units','normalized','Position',[.1
                         % no data, ignore.
                     end
                 end
+                
 
                 % do B    
                 time = (1:length(spikes(haz_data(i)).B))/SamplingRate;
-                % cache data to speed up
-                hash = dataHash(full(spikes(haz_data(i)).B));
-                if isempty(cache(hash))
-                    [fB,tB] = spiketimes2f(spikes(haz_data(i)).B,time);
-                    % remove trials with no spikes
-                    fB(:,sum(fB) == 0) = [];
-                    cache(hash,fB);
-                else
-                    fB = cache(hash);
-                    tB = (1:length(fB))*1e-3;
-                end
+                [fB,tB] = spiketimes2f(spikes(haz_data(i)).B,time);
+                tB = tB(:);
+                % remove trials with no spikes
+                fB(:,sum(fB) == 0) = [];
+
                 if width(fB) > 1
                     if pref.show_firing_rate_trials
                         for j = 1:width(fB)
                             l(i) = plot(sp(2),tA,fB(:,j),'Color',c(i,:));
                         end
                     else
-                       l(i) = plot(sp(2),tB,mean2(fB),'Color',c(i,:));
+                       l(i) = plot(sp(2),tB,nanmean(fB,2),'Color',c(i,:));
                     end
                     if pref.show_firing_rate_r2
                         hash = dataHash(fB);
@@ -814,9 +797,14 @@ discard_control = uicontrol(handles.main_fig,'units','normalized','Position',[.1
         loc =0; % holds current spike times
 
         console(strcat('Loading file:',path_name,'/',file_name))
-        handles.load_waitbar = waitbar(0.2, 'Loading data...');
+        
         temp=load(strcat(path_name,file_name));
         try
+            try
+                delete(handles.load_waitbar)
+            catch
+            end
+            handles.load_waitbar = waitbar(0.2, 'Loading data...');
             ControlParadigm = temp.ControlParadigm;
             data = temp.data;
             SamplingRate = temp.SamplingRate;
@@ -996,7 +984,6 @@ discard_control = uicontrol(handles.main_fig,'units','normalized','Position',[.1
             plotStim;
             plotResp(@loadFileCallback);
         catch
-            close(handles.load_waitbar)
             if src.String == '>'
                 loadFileCallback(src)
             elseif src.String == '<'
@@ -1008,7 +995,7 @@ discard_control = uicontrol(handles.main_fig,'units','normalized','Position',[.1
 
 
     function makeMachineLearningUI(~,~)
-        ml_ui.handles.main_fig = figure('Position',[60 500 450 450],'Toolbar','none','Menubar','none','Name','Deep Learning','NumberTitle','off','Resize','on','HandleVisibility','on');
+        ml_ui.handles.main_fig = figure('Position',[60 500 450 450],'Toolbar','none','Name','Deep Learning','NumberTitle','off','Resize','on','HandleVisibility','on');
 
         ml_ui.loadButton = uicontrol(ml_ui.handles.main_fig,'units','normalized','Position',[.05 .85 .4 .10],'Style', 'pushbutton', 'String', 'Load DBN','FontSize',20,'Callback',@loadDBN);
         ml_ui.saveButton = uicontrol(ml_ui.handles.main_fig,'units','normalized','Position',[.55 .85 .4 .10],'Style', 'pushbutton', 'String', 'Save DBN','FontSize',20,'Callback',@saveDBN);
@@ -1194,8 +1181,8 @@ discard_control = uicontrol(handles.main_fig,'units','normalized','Position',[.1
     end
 
     function mousecallback(~,~)
-        p=get(handles.ax1,'CurrentPoint');
-        p=p(1,1:2);
+        p = get(handles.ax1,'CurrentPoint');
+        p = p(1,1:2);
         modify(p)
     end
 
@@ -1240,63 +1227,9 @@ discard_control = uicontrol(handles.main_fig,'units','normalized','Position',[.1
 
         V = temp;
 
-        if pref.template_match_artifacts
-            % template match
-            plotwhat = get(handles.valve_channel,'String');
-            nchannels = length(get(handles.valve_channel,'Value'));
-            plot_these = get(handles.valve_channel,'Value');
-            if length(plot_these) > 1
-                plot_these = plot_these(1);
-            end
-            control_signal = ControlParadigm(ThisControlParadigm).Outputs(plot_these,:);
-
-            % find ons and offs and build templates
-            transitions = find(diff(control_signal));
-
-            after = round(pref.template_width);
-            if isnan(after) || after < 11
-                after = 50;
-            end
-            
-            
-            
-            if isempty(transitions)
-            else
-                % trim some edge cases
-                transitions(find(transitions+after>(length(V)-1))) = [];
-
-                Template = zeros(after+1,1);
-                w = zeros(length(transitions),1);
-                dv = zeros(length(transitions),1);
-                for i = 1:length(transitions)
-                    snippet = V(transitions(i):transitions(i)+after);
-                    % scale snippet
-                    w(i) = control_signal(transitions(i)-1) - control_signal(transitions(i)+1);
-                    Template = Template + snippet'*w(i);
-
-                end
-                Template = Template/length(transitions);
-
-
-                % subtract templates from trace
-                if length(unique(w)) == 2
-                    sf = 1;
-                    set(template_match_slider,'Enable','off');
-
-                    for i = 1:length(transitions)
-                        V(transitions(i):transitions(i)+after) = V(transitions(i):transitions(i)+after) - Template'*sf/w(i);
-                    end
-                else
-                    set(template_match_slider,'Enable','on');
-                    sf = (str2double(get(template_match_slider,'String')));
-
-                    for i = 1:length(transitions)
-                        V(transitions(i):transitions(i)+after) = V(transitions(i):transitions(i)+after) - Template'*sf*w(i);
-                    end
-                end
-
-            end
-
+        if strcmp(handles.remove_artifacts_menu.Checked,'on')
+            this_control = ControlParadigm(ThisControlParadigm).Outputs;
+            [V] = removeArtifactsUsingTemplate(V,this_control,pref);
         end
         if get(filtermode,'Value') == 1
             if pref.ssDebug 
@@ -1310,14 +1243,14 @@ discard_control = uicontrol(handles.main_fig,'units','normalized','Position',[.1
         end 
 
 
-        if get(sine_control,'Value') ==1
-            % need to suppress some periodic noise, probably from an electrical fault
-            z = min([length(time) 5e4]); % 5 seconds of data
-            time = time(:); V = V(:);
-            temp = fit(time(1:z),V(1:z),'sin1');
-            [num,den] = iirnotch(temp.b1/length(time),.01*(temp.b1/length(time)));
-            V = V - temp(time);
-        end
+        % if get(sine_control,'Value') ==1
+        %     % need to suppress some periodic noise, probably from an electrical fault
+        %     z = min([length(time) 5e4]); % 5 seconds of data
+        %     time = time(:); V = V(:);
+        %     temp = fit(time(1:z),V(1:z),'sin1');
+        %     [num,den] = iirnotch(temp.b1/length(time),.01*(temp.b1/length(time)));
+        %     V = V - temp(time);
+        % end
 
         set(handles.ax1_data,'XData',time,'YData',V,'Color','k','Parent',handles.ax1); 
 
@@ -1348,6 +1281,7 @@ discard_control = uicontrol(handles.main_fig,'units','normalized','Position',[.1
                 disp('plotResp 1304: invoking findSpikes...')
             end
             loc=findSpikes(V_censored); 
+            set(method_control,'Enable','on')
 
             % do we already have sorted spikes?
             if length(spikes) < ThisControlParadigm
@@ -1355,6 +1289,7 @@ discard_control = uicontrol(handles.main_fig,'units','normalized','Position',[.1
       
 
                 loc = findSpikes(V_censored); % disp('pref.ssDebug-1284')
+                set(method_control,'Enable','on')
                 if get(autosort_control,'Value') == 1
                     % sort spikes and show them
                    
@@ -1555,6 +1490,7 @@ discard_control = uicontrol(handles.main_fig,'units','normalized','Position',[.1
         for i = 1:length(handles.valve_channels)
             this_valve = ControlParadigm(ThisControlParadigm).Outputs(handles.valve_channels(i),:);
         end
+        plotStim;
     end
 
     function rasterPlot(~,~)
@@ -1564,7 +1500,7 @@ discard_control = uicontrol(handles.main_fig,'units','normalized','Position',[.1
         L ={};
         for i = 1:length(spikes)
             if length(spikes(i).A) > 1
-                raster2(full(spikes(i).A),spikes(i).B,yoffset);
+                raster2(spikes(i).A,spikes(i).B,yoffset);
                 yoffset = yoffset + width(spikes(i).A)*2 + 1;
                 ytick = [ytick yoffset];
                 L = [L strrep(ControlParadigm(i).Name,'_','-')];
@@ -1603,7 +1539,7 @@ discard_control = uicontrol(handles.main_fig,'units','normalized','Position',[.1
     function [R,V_snippets] = reduceDimensions(method)
 
         % take snippets for each putative spike
-
+        R = [];
         V_snippets = NaN(pref.t_before+pref.t_after,length(loc));
         for i = 2:length(loc)-1
             V_snippets(:,i) = V(loc(i)-pref.t_before+1:loc(i)+pref.t_after);

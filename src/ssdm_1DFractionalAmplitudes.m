@@ -8,10 +8,12 @@
 % 
 % This work is licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License. 
 % To view a copy of this license, visit http://creativecommons.org/licenses/by-nc-sa/4.0/.
-function R = ssdm_1DFractionalAmplitudes(V,Vf,deltat,loc,ax,ax2,flip_V_control)
+function R = ssdm_1DFractionalAmplitudes(V,Vf,loc)
+
+pref = readPref;
 
 wb = waitbar(0.2,'Computing Fractional amplitudes...');
-
+deltat = pref.deltat;
 h = (40*1e-4)/deltat; % deltat in seconds
 % 1D - find total spike amplitude for each
 R = zeros*loc;
@@ -19,7 +21,7 @@ loc_max = 0*loc;
 [R(1),loc_max(1)] = max(V(loc(1)-h:loc(1)) - V(loc(1)));
 loc_max(1) = loc(1) + loc_max(1) - h;
 for i = 2:length(loc)
-	if get(flip_V_control,'Value')
+	if pref.invert_V
 		before = max([loc(i)-h loc(i-1)]);
 		[R(i),loc_max(i)] = max(V(before:loc(i)) - V(loc(i)));
 		loc_max(i) = loc_max(i) + before;
@@ -31,24 +33,17 @@ for i = 2:length(loc)
 end
 
 time = deltat:deltat:(deltat*length(V));
-% figure, hold on
-% plot(time,V)
-% scatter(time(loc),V(loc))
-% scatter(time(loc_max),V(loc_max))
-
 
 
 waitbar(0.4,wb,'Building spike envelopes...');
 % build an upper and lower envelope
-if get(flip_V_control,'Value')
+if pref.invert_V
 	upper_envelope = interp1(time(loc_max),V(loc_max),time);
 	upper_envelope(1:find(~isnan(upper_envelope),1,'first')) = upper_envelope(find(~isnan(upper_envelope),1,'first'));
 	upper_envelope((find(~isnan(upper_envelope),1,'last')):end) = upper_envelope(find(~isnan(upper_envelope),1,'last')-1);
 	lower_envelope = interp1(time(loc),V(loc),time);
 	lower_envelope(1:find(~isnan(lower_envelope),1,'first')) = lower_envelope(find(~isnan(lower_envelope),1,'first'));
 	lower_envelope((find(~isnan(lower_envelope),1,'last')):end) = lower_envelope(find(~isnan(lower_envelope),1,'last')-1);
-	% plot(ax,time,lower_envelope,'g')
-	% plot(ax,time,upper_envelope,'r')
 else
 	upper_envelope = interp1(time(loc),V(loc),time);
 	upper_envelope(1:find(~isnan(upper_envelope),1,'first')) = upper_envelope(find(~isnan(upper_envelope),1,'first'));
@@ -109,14 +104,8 @@ for i = loc
 end
 clear upper_envelope lower_envelope
 envelope_amplitude = upper_envelope2- lower_envelope2;
-
-%R = R./envelope_amplitude(loc);
 close(wb)
 
 
-% cla(ax2)
-% plot(time(loc),R)
 
-% cla(ax2)
-% plot(ax2,time(loc),R)
 
