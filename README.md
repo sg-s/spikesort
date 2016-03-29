@@ -9,7 +9,7 @@ Spike sorting for Kontroller
 # Contents
 1. [What is this?](#features)
 2. [How to install this](#installation)
-3. [How to use this](#usage)
+3. [How to use this](#https://github.com/sg-s/spikesort/tree/master/docs/)
 4. [Plugins](#plugin-architecture)
 5. [Issues](https://github.com/sg-s/spikesort/issues)
 

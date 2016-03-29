@@ -19,10 +19,10 @@ if verLessThan('matlab', '8.0.1')
     error('Need MATLAB 2014b or better to run')
 end
 
-% % check the signal processing toolbox version
-% if verLessThan('signal','6.22')
-%     error('Need Signal Processing toolbox version 6.22 or higher')
-% end
+% check the signal processing toolbox version
+if verLessThan('signal','6.22')
+    error('Need Signal Processing toolbox version 6.22 or higher')
+end
 
 % get git version-name
 h = gitHash(mfilename('fullpath'));
