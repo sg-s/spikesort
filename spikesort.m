@@ -478,6 +478,10 @@ discard_control = uicontrol(handles.main_fig,'units','normalized','Position',[.1
         catch exc
             ms = strcat(methodname, ' ran into an error: ', exc.message);
             msgbox(ms,'spikesort');
+            disp('The full stack is:')
+            for ei = 1:length(exc.stack)
+                disp(exc.stack(ei))
+            end
             return
         end
         clear es
