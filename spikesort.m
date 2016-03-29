@@ -19,10 +19,10 @@ if verLessThan('matlab', '8.0.1')
     error('Need MATLAB 2014b or better to run')
 end
 
-% check the signal processing toolbox version
-if verLessThan('signal','6.22')
-    error('Need Signal Processing toolbox version 6.22 or higher')
-end
+% % check the signal processing toolbox version
+% if verLessThan('signal','6.22')
+%     error('Need Signal Processing toolbox version 6.22 or higher')
+% end
 
 % get git version-name
 h = gitHash(mfilename('fullpath'));
@@ -169,10 +169,6 @@ clear oi
 cluster_panel = uipanel('Title','Clustering','Position',[.43 .92 .17 .07]);
 cluster_control = uicontrol(cluster_panel,'Style','popupmenu','String',avail_methods,'units','normalized','Position',[.02 .6 .9 .2],'Callback',@findCluster,'Enable','off');
 
-% add a button for machine learning
-% mlpanel = uipanel('Title','Machine Learning','Position',[.61 .92 .17 .07]);
-% machineLearningUIControl = uicontrol(mlpanel,'Style','pushbutton','String','Launch DeepNN...','units','normalized','Position',[.02 .1 .9 .9],'Callback',@makeMachineLearningUI,'Enable','off');
-
 
 % metadata panel
 metadata_panel = uipanel('Title','Metadata','Position',[.29 .57 .21 .15]);
@@ -309,10 +305,10 @@ discard_control = uicontrol(handles.main_fig,'units','normalized','Position',[.1
 
 
     function [] = removeArtifacts(~,~)
-        if strcmp(handles.remove_artifacts_menu.Checked,'off')
-            handles.remove_artifacts_menu.Checked = 'on';
+        if strcmp(get(handles.remove_artifacts_menu,'Checked'),'off')
+            set(handles.remove_artifacts_menu,'Checked','on');
         else
-            handles.remove_artifacts_menu.Checked = 'off';
+            set(handles.remove_artifacts_menu,'Checked','off');
         end
         plotResp;
     end
@@ -983,11 +979,18 @@ discard_control = uicontrol(handles.main_fig,'units','normalized','Position',[.1
 
             plotStim;
             plotResp(@loadFileCallback);
-        catch
-            if get(src,'String') == '>'
+        catch err
+            if strcmp(get(src,'String'),'>')
                 loadFileCallback(src)
-            elseif get(src,'String') == '<'
+            elseif strcmp(get(src,'String'),'<')
                 loadFileCallback(src)
+            else
+                warning('Something went wrong with loading the file. The error was:')
+                disp(err)
+                disp('The error was here:')
+                for ei = 1:length(err.stack)
+                    disp(err.stack(ei))
+                end
             end
 
         end
@@ -1227,7 +1230,7 @@ discard_control = uicontrol(handles.main_fig,'units','normalized','Position',[.1
 
         V = temp;
 
-        if strcmp(handles.remove_artifacts_menu.Checked,'on')
+        if strcmp(get(handles.remove_artifacts_menu,'Checked'),'on')
             this_control = ControlParadigm(ThisControlParadigm).Outputs;
             [V] = removeArtifactsUsingTemplate(V,this_control,pref);
         end
@@ -1241,16 +1244,6 @@ discard_control = uicontrol(handles.main_fig,'units','normalized','Position',[.1
             hc = floor(hc/pref.deltat);
             [V,Vf] = bandPass(V,lc,hc);
         end 
-
-
-        % if get(sine_control,'Value') ==1
-        %     % need to suppress some periodic noise, probably from an electrical fault
-        %     z = min([length(time) 5e4]); % 5 seconds of data
-        %     time = time(:); V = V(:);
-        %     temp = fit(time(1:z),V(1:z),'sin1');
-        %     [num,den] = iirnotch(temp.b1/length(time),.01*(temp.b1/length(time)));
-        %     V = V - temp(time);
-        % end
 
         set(handles.ax1_data,'XData',time,'YData',V,'Color','k','Parent',handles.ax1); 
 
