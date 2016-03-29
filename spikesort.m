@@ -741,12 +741,12 @@ discard_control = uicontrol(handles.main_fig,'units','normalized','Position',[.1
     end
     
     function loadFileCallback(src,~)
-        if strcmp(src.String,'Load File')
+        if strcmp(get(src,'String'),'Load File')
             [file_name,path_name] = uigetfile('.mat');
             if ~file_name
                 return
             end
-        elseif strcmp(src.String,'<')
+        elseif strcmp(get(src,'String'),'<')
             if isempty(file_name)
                 return
             else
@@ -984,9 +984,9 @@ discard_control = uicontrol(handles.main_fig,'units','normalized','Position',[.1
             plotStim;
             plotResp(@loadFileCallback);
         catch
-            if src.String == '>'
+            if get(src,'String') == '>'
                 loadFileCallback(src)
-            elseif src.String == '<'
+            elseif get(src,'String') == '<'
                 loadFileCallback(src)
             end
 
@@ -1165,13 +1165,13 @@ discard_control = uicontrol(handles.main_fig,'units','normalized','Position',[.1
         end
 
 
-        if strcmp(src.String,'Discard View')
+        if strcmp(get(src,'String'),'Discard View')
             spikes(ThisControlParadigm).use_trace_fragment(ThisTrial,xl(1):xl(2)) = 0;
             % disp('Discarding view for trial #')
             % disp(ThisTrial)
             % disp('Discarding data from:')
             % disp(xl*pref.deltat)
-        elseif strcmp(src.String,'Retain View')
+        elseif strcmp(get(src,'String'),'Retain View')
             spikes(ThisControlParadigm).use_trace_fragment(ThisTrial,xl(1):xl(2)) = 1;
         else
             error('modifyTraceDiscard ran into an error because I was called by a function that I did not expect. I am meant to be called only by the discard view or the retain view pushbuttons.')
