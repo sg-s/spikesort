@@ -19,10 +19,10 @@ if verLessThan('matlab', '8.0.1')
     error('Need MATLAB 2014b or better to run')
 end
 
-% check the signal processing toolbox version
-if verLessThan('signal','6.22')
-    error('Need Signal Processing toolbox version 6.22 or higher')
-end
+% % check the signal processing toolbox version
+% if verLessThan('signal','6.22')
+%     error('Need Signal Processing toolbox version 6.22 or higher')
+% end
 
 % get git version-name
 h = gitHash(mfilename('fullpath'));
@@ -1082,7 +1082,7 @@ discard_control = uicontrol(handles.main_fig,'units','normalized','Position',[.1
             end
             spikes(ThisControlParadigm).A(ThisTrial,-s+loc+floor(p(1))) = 1;
             A = find(spikes(ThisControlParadigm).A(ThisTrial,:));
-            spikes(ThisControlParadigm).amplitudes_A(ThisTrial,A)  =  ssdm_1DAmplitudes(V,pref.deltat,A,flip_V_control);
+            spikes(ThisControlParadigm).amplitudes_A(ThisTrial,A)  =  ssdm_1DAmplitudes(V,A);
         elseif get(mode_new_B,'Value')==1
             % snip out a small waveform around the point
             if pref.invert_V
@@ -1092,7 +1092,7 @@ discard_control = uicontrol(handles.main_fig,'units','normalized','Position',[.1
             end
             spikes(ThisControlParadigm).B(ThisTrial,-s+loc+floor(p(1))) = 1;
             B = find(spikes(ThisControlParadigm).B(ThisTrial,:));
-            spikes(ThisControlParadigm).amplitudes_B(ThisTrial,B)  =  ssdm_1DAmplitudes(V,pref.deltat,B,flip_V_control);
+            spikes(ThisControlParadigm).amplitudes_B(ThisTrial,B)  =  ssdm_1DAmplitudes(V,B);
         elseif get(mode_delete,'Value')==1
             % find the closest spike
             Aspiketimes = find(spikes(ThisControlParadigm).A(ThisTrial,:));
@@ -1107,13 +1107,13 @@ discard_control = uicontrol(handles.main_fig,'units','normalized','Position',[.1
                 spikes(ThisControlParadigm).A(ThisTrial,Aspiketimes(closest_spike)) = 0;
                 spikes(ThisControlParadigm).N(ThisTrial,Aspiketimes(closest_spike)) = 1;
                 A = find(spikes(ThisControlParadigm).A(ThisTrial,:));
-                spikes(ThisControlParadigm).amplitudes_A(ThisTrial,A)  =  ssdm_1DAmplitudes(V,pref.deltat,A,flip_V_control);
+                spikes(ThisControlParadigm).amplitudes_A(ThisTrial,A)  =  ssdm_1DAmplitudes(V,A);
             else
                 [~,closest_spike] = min(dB);
                 spikes(ThisControlParadigm).B(ThisTrial,Bspiketimes(closest_spike)) = 0;
                 spikes(ThisControlParadigm).N(ThisTrial,Aspiketimes(closest_spike)) = 1;
                 B = find(spikes(ThisControlParadigm).B(ThisTrial,:));
-                spikes(ThisControlParadigm).amplitudes_B(ThisTrial,B)  =  ssdm_1DAmplitudes(V,pref.deltat,B,flip_V_control);
+                spikes(ThisControlParadigm).amplitudes_B(ThisTrial,B)  =  ssdm_1DAmplitudes(V,B);
             end
         elseif get(mode_A2B,'Value')==1 
             % find the closest A spike
@@ -1123,9 +1123,9 @@ discard_control = uicontrol(handles.main_fig,'units','normalized','Position',[.1
             spikes(ThisControlParadigm).A(ThisTrial,Aspiketimes(closest_spike)) = 0;
             spikes(ThisControlParadigm).B(ThisTrial,Aspiketimes(closest_spike)) = 1;
             A = find(spikes(ThisControlParadigm).A(ThisTrial,:));
-            spikes(ThisControlParadigm).amplitudes_A(ThisTrial,A)  =  ssdm_1DAmplitudes(V,pref.deltat,A,flip_V_control);
+            spikes(ThisControlParadigm).amplitudes_A(ThisTrial,A)  =  ssdm_1DAmplitudes(V,A);
             B = find(spikes(ThisControlParadigm).B(ThisTrial,:));
-            spikes(ThisControlParadigm).amplitudes_B(ThisTrial,B)  =  ssdm_1DAmplitudes(V,pref.deltat,B,flip_V_control);
+            spikes(ThisControlParadigm).amplitudes_B(ThisTrial,B)  =  ssdm_1DAmplitudes(V,B);
 
         elseif get(mode_B2A,'Value')==1
             % find the closest B spike
@@ -1135,9 +1135,9 @@ discard_control = uicontrol(handles.main_fig,'units','normalized','Position',[.1
             spikes(ThisControlParadigm).A(ThisTrial,Bspiketimes(closest_spike)) = 1;
             spikes(ThisControlParadigm).B(ThisTrial,Bspiketimes(closest_spike)) = 0;
             A = find(spikes(ThisControlParadigm).A(ThisTrial,:));
-            spikes(ThisControlParadigm).amplitudes_A(ThisTrial,A)  =  ssdm_1DAmplitudes(V,pref.deltat,A,flip_V_control);
+            spikes(ThisControlParadigm).amplitudes_A(ThisTrial,A)  =  ssdm_1DAmplitudes(V,A);
             B = find(spikes(ThisControlParadigm).B(ThisTrial,:));
-            spikes(ThisControlParadigm).amplitudes_B(ThisTrial,B)  =  ssdm_1DAmplitudes(V,pref.deltat,B,flip_V_control);
+            spikes(ThisControlParadigm).amplitudes_B(ThisTrial,B)  =  ssdm_1DAmplitudes(V,B);
         end
 
         % update plot
