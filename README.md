@@ -153,6 +153,31 @@ This powerful input architecture means you need to know what variables are calle
 * `V_snippets` a matrix containing snippets around `loc` from `Vf`. Useful if you just want to work with the spike shapes, and don't really care where they are. 
 
 
+# ROADMAP
+
+`spikesort v2.0` will be re-written using a MATLAB class, so that you can do things like this:
+
+```matlab
+% initialise the spikesort object
+s = spikesort; 
+
+% load a file
+s.path_name = '/path/to/file/to/be/sorted.mat';
+
+% go to a specific paradigm and trial
+s.current_paradigm = 2;
+s.current_trial = 10;
+
+% find spikes and sort
+s.find_spikes;
+s.reduce_dimensions('t-sne');
+s.cluster('density-peaks');
+
+% or, switch back to a GUI
+s.createGUI;
+
+```
+
 # License 
 
 [GPL v2](http://choosealicense.com/licenses/gpl-2.0/#)
