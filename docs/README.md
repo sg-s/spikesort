@@ -60,4 +60,46 @@ The expected workflow for t-SNE sorting is as follows:
 2. tune your spike detection parameters so you find every spike (I find that t-SNE works well even if ~90% of your detected peaks are noise, as long as you managed to get every single spike)
 3. Save your pref.m file
 4. run `preCachetSNE` on the folder with your data.
-5. Sort the spikes using t-SNE. The embedding should appear instantly. 
+5. Sort the spikes using t-SNE. The embedding should appear instantly.
+
+# A Working Example
+
+This section provides a brief overview of how to use the spikesort package by stepping through a working example, images showing expected outputs are also included.
+
+### Load the data
+
+1. Run spikesort.m
+2. Click *Load File*
+3. Select the data.mat file from the pop-up window
+
+If provided the data file you have uploaded is in the correct format, you will see the following window showing the voltage trace and transformed spike data trace. The purple points indicate spikes.
+
+![image](../images/WE_0_start.png)
+
+### Apply a dimensionality reduction technique
+
+1. Use the drop-down menu to select a dimensionality technique (for example 2DtSNE)
+2. Wait while the program runs the selected algorithm
+
+The spike data plot will now show green highlights indicating the data points to be separated into their respective groups.
+
+![image](../images/WE_1_tSNE_embedded.png)
+
+### Apply a clustering method
+
+1. Use the drop-down menu to select a clustering method (for example 2DManualCluster)
+2. A pop-up will be presented, showing the cluster of spikes
+3. Use the drop-down menu to select the group to which the cluster of spikes will be grouped into
+4. Drag a line around the clusters
+5. Repeate as neccessary
+6. Once all spike clusters have been grouped, close the window
+
+Spikesort accordingly sorts the spikes into their respective groups in the spike data plot. By selecting either Neuron A or Neuron B, spikesort tags the spikes as red or blue. The cluster of spikes grouped as noise will accordingly be removed from the spike data plot.
+
+![image](../images/WE_2_manual_sort_started.png)
+![image](../images/WE_3_manual_sort_finished.png)
+![image](../images/WE_4_spikes_sorted.png)
+
+### Output
+
+The resulting spike data plot will be saved into a new variable *spikes*.
