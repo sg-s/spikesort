@@ -229,7 +229,10 @@ discard_control = uicontrol(handles.main_fig,'units','normalized','Position',[.1
             es{1} = 'tag -a ';
             es{2} = tag;
             es{3} = strcat(path_name,file_name);
-            unix(strjoin(es));
+            try
+                unix(strjoin(es));
+            catch
+            end
         end
     end
 

@@ -49,6 +49,7 @@ Likewise, data clustering is achieved through plugins, allowing you to customise
 
 1. 1D Gaussian Clustering
 2. 2D Manual Clustering 
+3. 2D [Density Peaks](http://science.sciencemag.org/content/344/6191/1492)
 
 All these methods are built around an awesome [plugin](#plugin-architecture) architecture, making inclusion of new clustering methods **very** easy. 
 
@@ -64,9 +65,9 @@ When SmartScroll is enabled, `spikesort` will keep a constant number of spikes i
 
 `spikesort` supports the awesome [tag](https://github.com/jdberry/tag) command line file-tagging utility, allowing you to arbitrarily tag files with as many tags as you want. Not supported on Windows. 
 
-## Limitations 
+## Limitations and Scope
 
-* for various reasons, sorting into only two groups (A and B) is supported. spikesort will not support more than 2 groups in the anticipated future. 
+* sorting into only two groups (A and B) is supported. spikesort will not support more than 2 groups in the anticipated future. 
 * Only 1 recording electrode is supported at a time. No support for multi-electrode arrays, nor will `spikesort` ever have support for MEAs. 
 
 ## Installation
