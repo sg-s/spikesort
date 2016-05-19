@@ -667,7 +667,7 @@ discard_control = uicontrol(handles.main_fig,'units','normalized','Position',[.1
         legend(l,L)
         close(f_waitbar)
         linkaxes(sp(1:2))
-        prettyFig;
+        prettyFig('font_units','points');
         console('Made a firing rate plot.')
     end
 
