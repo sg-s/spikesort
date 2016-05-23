@@ -34,14 +34,17 @@ context_width = .2; % seconds.
 % spike detection
 t_before = 20; 		% should be an integer, in units of data samples
 t_after = 25; 		% should be an integer, in units of data samples 
-minimum_peak_prominence = 'auto'; 	% minimum peak prominence for peak detection. you can also specify a scalar value
+minimum_peak_prominence = 'auto'; 	% minimum peak prominence for peak detection. you can use 'auto' or you can also specify a scalar value
 minimum_peak_width = 1;
 minimum_peak_distance = 1; 			% how separated should the peaks be?
 V_cutoff = -1; 						% ignore peaks beyond this limit 
 invert_V = false; 					% sometimes, it is easier to find spikes if you invert V
 band_pass = [100 1000]; 			% in Hz. band pass V to find spikes more easily 
+
+% spike resolution
 remove_doublets = true;				% resolve doublet peaks, which are very likely AB or BA, not AA or BB
 doublet_distance = 40; 				% how far out should you look for doublets? 
+
 
 % artifact removal 
 remove_artifacts = 'off'; % or 'off'. 
@@ -51,4 +54,5 @@ use_off_template = false;
 use_on_template = false;
 
 
-
+% density peaks automatic cluster visualization 
+show_dp_clusters = true;

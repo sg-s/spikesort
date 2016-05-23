@@ -210,7 +210,7 @@ filtermode = uicontrol(handles.main_fig,'units','normalized','Position',[.03 .69
 findmode = uicontrol(handles.main_fig,'units','normalized','Position',[.16 .69 .12 .05],'Style','togglebutton','String','Find Spikes','Value',1,'Callback',@plotResp,'Enable','off');
 
 redo_control = uicontrol(handles.main_fig,'units','normalized','Position',[.03 .64 .12 .05],'Style','pushbutton','String','Redo','Value',0,'Callback',@redo,'Enable','off');
-autosort_control = uicontrol(handles.main_fig,'units','normalized','Position',[.16 .64 .12 .05],'Style','togglebutton','String','Autosort','Value',0,'Enable','off');
+autosort_control = uicontrol(handles.main_fig,'units','normalized','Position',[.16 .64 .12 .05],'Style','togglebutton','String','Autosort','Value',0,'Enable','off','Callback',@autosortCallback);
 
 sine_control = uicontrol(handles.main_fig,'units','normalized','Position',[.03 .59 .12 .05],'Style','togglebutton','String',' Kill Ringing','Value',0,'Callback',@plotResp,'Enable','off');
 discard_control = uicontrol(handles.main_fig,'units','normalized','Position',[.16 .59 .12 .05],'Style','togglebutton','String',' Discard','Value',0,'Callback',@discard,'Enable','off');
@@ -218,6 +218,16 @@ discard_control = uicontrol(handles.main_fig,'units','normalized','Position',[.1
 
 %% begin subfunctions
 % all subfunctions here are listed alphabetically
+
+    function autosortCallback(~,~)
+        if autosort_control.Value == 1
+            autosort_control.FontWeight = 'bold';
+            autosort_control.String = 'AUTOSORT ON';
+        else
+            autosort_control.FontWeight = 'normal';
+            autosort_control.String = 'Autosort Off';
+        end
+    end
 
     function addTag(src,~)
         % matlab wrapper for tag, which adds BSD tags to the file we are working on. *nix only. 
@@ -522,8 +532,14 @@ discard_control = uicontrol(handles.main_fig,'units','normalized','Position',[.1
         spikes(ThisControlParadigm).N(ThisTrial,N) = 1;
 
         % also save spike amplitudes
-        spikes(ThisControlParadigm).amplitudes_A(ThisTrial,A)  =  ssdm_1DAmplitudes(V,A);
-        spikes(ThisControlParadigm).amplitudes_B(ThisTrial,B)  =  ssdm_1DAmplitudes(V,B);
+        try
+            spikes(ThisControlParadigm).amplitudes_A(ThisTrial,A)  =  ssdm_1DAmplitudes(V,A);
+        catch
+        end
+        try
+            spikes(ThisControlParadigm).amplitudes_B(ThisTrial,B)  =  ssdm_1DAmplitudes(V,B);
+        catch
+        end
 
         % save them
         save(strcat(path_name,file_name),'spikes','-append')
@@ -1004,25 +1020,6 @@ discard_control = uicontrol(handles.main_fig,'units','normalized','Position',[.1
     end
 
 
-    function makeMachineLearningUI(~,~)
-        ml_ui.handles.main_fig = figure('Position',[60 500 450 450],'Toolbar','none','Name','Deep Learning','NumberTitle','off','Resize','on','HandleVisibility','on');
-
-        ml_ui.loadButton = uicontrol(ml_ui.handles.main_fig,'units','normalized','Position',[.05 .85 .4 .10],'Style', 'pushbutton', 'String', 'Load DBN','FontSize',20,'Callback',@loadDBN);
-        ml_ui.saveButton = uicontrol(ml_ui.handles.main_fig,'units','normalized','Position',[.55 .85 .4 .10],'Style', 'pushbutton', 'String', 'Save DBN','FontSize',20,'Callback',@saveDBN);
-        mlpanel = uipanel('Title','Train Network','Position',[.05 .3 .9 .5],'FontSize',16);
-        ml_ui.trainNS = uicontrol(mlpanel,'units','normalized','Position',[.05 .7 .6 .2],'Style', 'pushbutton', 'String', 'Noise/Spike Splitter','FontSize',20,'Callback',@trainDBN);
-        ml_ui.trainSC = uicontrol(mlpanel,'units','normalized','Position',[.05 .5 .6 .2],'Style', 'pushbutton', 'String', 'Single/Compound Splitter','FontSize',20,'Callback',@trainDBN);
-        ml_ui.trainAB = uicontrol(mlpanel,'units','normalized','Position',[.05 .3 .6 .2],'Style', 'pushbutton', 'String', 'A/B Splitter','FontSize',20,'Callback',@trainDBN);
-        uicontrol(mlpanel,'units','normalized','Position',[.05 .1 .2 .1],'Style', 'text', 'String', '#epochs:','FontSize',16);
-        ml_ui.epochControl= uicontrol(mlpanel,'units','normalized','Position',[.25 .1 .2 .1],'Style', 'edit', 'String', '1000','FontSize',16);
-        uicontrol(mlpanel,'units','normalized','Position',[.55 .1 .2 .1],'Style', 'text', 'String', 'Size:','FontSize',16);
-        ml_ui.sizeControl = uicontrol(mlpanel,'units','normalized','Position',[.75 .1 .2 .1],'Style', 'edit', 'String', '10','FontSize',16);
-
-        ml_ui.testControl = uicontrol(ml_ui.handles.main_fig,'units','normalized','Position',[.05 .1 .2 .1],'Style', 'pushbutton', 'String', 'Test','FontSize',20,'Callback',@deepSort);
-        ml_ui.sortControl = uicontrol(ml_ui.handles.main_fig,'units','normalized','Position',[.55 .1 .2 .1],'Style', 'pushbutton', 'String', 'Sort','FontSize',20,'Callback',@deepSort);
-
-    end
-
 
     function resetZoom(~,~)
         set(handles.ax1,'XLim',[min(time) max(time)]);
@@ -1353,8 +1350,8 @@ discard_control = uicontrol(handles.main_fig,'units','normalized','Position',[.1
             end
 
 
-  
             xlim = get(handles.ax1,'XLim');
+            
             if xlim(1) < min(time)
                 xlim(1) = min(time);
             end
@@ -1367,10 +1364,10 @@ discard_control = uicontrol(handles.main_fig,'units','normalized','Position',[.1
             
             ylim(2) = max(V(find(time==xlim(1)):find(time==xlim(2))));
             ylim(1) = min(V(find(time==xlim(1)):find(time==xlim(2))));
-            yr = 2*std(V(find(time==xlim(1)):find(time==xlim(2))));
+            yr = 2*nanstd(V(find(time==xlim(1)):find(time==xlim(2))));
 
+            if (isnan(yr)) || any(isnan(xlim)) || any(isnan(ylim))
 
-            if (isnan(yr)) | any(isnan(xlim)) | any(isnan(ylim))
                 xlim(2) = time(find(isnan(V),1,'first')-1);
                 xlim(1) = pref.deltat;
                 ylim(2) = max(V(1:find(isnan(V),1,'first')-1));
@@ -1541,11 +1538,18 @@ discard_control = uicontrol(handles.main_fig,'units','normalized','Position',[.1
         % take snippets for each putative spike
         R = [];
         V_snippets = NaN(pref.t_before+pref.t_after,length(loc));
-        for i = 2:length(loc)-1
+        if loc(1) < pref.t_before+1
+            loc(1) = [];
+            V_snippets(:,1) = []; 
+        end
+        if loc(end) + pref.t_after+1 > length(V)
+            loc(end) = [];
+            V_snippets(:,end) = [];
+        end
+        for i = 1:length(loc)
             V_snippets(:,i) = V(loc(i)-pref.t_before+1:loc(i)+pref.t_after);
         end
-        loc(1) = []; V_snippets(:,1) = []; 
-        loc(end) = []; V_snippets(:,end) = [];
+
 
         % update the spike markings
         set(handles.ax1_all_spikes,'XData',time(loc),'YData',V(loc),'Marker','o','MarkerSize',pref.marker_size,'Parent',handles.ax1,'MarkerEdgeColor','g','LineStyle','none');
