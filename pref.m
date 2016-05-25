@@ -12,14 +12,14 @@
 deltat = 1e-4; % what is the time step of the data?
 
 % debug preferences
-ssDebug = false; 			% should spikesort run in debug mode?
+ssDebug = true; 			% should spikesort run in debug mode?
 
 % display preferences
 marker_size = 5; 			% how big the spike indicators are
 show_r2 = false;			% show r2 in firing rate plot
 fs = 14; 					% UI font size
 fw = 'bold'; 				% UI font weight
-plot_control = false; 		% should spikesort plot the control signals?
+plot_control = false; 		% should spikesort plot the control signals instead of the stimulus?
 
 % firing rate estimation
 show_firing_rate_trials = false; % calculate firing rate on a trial-by-trial basis?

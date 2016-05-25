@@ -1277,7 +1277,7 @@ discard_control = uicontrol(handles.main_fig,'units','normalized','Position',[.1
             if pref.ssDebug
                 disp('plotResp 1304: invoking findSpikes...')
             end
-            loc=findSpikes(V_censored); 
+            loc = findSpikes(V_censored); 
             set(method_control,'Enable','on')
 
             % do we already have sorted spikes?
@@ -1550,6 +1550,10 @@ discard_control = uicontrol(handles.main_fig,'units','normalized','Position',[.1
             V_snippets(:,i) = V(loc(i)-pref.t_before+1:loc(i)+pref.t_after);
         end
 
+        if pref.ssDebug
+            disp('These many V_snippets:')
+            disp(length(V_snippets))
+        end
 
         % update the spike markings
         set(handles.ax1_all_spikes,'XData',time(loc),'YData',V(loc),'Marker','o','MarkerSize',pref.marker_size,'Parent',handles.ax1,'MarkerEdgeColor','g','LineStyle','none');
