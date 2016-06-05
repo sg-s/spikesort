@@ -93,4 +93,4 @@ else
 	end
 end
 
-N = 0*A;
+N = [];

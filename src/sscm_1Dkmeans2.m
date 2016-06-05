@@ -1,11 +1,11 @@
-% sscm_1Dkmeans.m
+% sscm_1Dkmeans2.m
 % this is a cluster plugin for spikesort.m
 % this clustering method splits a 1-dimensional dataset into two assuming that they result from two gaussians
 % created by Srinivas Gorur-Shandilya at 10:20 , 09 April 2014. Contact me at http://srinivas.gs/contact/
 % 
 % This work is licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License. 
 % To view a copy of this license, visit http://creativecommons.org/licenses/by-nc-sa/4.0/.
-function [A,B,N] = sscm_1Dkmeans(R,loc)
+function [A,B,N] = sscm_1Dkmeans2(R,loc)
 
 
 idx=kmeans(R(:),2);

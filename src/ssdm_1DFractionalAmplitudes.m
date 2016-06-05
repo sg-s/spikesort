@@ -8,13 +8,18 @@
 % 
 % This work is licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License. 
 % To view a copy of this license, visit http://creativecommons.org/licenses/by-nc-sa/4.0/.
-function R = ssdm_1DFractionalAmplitudes(V,Vf,loc)
+function R = ssdm_1DFractionalAmplitudes(V,loc)
 
 pref = readPref;
 
 wb = waitbar(0.2,'Computing Fractional amplitudes...');
 deltat = pref.deltat;
 h = (40*1e-4)/deltat; % deltat in seconds
+
+% prepend some data onto V
+V = [zeros(1,100) V];
+loc = 100+loc;
+
 % 1D - find total spike amplitude for each
 R = zeros*loc;
 loc_max = 0*loc;

@@ -19,14 +19,14 @@ if verLessThan('matlab', '8.0.1')
     error('Need MATLAB 2014b or better to run')
 end
 
-% % check the signal processing toolbox version
-% if verLessThan('signal','6.22')
-%     error('Need Signal Processing toolbox version 6.22 or higher')
-% end
+% check the signal processing toolbox version
+if verLessThan('signal','6.22')
+    error('Need Signal Processing toolbox version 6.22 or higher')
+end
 
 % get git version-name
 h = gitHash(mfilename('fullpath'));
-versionname = strcat('spikesort for Kontroller (Build-',h(1:6),')');
+versionname = strcat('spikesort for Kontroller (Build-',h(1:6),')'); 
 
 % load preferences
 pref = readPref;
@@ -154,7 +154,7 @@ for oi = 1:length(avail_methods)
     temp = avail_methods{oi};
     avail_methods{oi} = temp(6:end-2);
 end
-clear oi
+clear oi; pingx;
 method_control = uicontrol(dimredpanel,'Style','popupmenu','String',avail_methods,'units','normalized','Position',[.02 .6 .9 .2],'Callback',@reduceDimensionsCallback,'Enable','off');
 
 % find the available methods for clustering

@@ -12,7 +12,7 @@
 deltat = 1e-4; % what is the time step of the data?
 
 % debug preferences
-ssDebug = true; 			% should spikesort run in debug mode?
+ssDebug = false; 			% should spikesort run in debug mode?
 
 % display preferences
 marker_size = 5; 			% how big the spike indicators are
