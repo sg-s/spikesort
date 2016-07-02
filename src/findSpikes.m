@@ -7,7 +7,7 @@
 % To view a copy of this license, visit http://creativecommons.org/licenses/by-nc-sa/4.0/.
 function loc = findSpikes(V)
 
-pref = readPref;
+pref = readPref(fileparts(fileparts(which(mfilename))));
 
 % get param
 mpp = pref.minimum_peak_prominence;
