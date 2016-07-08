@@ -26,7 +26,7 @@ allfiles = dir('*.mat');
 for i = 1:length(allfiles)
 	thisfile = allfiles(i).name;
 	dbm = ['Working on: ' thisfile];
-	system(['echo "' dbm '" >> spikesort.log'])
+	system(['echo "' dbm '" >> spikesort.log']);
 	if ~strcmp(thisfile,'consolidated_data.mat') && ~strcmp(thisfile,'cached.mat')
 		load(thisfile)
 		for j = 1:length(data)
@@ -76,7 +76,7 @@ for i = 1:length(allfiles)
 				        end
 					    % run the fast tSNE algorithm on this
 					    dbm = ['starting fast_tsne @ ' datestr(now)];
-						system(['echo "' dbm '" >> spikesort.log'])
+						system(['echo "' dbm '" >> spikesort.log']);
 					    fast_tsne(V_snippets,2,10,60);
 					catch err
 						disp(err)

@@ -17,10 +17,5 @@ perplexity = 60;
 
 labels = ones(size(V_snippets,1),1);
 
-% based on size of data, use vanilla t-SNE or Barnes-Hut version
-if size(V_snippets,1) > 1200
-	R = fast_tsne(V_snippets, no_dims, init_dims, perplexity,.5)';
-else
-	h = figure('Name','t-SNE visualisation','toolbar','None','Menubar','none','NumberTitle','off');
-	R = tsne(V_snippets, labels, no_dims, init_dims, perplexity,h)';
-end
+% always use the fast tSNE algorith, as it is internally cached
+R = fast_tsne(V_snippets, no_dims, init_dims, perplexity,.5)';
