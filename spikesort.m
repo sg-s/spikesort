@@ -327,7 +327,7 @@ discard_control = uicontrol(handles.main_fig,'units','normalized','Position',[.1
 
     function chooseParadigmCallback(src,~)
         % callback that is run when we pick a new paradigm, either through the buttons or the drop down menu
-        paradigms_with_data = find(Kontroller_ntrials(data)); 
+        paradigms_with_data = find(structureElementLength(data)); 
         if src == paradigm_chooser
             ThisControlParadigm = paradigms_with_data(get(paradigm_chooser,'Value'));
         elseif src== next_paradigm
@@ -344,7 +344,7 @@ discard_control = uicontrol(handles.main_fig,'units','normalized','Position',[.1
             error('unknown source of callback 109. probably being incorrectly being called by something.')
         end
 
-        n = Kontroller_ntrials(data);
+        n = structureElementLength(data);
         n = n(ThisControlParadigm);
         temp  ={};
         for i = 1:n
@@ -369,7 +369,7 @@ discard_control = uicontrol(handles.main_fig,'units','normalized','Position',[.1
     end
 
     function chooseTrialCallback(src,~)
-        n = Kontroller_ntrials(data); 
+        n = structureElementLength(data); 
         if length(n) < ThisControlParadigm
             return
         else
@@ -857,7 +857,7 @@ discard_control = uicontrol(handles.main_fig,'units','normalized','Position',[.1
             end
 
             % find out which paradigms have data 
-            n = Kontroller_ntrials(data); 
+            n = structureElementLength(data); 
 
             % only show the paradigms with data
             temp = {ControlParadigm.Name};
@@ -1207,7 +1207,7 @@ discard_control = uicontrol(handles.main_fig,'units','normalized','Position',[.1
 
         % plot the response
         clear time V Vf % flush old variables 
-        n = Kontroller_ntrials(data); 
+        n = structureElementLength(data); 
         
         if n(ThisControlParadigm)
             plotwhat = get(resp_channel,'String');
@@ -1426,7 +1426,7 @@ discard_control = uicontrol(handles.main_fig,'units','normalized','Position',[.1
 
     function plotStim(~,~)
         % plot the stimulus and other things in handles.ax2
-        n = Kontroller_ntrials(data); 
+        n = structureElementLength(data); 
         miny = Inf; maxy = -Inf;
         if n(ThisControlParadigm)
             plotwhat = get(stim_channel,'String');
@@ -1487,7 +1487,10 @@ discard_control = uicontrol(handles.main_fig,'units','normalized','Position',[.1
                     % plot the control signal directly
                     time = pref.deltat*(1:length(temp));
                     set(handles.ax2_data,'XData',time,'YData',temp,'LineWidth',1); hold on;
-                    set(handles.ax2,'YLim',[min(temp) max(temp)]);
+                    try
+                        set(handles.ax2,'YLim',[min(temp) max(temp)]);
+                    catch
+                    end
                 else
                     temp(temp>0)=1;
                     time = pref.deltat*(1:length(temp));
