@@ -72,7 +72,6 @@ handles.main_fig = [];
 %               ##     ## ##     ## ##    ## ########     #######  #### 
 
 
-
 % make the master figure, and the axes to plot the voltage traces
 handles.main_fig = figure('position',[50 50 1200 700], 'Toolbar','figure','Menubar','none','Name',versionname,'NumberTitle','off','IntegerHandle','off','WindowButtonDownFcn',@mousecallback,'WindowScrollWheelFcn',@scroll,'CloseRequestFcn',@closess);
 temp =  findall(handles.main_fig,'Type','uitoggletool','-or','Type','uipushtool');
@@ -154,7 +153,7 @@ for oi = 1:length(avail_methods)
     temp = avail_methods{oi};
     avail_methods{oi} = temp(6:end-2);
 end
-clear oi; pingx;
+clear oi; 
 method_control = uicontrol(dimredpanel,'Style','popupmenu','String',avail_methods,'units','normalized','Position',[.02 .6 .9 .2],'Callback',@reduceDimensionsCallback,'Enable','off');
 
 % find the available methods for clustering
@@ -212,7 +211,7 @@ findmode = uicontrol(handles.main_fig,'units','normalized','Position',[.16 .69 .
 redo_control = uicontrol(handles.main_fig,'units','normalized','Position',[.03 .64 .12 .05],'Style','pushbutton','String','Redo','Value',0,'Callback',@redo,'Enable','off');
 autosort_control = uicontrol(handles.main_fig,'units','normalized','Position',[.16 .64 .12 .05],'Style','togglebutton','String','Autosort','Value',0,'Enable','off','Callback',@autosortCallback);
 
-sine_control = uicontrol(handles.main_fig,'units','normalized','Position',[.03 .59 .12 .05],'Style','togglebutton','String',' Kill Ringing','Value',0,'Callback',@plotResp,'Enable','off');
+handles.sine_control = uicontrol(handles.main_fig,'units','normalized','Position',[.03 .59 .12 .05],'Style','togglebutton','String',' Kill Ringing','Value',0,'Callback',@plotResp,'Enable','off');
 discard_control = uicontrol(handles.main_fig,'units','normalized','Position',[.16 .59 .12 .05],'Style','togglebutton','String',' Discard','Value',0,'Callback',@discard,'Enable','off');
 
 
@@ -262,7 +261,6 @@ discard_control = uicontrol(handles.main_fig,'units','normalized','Position',[.1
         if size(control_signal,2) > size(control_signal,1)
             control_signal = control_signal';
         end
-
 
         % make the template object
         template.control_signal_channels = plot_these;
@@ -916,7 +914,7 @@ discard_control = uicontrol(handles.main_fig,'units','normalized','Position',[.1
 
             % enable all controls
             waitbar(.7,handles.load_waitbar,'Enabling UI...')
-            set(sine_control,'Enable','on');
+            set(handles.sine_control,'Enable','on');
             set(autosort_control,'Enable','on');
             set(redo_control,'Enable','on');
             set(findmode,'Enable','on');
@@ -1023,6 +1021,12 @@ discard_control = uicontrol(handles.main_fig,'units','normalized','Position',[.1
 
     function resetZoom(~,~)
         set(handles.ax1,'XLim',[min(time) max(time)]);
+
+        temp = sort(V);
+        handles.ax1.YLim(1) = mean(temp(1:floor(length(temp)*.05)))*3;
+        temp = sort(V,'descend');
+        handles.ax1.YLim(2) = mean(temp(1:floor(length(temp)*.05)))*3;
+
     end
 
 
@@ -1234,10 +1238,6 @@ discard_control = uicontrol(handles.main_fig,'units','normalized','Position',[.1
 
         V = temp;
 
-        if strcmp(get(handles.remove_artifacts_menu,'Checked'),'on')
-            this_control = ControlParadigm(ThisControlParadigm).Outputs;
-            [V] = removeArtifactsUsingTemplate(V,this_control,pref);
-        end
         if get(filtermode,'Value') == 1
             if pref.ssDebug 
                 disp('plotResp 1251: filtering trace...')
@@ -1248,6 +1248,11 @@ discard_control = uicontrol(handles.main_fig,'units','normalized','Position',[.1
             hc = floor(hc/pref.deltat);
             [V,Vf] = bandPass(V,lc,hc);
         end 
+
+        if strcmp(get(handles.remove_artifacts_menu,'Checked'),'on')
+            this_control = ControlParadigm(ThisControlParadigm).Outputs;
+            V = removeArtifactsUsingTemplate(V,this_control,pref);
+        end
 
         set(handles.ax1_data,'XData',time,'YData',V,'Color','k','Parent',handles.ax1); 
 
@@ -1266,6 +1271,22 @@ discard_control = uicontrol(handles.main_fig,'units','normalized','Position',[.1
             end
         end
 
+
+        if get(handles.sine_control,'Value')
+            % operate in 1 second blocks
+            % for z = round(1/(pref.deltat)):round(1/(pref.deltat)):length(V)
+            %     textbar(z,length(V))
+            %     a = max([z - round(1/(pref.deltat)) 1]);
+            %     temp = V(a:z);
+            %     s = std(temp);
+            %     % rm_this = temp>2*s | temp < -2*s;
+            %     x = (1:length(temp))';
+            %     ff = fit(x(:),temp(:),'sin1');
+            %     V(a:z) = V(a:z) - ff(x)';
+
+            % end
+            % set(handles.ax1_data,'XData',time,'YData',V,'Color','k','Parent',handles.ax1); 
+        end
 
         % do we have to find spikes too?
         V_censored = V;
