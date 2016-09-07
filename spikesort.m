@@ -24,9 +24,17 @@ if verLessThan('signal','6.22')
     error('Need Signal Processing toolbox version 6.22 or higher')
 end
 
-% get git version-name
-h = gitHash(mfilename('fullpath'));
-versionname = strcat('spikesort for Kontroller (Build-',h(1:6),')'); 
+% get git build_number
+build_number = str2double(fileread([fileparts(which(mfilename)) oss 'build_number']));
+v = checkForNewestVersionOnGitHub('/sg-s/spikesort/');
+if v > build_number
+    disp(['A new version of spikesort is available: build:' oval(v)])
+    disp(['You have build ' oval(build_number)])
+    disp('Update using "install -f spikesort"')
+else
+    disp('You have the latest version of spikesort')
+end
+versionname = strcat('spikesort for Kontroller (Build-',oval(build_number),')'); 
 
 % load preferences
 pref = readPref;
