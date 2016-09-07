@@ -34,7 +34,7 @@ for i = 1:length(toolboxes)
         if v > build_number
             disp(['A new version of' toolboxes{i} 'is available: build:' oval(v)])
             disp(['You have build ' oval(build_number)])
-            disp('Update using "install -f spikesort"')
+            disp('Update using "install -f sg-s/spikesort"')
         else
             disp(['You have the latest version of ' toolboxes{i}])
         end
