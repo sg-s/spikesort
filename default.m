@@ -12,7 +12,7 @@
 deltat = 1e-4; % what is the time step of the data?
 
 % debug preferences
-ssDebug = true; 			% should spikesort run in debug mode?
+ssDebug = false; 			% should spikesort run in debug mode?
 
 % display preferences
 marker_size = 5; 			% how big the spike indicators are
@@ -34,7 +34,7 @@ context_width = .2; % seconds.
 % spike detection
 t_before = 20; 		% should be an integer, in units of data samples
 t_after = 25; 		% should be an integer, in units of data samples 
-minimum_peak_prominence = 1e-2; 	% minimum peak prominence for peak detection. you can use 'auto' or you can also specify a scalar value
+minimum_peak_prominence = 'auto'; 	% minimum peak prominence for peak detection. you can use 'auto' or you can also specify a scalar value
 minimum_peak_width = 1;
 minimum_peak_distance = 1; 			% how separated should the peaks be?
 V_cutoff = -1; 						% ignore peaks beyond this limit 

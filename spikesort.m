@@ -1282,6 +1282,9 @@ discard_control = uicontrol(handles.main_fig,'units','normalized','Position',[.1
                     else
                         ignored_fragments = ~spikes(ThisControlParadigm).use_trace_fragment(ThisTrial,:);
                         set(handles.ax1_ignored_data,'XData',time(ignored_fragments),'YData',V(ignored_fragments),'Color',[.5 .5 .5],'Parent',handles.ax1);
+                        if pref.ssDebug
+                            disp('Ignoring part of the trace')
+                        end
                     end
                 end
             end
@@ -1558,6 +1561,7 @@ discard_control = uicontrol(handles.main_fig,'units','normalized','Position',[.1
                 spikes(ThisControlParadigm).B(ThisTrial,:) = 0;
                 spikes(ThisControlParadigm).amplitudes_A(ThisTrial,:) = 0;
                 spikes(ThisControlParadigm).amplitudes_B(ThisTrial,:) = 0;
+                spikes(ThisControlParadigm).use_trace_fragment(ThisTrial,:) = 1;
             else
                 % all cool
             end
