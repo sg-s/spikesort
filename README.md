@@ -78,11 +78,11 @@ The best way to install spikesort is through my package manager:
 
 ```
 >> urlwrite('http://srinivas.gs/install.m','install.m'); 
->> install spikesort
->> install srinivas.gs_mtools   # spikesort needs this package to run
->> install kontroller           # needs a few functions from this package
->> install t-sne                # t-distributed SNE
->> install bhtsne               # Barnes-Hut t-SNE
+>> install sg-s/spikesort
+>> install sg-s/srinivas.gs_mtools   # spikesort needs this package to run
+>> install sg-s/kontroller           # needs a few functions from this package
+>> install sg-s/t-sne                # t-distributed SNE
+>> install sg-s/bhtsne               # Barnes-Hut t-SNE
 ```
 
 This script grabs the code and fixes your path. 
@@ -93,7 +93,7 @@ Or, if you have `git` installed:
 git clone git@github.com:sg-s/spikesort.git
 ````
 
-or [download the latest release](https://github.com/sg-s/spikesort/releases). Don't forget to download, install and configure the other packages too. 
+Don't forget to download, install and configure the other packages too. 
 
 ### install [bhtsne](https://github.com/lvdmaaten/bhtsne) and [t-sne](https://github.com/sg-s/t-sne)
 
