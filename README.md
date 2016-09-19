@@ -181,9 +181,9 @@ s.createGUI;
 
 # License 
 
-[GPL v2](http://choosealicense.com/licenses/gpl-2.0/#)
+[GPL v3](http://gplv3.fsf.org/)
 
-`spikesort` also includes the following code from third parties:
+`spikesort` also includes the following code from third parties, which are under their own licenses:
 
 1. [t-SNE](https://lvdmaaten.github.io/tsne/) from Laurens van der Maaten
 2. sparsePCA from Thomas Buehler and Matthias Hein
