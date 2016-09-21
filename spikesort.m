@@ -26,23 +26,8 @@ end
 
 % get git build_number for all toolboxes
 toolboxes = {'srinivas.gs_mtools','spikesort','t-sne','bhtsne'};
-for i = 1:length(toolboxes)
-    try
-        [~,p]=searchPath(toolboxes{i});
-        build_number = str2double(fileread([p oss 'build_number']));
-        v = checkForNewestVersionOnGitHub(['/sg-s/' toolboxes{i}]);
-        if v > build_number
-            disp(['A new version of' toolboxes{i} 'is available: build:' oval(v)])
-            disp(['You have build ' oval(build_number)])
-            disp('Update using "install -f sg-s/spikesort"')
-        else
-            disp(['You have the latest version of ' toolboxes{i}])
-        end
-    catch
-        error('Missing toolboxes? Try updating and re-installing all toolboxes.')
-    end
-end
-versionname = strcat('spikesort for Kontroller (Build-',oval(build_number),')'); 
+build_numbers = checkDeps(toolboxes);
+versionname = strcat('spikesort for Kontroller (Build-',oval(build_numbers(2)),')'); 
 
 % load preferences
 pref = readPref;
