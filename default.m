@@ -8,11 +8,17 @@
 % To view a copy of this license, visit http://creativecommons.org/licenses/by-nc-sa/4.0/.
 
 
-% general
+%% ~~~~~~~~~~~~~~~~~  DATA  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 deltat = 1e-4; % what is the time step of the data?
 
-% debug preferences
+
+%% ~~~~~~~~~~~~~~~~~  GENERAL  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 ssDebug = false; 			% should spikesort run in debug mode?
+useFastBandPass = true; 	% use a fast, FFT-based bandPass? 
+
+%% ~~~~~~~~~~~~~~~~~  DISPLAY  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 % display preferences
 marker_size = 5; 			% how big the spike indicators are
@@ -21,15 +27,23 @@ fs = 14; 					% UI font size
 fw = 'bold'; 				% UI font weight
 plot_control = true; 		% should spikesort plot the control signals instead of the stimulus?
 
-% firing rate estimation
-show_firing_rate_trials = false; % calculate firing rate on a trial-by-trial basis?
-show_firing_rate_r2 = false; 	% show r-square of firing rates?
-
 % UI
 smart_scroll = true; 				% intelligently scroll so we keep # visible spikes constant 
 % context width: window around the spike to show when clicked on in a reduced representation
 context_width = .2; % seconds. 
 
+% density peaks automatic cluster visualization 
+show_dp_clusters = true;
+
+%% ~~~~~~~~~~~~~~~~~  FIRING RATE ESTIMATION  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+% firing rate estimation
+show_firing_rate_trials = false; % calculate firing rate on a trial-by-trial basis?
+show_firing_rate_r2 = false; 	% show r-square of firing rates?
+firing_rate_dt = 1e-1; % time step for firing rate estimation 
+firing_rate_window_size = 3e-2; % window size for firing rate convolution
+
+%% ~~~~~~~~~~~~~~~~~  SPIKE DETECTION AND RESOLUTION ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 % spike detection
 t_before = 20; 		% should be an integer, in units of data samples
@@ -54,5 +68,4 @@ use_off_template = false;
 use_on_template = false;
 
 
-% density peaks automatic cluster visualization 
-show_dp_clusters = true;
+

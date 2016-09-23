@@ -585,7 +585,7 @@ discard_control = uicontrol(handles.main_fig,'units','normalized','Position',[.1
 
                 % do A
                 time = (1:length(spikes(haz_data(i)).A))/SamplingRate;
-                [fA,tA] = spiketimes2f(spikes(haz_data(i)).A,time,1e-2,3e-2);
+                [fA,tA] = spiketimes2f(spikes(haz_data(i)).A,time,pref.firing_rate_dt,pref.firing_rate_window_size);
                 tA = tA(:);
                 % remove trials with no spikes
                 fA(:,sum(fA) == 0) = [];
@@ -1247,7 +1247,11 @@ discard_control = uicontrol(handles.main_fig,'units','normalized','Position',[.1
             lc = floor(lc/pref.deltat);
             hc = 1/pref.band_pass(2);
             hc = floor(hc/pref.deltat);
-            [V,Vf] = bandPass(V,lc,hc);
+            if pref.useFastBandPass
+                [V,Vf] = fastBandPass(V,lc,hc);
+            else
+                [V,Vf] = bandPass(V,lc,hc);
+            end
         end 
 
         if strcmp(get(handles.remove_artifacts_menu,'Checked'),'on')
