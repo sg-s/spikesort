@@ -87,7 +87,7 @@ handles.menu2 = uimenu('Label','Tools');
 uimenu(handles.menu2,'Label','Template Match','Callback',@matchTemplate);
 handles.remove_artifacts_menu = uimenu(handles.menu2,'Label','Remove Artifacts','Callback',@removeArtifacts,'Checked',pref.remove_artifacts);
 uimenu(handles.menu2,'Label','Reload preferences','Callback',@reloadPreferences,'Separator','on');
-uimenu(handles.menu2,'Label','Reset Zoom','Callback',@resetZoom);
+uimenu(handles.menu2,'Label','Reset zoom','Callback',@resetZoom);
 
 
 delete(temp([1:8 11:15]))

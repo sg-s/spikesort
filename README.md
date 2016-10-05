@@ -57,7 +57,7 @@ All these methods are built around an awesome [plugin](#plugin-architecture) arc
 
 When SmartScroll is enabled, `spikesort` will keep a constant number of spikes in view. This is perfect for closely examining a time series with fluctuating firing rates, and displaying spikes in an optimal manner. 
 
-### Native support for [Kontroller](https://github.com/sg-s/kontroller)-generated data
+### Native support for [kontroller](https://github.com/sg-s/kontroller)-generated data
 
 ![](images/kontroller.png)
 
@@ -107,13 +107,11 @@ Note that my fork of `bhtsne` may have modifications, and this is what you shoul
 
 ### install tag
 
-On Mac OS X, `spikesort` supports file tagging. To get this working, you need to have [homebrew](http://brew.sh) installed. You can then install `tag` using
+On macOS, `spikesort` supports file tagging. To get this working, you need to have [homebrew](http://brew.sh) installed. You can then install `tag` using
 
 ````
 brew install tag
 ````
-
-# Hacking
 
 ## Plugin architecture
 
@@ -147,41 +145,18 @@ and `spikesort` will intelligently give your function the correct variables in t
 
 This powerful input architecture means you need to know what variables are called in the `spikesort` codebase. You should read the code. Here is a non-exhaustive list of some useful internal variables that `spikesort` uses that you might want to use in your plugin:
 
-* `V` a vector, contains the raw voltage trace
+* `V` a vector, contains the raw voltage trace that is currently shown
 * `Vf` a vector, contains the filtered voltage trace
 * `loc` a vector, contains the vector indices of putative spikes
 * `ax`, `ax2` handles to the two main axes. Useful if your plugin does some fancy plotting.  
 * `V_snippets` a matrix containing snippets around `loc` from `Vf`. Useful if you just want to work with the spike shapes, and don't really care where they are. 
 
 
-# ROADMAP
-
-`spikesort v2.0` will be re-written using a MATLAB class, so that you can do things like this:
-
-```matlab
-% initialise the spikesort object
-s = spikesort; 
-
-% load a file
-s.path_name = '/path/to/file/to/be/sorted.mat';
-
-% go to a specific paradigm and trial
-s.current_paradigm = 2;
-s.current_trial = 10;
-
-% find spikes and sort
-s.find_spikes;
-s.reduce_dimensions('t-sne');
-s.cluster('density-peaks');
-
-% or, switch back to a GUI
-s.createGUI;
-
-```
-
 # License 
 
 [GPL v3](http://gplv3.fsf.org/)
+
+If you plan to use `spikesort` for a publication, please [write to me](http://srinivas.gs/#contact) for appropriate citation. 
 
 `spikesort` also includes the following code from third parties, which are under their own licenses:
 
