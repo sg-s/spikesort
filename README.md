@@ -72,17 +72,17 @@ When SmartScroll is enabled, `spikesort` will keep a constant number of spikes i
 
 ## Installation
 
-spikesort is written in MATLAB. It should work on any OS, but has only been tested on Mac OS X. 
+spikesort is written in MATLAB. It should work on any OS that MATLAB runs on, but has only been tested on Windows and macOS. 
 
 The best way to install spikesort is through my package manager: 
 
 ```
->> urlwrite('http://srinivas.gs/install.m','install.m'); 
->> install sg-s/spikesort
->> install sg-s/srinivas.gs_mtools   # spikesort needs this package to run
->> install sg-s/kontroller           # needs a few functions from this package
->> install sg-s/t-sne                # t-distributed SNE
->> install sg-s/bhtsne               # Barnes-Hut t-SNE
+urlwrite('http://srinivas.gs/install.m','install.m'); 
+install sg-s/spikesort
+install sg-s/srinivas.gs_mtools   # spikesort needs this package to run
+install sg-s/kontroller           # needs a few functions from this package
+install sg-s/t-sne                # t-distributed SNE
+install sg-s/bhtsne               # Barnes-Hut t-SNE
 ```
 
 This script grabs the code and fixes your path. 
@@ -103,7 +103,7 @@ If you used `install.m` to install spikesort, you already have these toolbox. Ho
 g++ sptree.cpp tsne.cpp -o bh_tsne -O2
 ```
 
-Note that my fork of `bhtsne` may have modifications, and this is what you should use with `spikesort`. If you're running Windows, you need to use whatever compiler you have to compile this. 
+Note that my fork of `bhtsne` may have modifications, and this is what you should use with `spikesort`. If you're running Windows, you need to use whatever compiler you have to compile this. See [this](https://github.com/sg-s/bhtsne) for instructions on how to build the binary.
 
 ### install tag
 
