@@ -760,7 +760,7 @@ discard_control = uicontrol(handles.main_fig,'units','normalized','Position',[.1
     
     function loadFileCallback(src,~)
         if strcmp(get(src,'String'),'Load File')
-            [file_name,path_name] = uigetfile('.mat');
+            [file_name,path_name] = uigetfile({'.mat';'.kontroller'});
             if ~file_name
                 return
             end
@@ -787,7 +787,7 @@ discard_control = uicontrol(handles.main_fig,'units','normalized','Position',[.1
                 % first save what we had before
                 save(strcat(path_name,file_name),'spikes','-append')
                 
-                allfiles = dir(strcat(path_name,'*.mat'));
+                allfiles = [dir(strcat(path_name,'*.mat')) dir(strcat(path_name,'*.kontroller'))];
                 thisfile = find(strcmp(file_name,{allfiles.name}))+1;
                 if thisfile > length(allfiles)
                     file_name = allfiles(1).name;
@@ -816,7 +816,7 @@ discard_control = uicontrol(handles.main_fig,'units','normalized','Position',[.1
 
         console(strcat('Loading file:',path_name,'/',file_name))
         
-        temp=load(strcat(path_name,file_name));
+        temp=load(strcat(path_name,file_name),'-mat');
         try
             try
                 delete(handles.load_waitbar)
@@ -1642,7 +1642,7 @@ discard_control = uicontrol(handles.main_fig,'units','normalized','Position',[.1
             disp(length(B2A))
         end
         % swap 
-        A = sort(unique([A B2A]));
+        A = sort(unique([A(:); B2A(:)]));
         B = setdiff(B,B2A);
 
         % remove A doublets and assign one of them to B
@@ -1665,7 +1665,7 @@ discard_control = uicontrol(handles.main_fig,'units','normalized','Position',[.1
         end
 
         % swap 
-        B = sort(unique([B A2B_cand]));
+        B = sort(unique([B(:); A2B_cand(:)]));
         A = setdiff(A,A2B_cand);
 
         if pref.ssDebug
