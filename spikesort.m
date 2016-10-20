@@ -9,7 +9,7 @@
 function [] = spikesort()
 
 % check dependencies 
-dependencies = {'prettyFig','manualCluster','computeOnsOffs','dataHash','gitHash','argInNames','cache','bandPass','oss','raster2','sem','rsquare','spiketimes2f','tsne','fast_tsne'};
+dependencies = {'prettyFig','manualCluster','computeOnsOffs','dataHash','gitHash','argInNames','cache','bandPass','oss','raster2','sem','rsquare','spiketimes2f','tsne'};
 for si = 1:length(dependencies)
     err_message = ['spikesort needs ' dependencies{si} ' to run, which was not found. Read the docs. to make sure you have installed all dependencies.'];
     assert(exist(dependencies{si},'file')==2,err_message)
@@ -759,7 +759,7 @@ discard_control = uicontrol(handles.main_fig,'units','normalized','Position',[.1
     
     function loadFileCallback(src,~)
         if strcmp(get(src,'String'),'Load File')
-            [file_name,path_name] = uigetfile({'.mat';'.kontroller'});
+            [file_name,path_name] = uigetfile({'*.mat';'*.kontroller'});
             if ~file_name
                 return
             end

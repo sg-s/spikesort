@@ -74,10 +74,15 @@ for i = 1:length(allfiles)
 				        	disp('We have these many V_snippets')
 				        	disp(length(V_snippets))
 				        end
-					    % run the fast tSNE algorithm on this
-					    dbm = ['starting fast_tsne @ ' datestr(now)];
-						system(['echo "' dbm '" >> spikesort.log']);
-					    fast_tsne(V_snippets,2,10,60);
+
+				        if exist('fast_tsne','file')	
+						    % run the fast tSNE algorithm on this
+						    dbm = ['starting fast_tsne @ ' datestr(now)];
+							system(['echo "' dbm '" >> spikesort.log']);
+						    fast_tsne(V_snippets,2,10,60);
+						else
+							error('You need bhtsne to use this.')
+						end
 					catch err
 						disp(err)
 					end
