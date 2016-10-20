@@ -181,15 +181,14 @@ else
     tag_control = uicontrol(metadata_panel,'Style','edit','String','+Tag, or -Tag','units','normalized','Position',[.5 .035 .45 .2],'Callback',@addTag);
 
     % modify environment to get paths for non-matlab code right
-    path1 = getenv('PATH');
-    if isempty(strfind(path1,':/usr/local/bin'))
-        path1 = [path1 ':/usr/local/bin'];
+    if ~ismac
+        path1 = getenv('PATH');
+        if isempty(strfind(path1,[pathsep '/usr/local/bin']))
+            path1 = [path1 pathsep '/usr/local/bin'];
+        end
+
+        setenv('PATH', path1);
     end
-    if isempty(strfind(path1,[':' fileparts(which('fast_tsne'))]))
-        path1 = [path1 ':' fileparts(which('fast_tsne'))];
-    end
-    
-    setenv('PATH', path1);
 
 end
 
