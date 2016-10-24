@@ -856,7 +856,11 @@ discard_control = uicontrol(handles.main_fig,'units','normalized','Position',[.1
             fl = fieldnames(data);
 
             % also add all the control signals
-            set(stim_channel,'String',[fl(:); OutputChannelNames(:)]);
+            try
+                set(stim_channel,'String',[fl(:); OutputChannelNames]);
+            catch
+                set(stim_channel,'String',[fl(:) OutputChannelNames]);
+            end
 
             % update response listbox with all the input channel names
             set(resp_channel,'String',fl);

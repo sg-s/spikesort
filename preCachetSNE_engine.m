@@ -27,7 +27,7 @@ for i = 1:length(allfiles)
 	thisfile = allfiles(i).name;
 	dbm = ['Working on: ' thisfile];
 	system(['echo "' dbm '" >> spikesort.log']);
-	if ~strcmp(thisfile,'consolidated_data.mat') && ~strcmp(thisfile,'cached.mat')
+	if ~strcmp(thisfile,'consolidated_data.mat') && ~strcmp(thisfile,'cached.mat') && ~strcmp(thisfile,'cached_log.mat')
 		load(thisfile)
 		for j = 1:length(data)
 			this_control = ControlParadigm(j).Outputs;
@@ -51,7 +51,12 @@ for i = 1:length(allfiles)
 			            lc = floor(lc/pref.deltat);
 			            hc = 1/pref.band_pass(2);
 			            hc = floor(hc/pref.deltat);
-			            V = bandPass(V,lc,hc);
+			            
+			           	if pref.useFastBandPass
+			                [V,Vf] = fastBandPass(V,lc,hc);
+			            else
+			                [V,Vf] = bandPass(V,lc,hc);
+			            end
 
 			            % find spikes
 						loc = findSpikes(V);
@@ -77,7 +82,7 @@ for i = 1:length(allfiles)
 
 				        if exist('fast_tsne','file')	
 						    % run the fast tSNE algorithm on this
-						    dbm = ['starting fast_tsne @ ' datestr(now)];
+						    dbm = ['starting fast_tsne @ ' datestr(now) '.working on paradigm: ' oval(j) ' , trial: ' oval(k)];
 							system(['echo "' dbm '" >> spikesort.log']);
 						    fast_tsne(V_snippets,2,10,60);
 						else
