@@ -56,6 +56,7 @@ time = 0;
 loc =0; % holds current spike times
 file_name = [];
 path_name = [];
+filter_index = [];
 
 % handles
 handles.valve_channel = [];
@@ -759,7 +760,7 @@ discard_control = uicontrol(handles.main_fig,'units','normalized','Position',[.1
     
     function loadFileCallback(src,~)
         if strcmp(get(src,'String'),'Load File')
-            [file_name,path_name] = uigetfile({'*.mat';'*.kontroller'});
+            [file_name,path_name,filter_index] = uigetfile({'*.mat';'*.kontroller'});
             if ~file_name
                 return
             end
@@ -770,7 +771,12 @@ discard_control = uicontrol(handles.main_fig,'units','normalized','Position',[.1
                 % first save what we had before
                 save(strcat(path_name,file_name),'spikes','-append')
 
-                allfiles = dir(strcat(path_name,'*.mat'));
+
+                if filter_index == 1
+                    allfiles = dir(strcat(path_name,'*.mat'));
+                else
+                    allfiles = dir(strcat(path_name,'*.kontroller'));
+                end
                 thisfile = find(strcmp(file_name,{allfiles.name}))-1;
                 if thisfile < 1
                     file_name = allfiles(end).name;
@@ -786,7 +792,11 @@ discard_control = uicontrol(handles.main_fig,'units','normalized','Position',[.1
                 % first save what we had before
                 save(strcat(path_name,file_name),'spikes','-append')
                 
-                allfiles = [dir(strcat(path_name,'*.mat')) dir(strcat(path_name,'*.kontroller'))];
+                if filter_index == 1
+                    allfiles = dir(strcat(path_name,'*.mat'));
+                else
+                    allfiles = dir(strcat(path_name,'*.kontroller'));
+                end
                 thisfile = find(strcmp(file_name,{allfiles.name}))+1;
                 if thisfile > length(allfiles)
                     file_name = allfiles(1).name;
