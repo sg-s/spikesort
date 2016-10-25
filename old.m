@@ -1,12 +1,4 @@
-% spikesort.m
-% Allows you to view, manipulate and sort spikes from experiments conducted by Kontroller. specifically meant to sort spikes from Drosophila ORNs
-% spikesort was written by Srinivas Gorur-Shandilya at 10:20 , 09 April 2014. Contact me at http://srinivas.gs/contact/
-% part of the spikesort package
-% https://github.com/sg-s/spikesort
-% 
-% This work is licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License. 
-% To view a copy of this license, visit http://creativecommons.org/licenses/by-nc-sa/4.0/.
-function [] = spikesort()
+% old spikesort
 
 % check dependencies 
 dependencies = {'prettyFig','manualCluster','computeOnsOffs','dataHash','gitHash','argInNames','cache','bandPass','oss','raster2','sem','rsquare','spiketimes2f','tsne'};
@@ -24,13 +16,7 @@ if verLessThan('signal','6.22')
     error('Need Signal Processing toolbox version 6.22 or higher')
 end
 
-% get git build_number for all toolboxes
-toolboxes = {'srinivas.gs_mtools','spikesort','t-sne','bhtsne'};
-build_numbers = checkDeps(toolboxes);
-versionname = strcat('spikesort for Kontroller (Build-',oval(build_numbers(2)),')'); 
 
-% load preferences
-pref = readPref;
 
 % add src folder to path
 addpath([fileparts(which(mfilename)) oss 'src'])
@@ -73,147 +59,6 @@ handles.main_fig = [];
 %               ##     ## ##     ## ##   ##  ##          ##     ##  ##  
 %               ##     ## ##     ## ##    ## ########     #######  #### 
 
-
-% make the master figure, and the axes to plot the voltage traces
-handles.main_fig = figure('position',[50 50 1200 700], 'Toolbar','figure','Menubar','none','Name',versionname,'NumberTitle','off','IntegerHandle','off','WindowButtonDownFcn',@mousecallback,'WindowScrollWheelFcn',@scroll,'CloseRequestFcn',@closess);
-temp =  findall(handles.main_fig,'Type','uitoggletool','-or','Type','uipushtool');
-
-% make plots menu
-handles.menu1 = uimenu('Label','Make Plots...');
-uimenu(handles.menu1,'Label','Raster','Callback',@rasterPlot);
-uimenu(handles.menu1,'Label','Firing Rate','Callback',@firingRatePlot);
-
-% pre-processing
-handles.menu2 = uimenu('Label','Tools');
-uimenu(handles.menu2,'Label','Template Match','Callback',@matchTemplate);
-handles.remove_artifacts_menu = uimenu(handles.menu2,'Label','Remove Artifacts','Callback',@removeArtifacts,'Checked',pref.remove_artifacts);
-uimenu(handles.menu2,'Label','Reload preferences','Callback',@reloadPreferences,'Separator','on');
-uimenu(handles.menu2,'Label','Reset zoom','Callback',@resetZoom);
-
-
-delete(temp([1:8 11:15]))
-
-
-% make the two axes
-handles.ax1 = axes('parent',handles.main_fig,'Position',[0.07 0.05 0.87 0.29]); hold on
-jump_back = uicontrol(handles.main_fig,'units','normalized','Position',[0 .04 .04 .50],'Style', 'pushbutton', 'String', '<','callback',@jump);
-jump_fwd = uicontrol(handles.main_fig,'units','normalized','Position',[.96 .04 .04 .50],'Style', 'pushbutton', 'String', '>','callback',@jump);
-handles.ax2 = axes('parent',handles.main_fig,'Position',[0.07 0.37 0.87 0.18]); hold on
-linkaxes([handles.ax2,handles.ax1],'x')
-
-% make dummy plots on these axes, for placeholders later on
-handles.ax1_data = plot(handles.ax1,NaN,NaN);
-handles.ax1_spike_marker = plot(handles.ax1,NaN,NaN);
-handles.ax1_A_spikes = plot(handles.ax1,NaN,NaN);
-handles.ax1_B_spikes = plot(handles.ax1,NaN,NaN);
-handles.ax1_all_spikes = plot(handles.ax1,NaN,NaN);
-handles.ax1_ignored_data = plot(handles.ax1,NaN,NaN);
-
-% now some for ax1
-handles.ax2_data = plot(handles.ax2,NaN,NaN);
-for si = 1:10
-    handles.ax2_control_signals(si) = plot(handles.ax2,NaN,NaN);
-end
-
-
-% make all the panels
-
-% datapanel (allows you to choose what to plot where)
-datapanel = uipanel('Title','Data','Position',[.8 .57 .16 .4]);
-uicontrol(datapanel,'units','normalized','Position',[.02 .9 .510 .10],'Style', 'text', 'String', 'Control Signal','FontSize',pref.fs,'FontWeight',pref.fw);
-handles.valve_channel = uicontrol(datapanel,'units','normalized','Position',[.03 .68 .910 .25],'Style', 'listbox', 'String', '','FontSize',pref.fs,'FontWeight',pref.fw,'Callback',@plotValve,'Min',0,'Max',2);
-uicontrol(datapanel,'units','normalized','Position',[.01 .56 .510 .10],'Style', 'text', 'String', 'Stimulus','FontSize',pref.fs,'FontWeight',pref.fw);
-stim_channel = uicontrol(datapanel,'units','normalized','Position',[.03 .38 .910 .20],'Style', 'listbox', 'String', '','FontSize',pref.fs,'FontWeight',pref.fw,'Callback',@plotStim);
-
-uicontrol(datapanel,'units','normalized','Position',[.01 .25 .610 .10],'Style', 'text', 'String', 'Response','FontSize',pref.fs,'FontWeight',pref.fw);
-resp_channel = uicontrol(datapanel,'units','normalized','Position',[.01 .01 .910 .25],'Style', 'listbox', 'String', '','FontSize',pref.fs,'FontWeight',pref.fw);
-
-
-% file I/O
-uicontrol(handles.main_fig,'units','normalized','Position',[.10 .92 .07 .07],'Style', 'pushbutton', 'String', 'Load File','FontSize',pref.fs,'FontWeight',pref.fw,'callback',@loadFileCallback);
-uicontrol(handles.main_fig,'units','normalized','Position',[.05 .93 .03 .05],'Style', 'pushbutton', 'String', '<','FontSize',pref.fs,'FontWeight',pref.fw,'callback',@loadFileCallback);
-uicontrol(handles.main_fig,'units','normalized','Position',[.19 .93 .03 .05],'Style', 'pushbutton', 'String', '>','FontSize',pref.fs,'FontWeight',pref.fw,'callback',@loadFileCallback);
-
-% paradigms and trials
-datachooserpanel = uipanel('Title','Paradigms and Trials','Position',[.03 .75 .25 .16]);
-paradigm_chooser = uicontrol(datachooserpanel,'units','normalized','Position',[.25 .75 .5 .20],'Style', 'popupmenu', 'String', 'Choose Paradigm','callback',@chooseParadigmCallback,'Enable','off');
-next_paradigm = uicontrol(datachooserpanel,'units','normalized','Position',[.75 .65 .15 .33],'Style', 'pushbutton', 'String', '>','callback',@chooseParadigmCallback,'Enable','off');
-prev_paradigm = uicontrol(datachooserpanel,'units','normalized','Position',[.05 .65 .15 .33],'Style', 'pushbutton', 'String', '<','callback',@chooseParadigmCallback,'Enable','off');
-
-trial_chooser = uicontrol(datachooserpanel,'units','normalized','Position',[.25 .27 .5 .20],'Style', 'popupmenu', 'String', 'Choose Trial','callback',@chooseTrialCallback,'Enable','off');
-next_trial = uicontrol(datachooserpanel,'units','normalized','Position',[.75 .15 .15 .33],'Style', 'pushbutton', 'String', '>','callback',@chooseTrialCallback,'Enable','off');
-prev_trial = uicontrol(datachooserpanel,'units','normalized','Position',[.05 .15 .15 .33],'Style', 'pushbutton', 'String', '<','callback',@chooseTrialCallback,'Enable','off');
-
-% dimension reduction and clustering panels
-dimredpanel = uipanel('Title','Dimensionality Reduction','Position',[.25 .92 .17 .07]);
-% find the available methods
-look_here = [fileparts(mfilename('fullpath')) oss 'src' oss];
- % this is where we should look for methods
-avail_methods=dir(strcat(look_here,'ssdm_*.m'));
-avail_methods={avail_methods.name};
-for oi = 1:length(avail_methods)
-    temp = avail_methods{oi};
-    avail_methods{oi} = temp(6:end-2);
-end
-clear oi; 
-method_control = uicontrol(dimredpanel,'Style','popupmenu','String',avail_methods,'units','normalized','Position',[.02 .6 .9 .2],'Callback',@reduceDimensionsCallback,'Enable','off');
-
-% find the available methods for clustering
-
-avail_methods=dir(strcat(look_here,'sscm_*.m'));
-avail_methods={avail_methods.name};
-for oi = 1:length(avail_methods)
-    temp = avail_methods{oi};
-    avail_methods{oi} = temp(6:end-2);
-end
-clear oi
-cluster_panel = uipanel('Title','Clustering','Position',[.43 .92 .17 .07]);
-cluster_control = uicontrol(cluster_panel,'Style','popupmenu','String',avail_methods,'units','normalized','Position',[.02 .6 .9 .2],'Callback',@findCluster,'Enable','off');
-
-
-% metadata panel
-metadata_panel = uipanel('Title','Metadata','Position',[.29 .57 .21 .15]);
-metadata_text_control = uicontrol(metadata_panel,'Style','edit','String','','units','normalized','Position',[.03 .3 .94 .7],'Callback',@updateMetadata,'Enable','off','Max',5,'Min',1,'HorizontalAlignment','left');
-uicontrol(metadata_panel,'Style','pushbutton','String','Generate Summary','units','normalized','Position',[.03 .035 .45 .2],'Callback',@generateSummary);
-
-% disable tagging on non unix systems
-if ispc
-else
-    tag_control = uicontrol(metadata_panel,'Style','edit','String','+Tag, or -Tag','units','normalized','Position',[.5 .035 .45 .2],'Callback',@addTag);
-
-    % modify environment to get paths for non-matlab code right
-    if ~ismac
-        path1 = getenv('PATH');
-        if isempty(strfind(path1,[pathsep '/usr/local/bin']))
-            path1 = [path1 pathsep '/usr/local/bin'];
-        end
-
-        setenv('PATH', path1);
-    end
-
-end
-
-% manual override panel
-manualpanel = uibuttongroup(handles.main_fig,'Title','Manual Override','Position',[.68 .56 .11 .34]);
-uicontrol(manualpanel,'units','normalized','Position',[.1 7/8 .8 1/9],'Style','pushbutton','String','Mark All in View','Callback',@markAllCallback);
-mode_new_A = uicontrol(manualpanel,'units','normalized','Position',[.1 6/8 .8 1/9], 'Style', 'radiobutton', 'String', '+A','FontSize',pref.fs);
-mode_new_B = uicontrol(manualpanel,'units','normalized','Position',[.1 5/8 .8 1/9], 'Style', 'radiobutton', 'String', '+B','FontSize',pref.fs);
-mode_delete = uicontrol(manualpanel,'units','normalized','Position',[.1 4/8 .8 1/9], 'Style', 'radiobutton', 'String', '-X','FontSize',pref.fs);
-mode_A2B = uicontrol(manualpanel,'units','normalized','Position',[.1 3/8 .8 1/9], 'Style', 'radiobutton', 'String', 'A->B','FontSize',pref.fs);
-mode_B2A = uicontrol(manualpanel,'units','normalized','Position',[.1 2/8 .8 1/9], 'Style', 'radiobutton', 'String', 'B->A','FontSize',pref.fs);
-uicontrol(manualpanel,'units','normalized','Position',[.1 1/8 .8 1/9],'Style','pushbutton','String','Discard View','Callback',@modifyTraceDiscard);
-uicontrol(manualpanel,'units','normalized','Position',[.1 0/8 .8 1/9],'Style','pushbutton','String','Retain View','Callback',@modifyTraceDiscard);
-
-
-% various toggle switches and pushbuttons
-filtermode = uicontrol(handles.main_fig,'units','normalized','Position',[.03 .69 .12 .05],'Style','togglebutton','String','Filter','Value',1,'Callback',@plotResp,'Enable','off');
-findmode = uicontrol(handles.main_fig,'units','normalized','Position',[.16 .69 .12 .05],'Style','togglebutton','String','Find Spikes','Value',1,'Callback',@plotResp,'Enable','off');
-
-redo_control = uicontrol(handles.main_fig,'units','normalized','Position',[.03 .64 .12 .05],'Style','pushbutton','String','Redo','Value',0,'Callback',@redo,'Enable','off');
-autosort_control = uicontrol(handles.main_fig,'units','normalized','Position',[.16 .64 .12 .05],'Style','togglebutton','String','Autosort','Value',0,'Enable','off','Callback',@autosortCallback);
-
-handles.sine_control = uicontrol(handles.main_fig,'units','normalized','Position',[.03 .59 .12 .05],'Style','togglebutton','String',' Kill Ringing','Value',0,'Callback',@plotResp,'Enable','off');
-discard_control = uicontrol(handles.main_fig,'units','normalized','Position',[.16 .59 .12 .05],'Style','togglebutton','String',' Discard','Value',0,'Callback',@discard,'Enable','off');
 
 
 %% begin subfunctions
@@ -1780,5 +1625,4 @@ discard_control = uicontrol(handles.main_fig,'units','normalized','Position',[.1
 
 
 end
-
 

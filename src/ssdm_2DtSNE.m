@@ -7,15 +7,11 @@
 
 function R = ssdm_2DtSNE(V_snippets)
 
-V_snippets = V_snippets';
-
-
 % some parameters
 no_dims = 2;
 init_dims = 10;
 perplexity = 60;
 
-labels = ones(size(V_snippets,1),1);
-
 % always use the fast tSNE algorith, as it is internally cached
+disp(['hash of V_snippets is ' dataHash(V_snippets)])
 R = fast_tsne(V_snippets, no_dims, init_dims, perplexity,.5)';
