@@ -21,6 +21,7 @@ classdef spikesort < handle & matlab.mixin.CustomDisplay
 
         % data handling
         current_data
+        OutputChannelNames
 
         % core variables
         R  % this holds the dimensionality reduced data

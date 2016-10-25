@@ -28,7 +28,7 @@ SamplingRate = [];
 OutputChannelNames = [];
 metadata = [];
 timestamps = [];
-ThisControlParadigm = 1;
+s.this_paradigm = 1;
 ThisTrial = 1;
 temp = [];
 spikes.A = 0;
@@ -102,7 +102,7 @@ handles.main_fig = [];
         % template match
         nchannels = length(get(handles.valve_channel,'Value'));
         plot_these = get(handles.valve_channel,'Value');
-        control_signal = ControlParadigm(ThisControlParadigm).Outputs(plot_these,:);
+        control_signal = ControlParadigm(s.this_paradigm).Outputs(plot_these,:);
 
         if size(control_signal,2) > size(control_signal,1)
             control_signal = control_signal';
@@ -171,107 +171,9 @@ handles.main_fig = [];
     end
 
 
-    function chooseParadigmCallback(src,~)
-        % callback that is run when we pick a new paradigm, either through the buttons or the drop down menu
-        paradigms_with_data = find(structureElementLength(data)); 
-        if src == paradigm_chooser
-            ThisControlParadigm = paradigms_with_data(get(paradigm_chooser,'Value'));
-        elseif src== next_paradigm
-            if max(paradigms_with_data) > ThisControlParadigm 
-                ThisControlParadigm = paradigms_with_data(find(paradigms_with_data == ThisControlParadigm)+1);
-                set(paradigm_chooser,'Value',find(paradigms_with_data == ThisControlParadigm));
-            end
-        elseif src == prev_paradigm
-            if ThisControlParadigm > paradigms_with_data(1)
-                ThisControlParadigm = paradigms_with_data(find(paradigms_with_data == ThisControlParadigm)-1);
-                set(paradigm_chooser,'Value',find(paradigms_with_data == ThisControlParadigm));
-            end
-        else
-            error('unknown source of callback 109. probably being incorrectly being called by something.')
-        end
 
-        n = structureElementLength(data);
-        n = n(ThisControlParadigm);
-        temp  ={};
-        for i = 1:n
-            temp{i} = strcat('Trial-',mat2str(i));
-        end
-        set(trial_chooser,'String',temp);
-        if src == prev_paradigm
-            set(trial_chooser,'Value',n);
-            ThisTrial = n;
-        else
-            set(trial_chooser,'Value',1);
-            ThisTrial = 1;
-        end
-        
-        % update the plots
-        plotStim;
-        plotResp(@chooseParadigmCallback);
 
-        % update Discard control
-        updateDiscardControl;
-               
-    end
 
-    function chooseTrialCallback(src,~)
-        n = structureElementLength(data); 
-        if length(n) < ThisControlParadigm
-            return
-        else
-            n = n(ThisControlParadigm);
-        end
-        if src == trial_chooser
-            ThisTrial = get(trial_chooser,'Value');
-            % update the plots
-            plotStim;
-            plotResp(@chooseTrialCallback);
-        elseif src== next_trial
-            if ThisTrial < n
-                ThisTrial = ThisTrial +1;
-                set(trial_chooser,'Value',ThisTrial);
-                % update the plots
-                plotStim;
-                plotResp(@chooseTrialCallback);
-            else
-                % fake a call
-                chooseParadigmCallback(next_paradigm);
-            end
-        elseif src == prev_trial
-            if ThisTrial > 1
-                ThisTrial = ThisTrial  - 1;
-                set(trial_chooser,'Value',ThisTrial);
-                % update the plots
-                plotStim;
-                plotResp(@chooseTrialCallback);
-            else
-                % fake a call
-                chooseParadigmCallback(prev_paradigm);
-            end
-        else
-            error('unknown source of callback 173. probably being incorrectly being called by something.')
-        end    
-
-        % update Discard control
-        updateDiscardControl;
-
-    end
-
-    function closess(~,~)
-        % close everything and save everything
-        try
-            if ~isempty(path_name) && ~isempty(file_name) 
-                if ischar(path_name) && ischar(file_name)
-                    save(strcat(path_name,file_name),'spikes','-append')
-                end
-            end
-        catch
-            warning('Error saving data!')
-        end
-
-        delete(handles.main_fig)
-
-    end
 
     function discard(~,~)
 
@@ -279,19 +181,19 @@ handles.main_fig = [];
         if get(discard_control,'Value') == 0
             % reset discard
             if isfield(spikes,'discard')
-                spikes(ThisControlParadigm).discard(ThisTrial) = 0;
+                spikes(s.this_paradigm).discard(ThisTrial) = 0;
             end
             set(discard_control,'String','Discard','FontWeight','normal')
         else
             set(discard_control,'String','Discarded!','FontWeight','bold')
             
             % need to reset spikes
-            if length(spikes) >= ThisControlParadigm
-                if width(spikes(ThisControlParadigm).A) >= ThisTrial
-                    spikes(ThisControlParadigm).A(ThisTrial,:) = 0;
-                    spikes(ThisControlParadigm).B(ThisTrial,:) = 0;
-                    spikes(ThisControlParadigm).amplitudes_A(ThisTrial,:) = 0;
-                    spikes(ThisControlParadigm).amplitudes_B(ThisTrial,:) = 0;
+            if length(spikes) >= s.this_paradigm
+                if width(spikes(s.this_paradigm).A) >= ThisTrial
+                    spikes(s.this_paradigm).A(ThisTrial,:) = 0;
+                    spikes(s.this_paradigm).B(ThisTrial,:) = 0;
+                    spikes(s.this_paradigm).amplitudes_A(ThisTrial,:) = 0;
+                    spikes(s.this_paradigm).amplitudes_B(ThisTrial,:) = 0;
 
                 else
                     % all cool
@@ -301,7 +203,7 @@ handles.main_fig = [];
             end   
 
             % mark as discarded
-            spikes(ThisControlParadigm).discard(ThisTrial) = 1;
+            spikes(s.this_paradigm).discard(ThisTrial) = 1;
             save(strcat(path_name,file_name),'spikes','-append')
             
         end
@@ -358,30 +260,30 @@ handles.main_fig = [];
 
         % save them
         try
-            spikes(ThisControlParadigm).A(ThisTrial,:) = sparse(1,length(time));      
-            spikes(ThisControlParadigm).B(ThisTrial,:) = sparse(1,length(time));
-            spikes(ThisControlParadigm).N(ThisTrial,:) = sparse(1,length(time));
-            spikes(ThisControlParadigm).amplitudes_A(ThisTrial,:) = sparse(1,length(time));
-            spikes(ThisControlParadigm).amplitudes_B(ThisTrial,:) = sparse(1,length(time));
+            spikes(s.this_paradigm).A(ThisTrial,:) = sparse(1,length(time));      
+            spikes(s.this_paradigm).B(ThisTrial,:) = sparse(1,length(time));
+            spikes(s.this_paradigm).N(ThisTrial,:) = sparse(1,length(time));
+            spikes(s.this_paradigm).amplitudes_A(ThisTrial,:) = sparse(1,length(time));
+            spikes(s.this_paradigm).amplitudes_B(ThisTrial,:) = sparse(1,length(time));
         catch
-            spikes(ThisControlParadigm).A = sparse(ThisTrial,length(time));
-            spikes(ThisControlParadigm).B = sparse(ThisTrial,length(time));
-            spikes(ThisControlParadigm).N = sparse(ThisTrial,length(time));
-            spikes(ThisControlParadigm).amplitudes_A = sparse(ThisTrial,length(time));
-            spikes(ThisControlParadigm).amplitudes_B = sparse(ThisTrial,length(time));
+            spikes(s.this_paradigm).A = sparse(ThisTrial,length(time));
+            spikes(s.this_paradigm).B = sparse(ThisTrial,length(time));
+            spikes(s.this_paradigm).N = sparse(ThisTrial,length(time));
+            spikes(s.this_paradigm).amplitudes_A = sparse(ThisTrial,length(time));
+            spikes(s.this_paradigm).amplitudes_B = sparse(ThisTrial,length(time));
 
         end
-        spikes(ThisControlParadigm).A(ThisTrial,A) = 1;
-        spikes(ThisControlParadigm).B(ThisTrial,B) = 1;
-        spikes(ThisControlParadigm).N(ThisTrial,N) = 1;
+        spikes(s.this_paradigm).A(ThisTrial,A) = 1;
+        spikes(s.this_paradigm).B(ThisTrial,B) = 1;
+        spikes(s.this_paradigm).N(ThisTrial,N) = 1;
 
         % also save spike amplitudes
         try
-            spikes(ThisControlParadigm).amplitudes_A(ThisTrial,A)  =  ssdm_1DAmplitudes(V,A);
+            spikes(s.this_paradigm).amplitudes_A(ThisTrial,A)  =  ssdm_1DAmplitudes(V,A);
         catch
         end
         try
-            spikes(ThisControlParadigm).amplitudes_B(ThisTrial,B)  =  ssdm_1DAmplitudes(V,B);
+            spikes(s.this_paradigm).amplitudes_B(ThisTrial,B)  =  ssdm_1DAmplitudes(V,B);
         catch
         end
 
@@ -577,7 +479,7 @@ handles.main_fig = [];
 
             % find the next digital channel switch in any channel
             for i = 1:length(digital_channels)
-                this_channel = ControlParadigm(ThisControlParadigm).Outputs(digital_channels(i),:);
+                this_channel = ControlParadigm(s.this_paradigm).Outputs(digital_channels(i),:);
                 [ons] = computeOnsOffs(this_channel);
                 ons(ons<xl(2)) = [];
                 next_on = min([next_on(:); ons(:)]);
@@ -590,7 +492,7 @@ handles.main_fig = [];
 
             % find the prev digital channel switch in any channel
             for i = 1:length(digital_channels)
-                this_channel = ControlParadigm(ThisControlParadigm).Outputs(digital_channels(i),:);
+                this_channel = ControlParadigm(s.this_paradigm).Outputs(digital_channels(i),:);
                 [ons] = computeOnsOffs(this_channel);
                 ons(ons>xl(1)-1) = [];
                 prev_on = max([prev_on(:); ons(:)]);
@@ -654,7 +556,7 @@ handles.main_fig = [];
 
         % reset some pushbuttons and other things
         set(discard_control,'Value',0)
-        ThisControlParadigm = 1;
+        s.this_paradigm = 1;
         ThisTrial = 1;
         temp = [];
         clear spikes
@@ -724,11 +626,11 @@ handles.main_fig = [];
 
 
             % go to the first paradigm with data. 
-            ThisControlParadigm = find(n);
-            ThisControlParadigm = ThisControlParadigm(1);
+            s.this_paradigm = find(n);
+            s.this_paradigm = s.this_paradigm(1);
 
 
-            n = n(ThisControlParadigm);
+            n = n(s.this_paradigm);
             if n
                 temp  ={};
                 for i = 1:n
@@ -898,19 +800,19 @@ handles.main_fig = [];
         % get mode
         if get(mode_B2A,'Value')
             % add to A spikes
-            spikes(ThisControlParadigm).A(ThisTrial,loc(loc>xmin & loc<xmax))  = 1;
+            spikes(s.this_paradigm).A(ThisTrial,loc(loc>xmin & loc<xmax))  = 1;
             % remove b spikes
-            spikes(ThisControlParadigm).B(ThisTrial,loc(loc>xmin & loc<xmax))  = 0;
+            spikes(s.this_paradigm).B(ThisTrial,loc(loc>xmin & loc<xmax))  = 0;
 
         elseif get(mode_A2B,'Value')
             % add to B spikes
-            spikes(ThisControlParadigm).B(ThisTrial,loc(loc>xmin & loc<xmax))  = 1;
+            spikes(s.this_paradigm).B(ThisTrial,loc(loc>xmin & loc<xmax))  = 1;
             % remove A spikes
-            spikes(ThisControlParadigm).A(ThisTrial,loc(loc>xmin & loc<xmax))  = 0;
+            spikes(s.this_paradigm).A(ThisTrial,loc(loc>xmin & loc<xmax))  = 0;
         elseif get(mode_delete,'Value')
-            spikes(ThisControlParadigm).A(ThisTrial,loc(loc>xmin & loc<xmax))  = 0;
-            spikes(ThisControlParadigm).B(ThisTrial,loc(loc>xmin & loc<xmax))  = 0;
-            spikes(ThisControlParadigm).N(ThisTrial,loc(loc>xmin & loc<xmax))  = 1;
+            spikes(s.this_paradigm).A(ThisTrial,loc(loc>xmin & loc<xmax))  = 0;
+            spikes(s.this_paradigm).B(ThisTrial,loc(loc>xmin & loc<xmax))  = 0;
+            spikes(s.this_paradigm).N(ThisTrial,loc(loc>xmin & loc<xmax))  = 1;
         end
 
         % update plot
@@ -943,9 +845,9 @@ handles.main_fig = [];
             else
                 [~,loc] = max(V(floor(p(1)-s:p(1)+s)));
             end
-            spikes(ThisControlParadigm).A(ThisTrial,-s+loc+floor(p(1))) = 1;
-            A = find(spikes(ThisControlParadigm).A(ThisTrial,:));
-            spikes(ThisControlParadigm).amplitudes_A(ThisTrial,A)  =  ssdm_1DAmplitudes(V,A);
+            spikes(s.this_paradigm).A(ThisTrial,-s+loc+floor(p(1))) = 1;
+            A = find(spikes(s.this_paradigm).A(ThisTrial,:));
+            spikes(s.this_paradigm).amplitudes_A(ThisTrial,A)  =  ssdm_1DAmplitudes(V,A);
         elseif get(mode_new_B,'Value')==1
             % snip out a small waveform around the point
             if pref.invert_V
@@ -953,13 +855,13 @@ handles.main_fig = [];
             else
                 [~,loc] = max(V(floor(p(1)-s:p(1)+s)));
             end
-            spikes(ThisControlParadigm).B(ThisTrial,-s+loc+floor(p(1))) = 1;
-            B = find(spikes(ThisControlParadigm).B(ThisTrial,:));
-            spikes(ThisControlParadigm).amplitudes_B(ThisTrial,B)  =  ssdm_1DAmplitudes(V,B);
+            spikes(s.this_paradigm).B(ThisTrial,-s+loc+floor(p(1))) = 1;
+            B = find(spikes(s.this_paradigm).B(ThisTrial,:));
+            spikes(s.this_paradigm).amplitudes_B(ThisTrial,B)  =  ssdm_1DAmplitudes(V,B);
         elseif get(mode_delete,'Value')==1
             % find the closest spike
-            Aspiketimes = find(spikes(ThisControlParadigm).A(ThisTrial,:));
-            Bspiketimes = find(spikes(ThisControlParadigm).B(ThisTrial,:));
+            Aspiketimes = find(spikes(s.this_paradigm).A(ThisTrial,:));
+            Bspiketimes = find(spikes(s.this_paradigm).B(ThisTrial,:));
 
             dA= (((Aspiketimes-p(1))/(xrange)).^2  + ((V(Aspiketimes) - p(2))/(5*yrange)).^2);
             dB= (((Bspiketimes-p(1))/(xrange)).^2  + ((V(Bspiketimes) - p(2))/(5*yrange)).^2);
@@ -967,40 +869,40 @@ handles.main_fig = [];
             dist_to_B = min(dB);
             if dist_to_A < dist_to_B
                 [~,closest_spike] = min(dA);
-                spikes(ThisControlParadigm).A(ThisTrial,Aspiketimes(closest_spike)) = 0;
-                spikes(ThisControlParadigm).N(ThisTrial,Aspiketimes(closest_spike)) = 1;
-                A = find(spikes(ThisControlParadigm).A(ThisTrial,:));
-                spikes(ThisControlParadigm).amplitudes_A(ThisTrial,A)  =  ssdm_1DAmplitudes(V,A);
+                spikes(s.this_paradigm).A(ThisTrial,Aspiketimes(closest_spike)) = 0;
+                spikes(s.this_paradigm).N(ThisTrial,Aspiketimes(closest_spike)) = 1;
+                A = find(spikes(s.this_paradigm).A(ThisTrial,:));
+                spikes(s.this_paradigm).amplitudes_A(ThisTrial,A)  =  ssdm_1DAmplitudes(V,A);
             else
                 [~,closest_spike] = min(dB);
-                spikes(ThisControlParadigm).B(ThisTrial,Bspiketimes(closest_spike)) = 0;
-                spikes(ThisControlParadigm).N(ThisTrial,Aspiketimes(closest_spike)) = 1;
-                B = find(spikes(ThisControlParadigm).B(ThisTrial,:));
-                spikes(ThisControlParadigm).amplitudes_B(ThisTrial,B)  =  ssdm_1DAmplitudes(V,B);
+                spikes(s.this_paradigm).B(ThisTrial,Bspiketimes(closest_spike)) = 0;
+                spikes(s.this_paradigm).N(ThisTrial,Aspiketimes(closest_spike)) = 1;
+                B = find(spikes(s.this_paradigm).B(ThisTrial,:));
+                spikes(s.this_paradigm).amplitudes_B(ThisTrial,B)  =  ssdm_1DAmplitudes(V,B);
             end
         elseif get(mode_A2B,'Value')==1 
             % find the closest A spike
-            Aspiketimes = find(spikes(ThisControlParadigm).A(ThisTrial,:));
+            Aspiketimes = find(spikes(s.this_paradigm).A(ThisTrial,:));
             dA= (((Aspiketimes-p(1))/(xrange)).^2  + ((V(Aspiketimes) - p(2))/(5*yrange)).^2);
             [~,closest_spike] = min(dA);
-            spikes(ThisControlParadigm).A(ThisTrial,Aspiketimes(closest_spike)) = 0;
-            spikes(ThisControlParadigm).B(ThisTrial,Aspiketimes(closest_spike)) = 1;
-            A = find(spikes(ThisControlParadigm).A(ThisTrial,:));
-            spikes(ThisControlParadigm).amplitudes_A(ThisTrial,A)  =  ssdm_1DAmplitudes(V,A);
-            B = find(spikes(ThisControlParadigm).B(ThisTrial,:));
-            spikes(ThisControlParadigm).amplitudes_B(ThisTrial,B)  =  ssdm_1DAmplitudes(V,B);
+            spikes(s.this_paradigm).A(ThisTrial,Aspiketimes(closest_spike)) = 0;
+            spikes(s.this_paradigm).B(ThisTrial,Aspiketimes(closest_spike)) = 1;
+            A = find(spikes(s.this_paradigm).A(ThisTrial,:));
+            spikes(s.this_paradigm).amplitudes_A(ThisTrial,A)  =  ssdm_1DAmplitudes(V,A);
+            B = find(spikes(s.this_paradigm).B(ThisTrial,:));
+            spikes(s.this_paradigm).amplitudes_B(ThisTrial,B)  =  ssdm_1DAmplitudes(V,B);
 
         elseif get(mode_B2A,'Value')==1
             % find the closest B spike
-            Bspiketimes = find(spikes(ThisControlParadigm).B(ThisTrial,:));
+            Bspiketimes = find(spikes(s.this_paradigm).B(ThisTrial,:));
             dB= (((Bspiketimes-p(1))/(xrange)).^2  + ((V(Bspiketimes) - p(2))/(5*yrange)).^2);
             [~,closest_spike] = min(dB);
-            spikes(ThisControlParadigm).A(ThisTrial,Bspiketimes(closest_spike)) = 1;
-            spikes(ThisControlParadigm).B(ThisTrial,Bspiketimes(closest_spike)) = 0;
-            A = find(spikes(ThisControlParadigm).A(ThisTrial,:));
-            spikes(ThisControlParadigm).amplitudes_A(ThisTrial,A)  =  ssdm_1DAmplitudes(V,A);
-            B = find(spikes(ThisControlParadigm).B(ThisTrial,:));
-            spikes(ThisControlParadigm).amplitudes_B(ThisTrial,B)  =  ssdm_1DAmplitudes(V,B);
+            spikes(s.this_paradigm).A(ThisTrial,Bspiketimes(closest_spike)) = 1;
+            spikes(s.this_paradigm).B(ThisTrial,Bspiketimes(closest_spike)) = 0;
+            A = find(spikes(s.this_paradigm).A(ThisTrial,:));
+            spikes(s.this_paradigm).amplitudes_A(ThisTrial,A)  =  ssdm_1DAmplitudes(V,A);
+            B = find(spikes(s.this_paradigm).B(ThisTrial,:));
+            spikes(s.this_paradigm).amplitudes_B(ThisTrial,B)  =  ssdm_1DAmplitudes(V,B);
         end
 
         % update plot
@@ -1020,29 +922,29 @@ handles.main_fig = [];
         end
 
         % check if we already have some discard information stored in spikes
-        if length(spikes) < ThisControlParadigm
-            spikes(ThisControlParadigm).use_trace_fragment = ones(1,length(V));
+        if length(spikes) < s.this_paradigm
+            spikes(s.this_paradigm).use_trace_fragment = ones(1,length(V));
         else
             if isfield(spikes,'use_trace_fragment')
-                if width(spikes(ThisControlParadigm).use_trace_fragment) < ThisTrial
-                    spikes(ThisControlParadigm).use_trace_fragment(ThisTrial,:) = ones(1,length(V));
+                if width(spikes(s.this_paradigm).use_trace_fragment) < ThisTrial
+                    spikes(s.this_paradigm).use_trace_fragment(ThisTrial,:) = ones(1,length(V));
                 else
                     
                 end
             else
-                spikes(ThisControlParadigm).use_trace_fragment(ThisTrial,:) = ones(1,length(V));
+                spikes(s.this_paradigm).use_trace_fragment(ThisTrial,:) = ones(1,length(V));
             end
         end
 
 
         if strcmp(get(src,'String'),'Discard View')
-            spikes(ThisControlParadigm).use_trace_fragment(ThisTrial,xl(1):xl(2)) = 0;
+            spikes(s.this_paradigm).use_trace_fragment(ThisTrial,xl(1):xl(2)) = 0;
             % disp('Discarding view for trial #')
             % disp(ThisTrial)
             % disp('Discarding data from:')
             % disp(xl*pref.deltat)
         elseif strcmp(get(src,'String'),'Retain View')
-            spikes(ThisControlParadigm).use_trace_fragment(ThisTrial,xl(1):xl(2)) = 1;
+            spikes(s.this_paradigm).use_trace_fragment(ThisTrial,xl(1):xl(2)) = 1;
         else
             error('modifyTraceDiscard ran into an error because I was called by a function that I did not expect. I am meant to be called only by the discard view or the retain view pushbuttons.')
         end
@@ -1056,326 +958,14 @@ handles.main_fig = [];
         modify(p)
     end
 
-    function plotResp(src,~)
-        % clear some old stuff
-        set(handles.ax1_ignored_data,'XData',NaN,'YData',NaN);
-        set(handles.ax1_all_spikes,'XData',NaN,'YData',NaN);
-        set(handles.ax1_B_spikes,'XData',NaN,'YData',NaN);
-        set(handles.ax1_A_spikes,'XData',NaN,'YData',NaN);
-        set(handles.ax1_spike_marker,'XData',NaN,'YData',NaN);
-
-        % plot the response
-        clear time V Vf % flush old variables 
-        n = structureElementLength(data); 
-        
-        if n(ThisControlParadigm)
-            plotwhat = get(resp_channel,'String');
-            plotthis = plotwhat{get(resp_channel,'Value')};
-            eval(strcat('temp=data(ThisControlParadigm).',plotthis,';'));
-            temp = temp(ThisTrial,:);
-            time = pref.deltat*(1:length(temp));
-        else
-            return    
-        end
-
-        % check if we have chosen to discard this
-        if isfield(spikes,'discard')
-            try spikes(ThisControlParadigm).discard(ThisTrial);
-                if spikes(ThisControlParadigm).discard(ThisTrial) == 1
-                    % set the control
-                    set(discard_control,'Value',1);
-                    set(handles.ax1_data,'XData',time,'YData',temp,'Color','k','Parent',handles.ax1);
-                    return
-                else
-
-                    set(discard_control,'Value',0);
-                end
-            catch
-                set(discard_control,'Value',0);
-            end
-        end
-
-        V = temp;
-
-        if get(filtermode,'Value') == 1
-            if pref.ssDebug 
-                disp('plotResp 1251: filtering trace...')
-            end
-            lc = 1/pref.band_pass(1);
-            lc = floor(lc/pref.deltat);
-            hc = 1/pref.band_pass(2);
-            hc = floor(hc/pref.deltat);
-            if pref.useFastBandPass
-                [V,Vf] = fastBandPass(V,lc,hc);
-            else
-                [V,Vf] = bandPass(V,lc,hc);
-            end
-        end 
-
-        if strcmp(get(handles.remove_artifacts_menu,'Checked'),'on')
-            this_control = ControlParadigm(ThisControlParadigm).Outputs;
-            V = removeArtifactsUsingTemplate(V,this_control,pref);
-        end
-
-        set(handles.ax1_data,'XData',time,'YData',V,'Color','k','Parent',handles.ax1); 
-
-        % check if we are discarding part of the trace
-        ignored_fragments = 0*V;
-        if isfield(spikes,'use_trace_fragment')
-            if length(spikes) < ThisControlParadigm
-            else
-                if ~isempty(spikes(ThisControlParadigm).use_trace_fragment)
-                    if width(spikes(ThisControlParadigm).use_trace_fragment) < ThisTrial
-                    else
-                        ignored_fragments = ~spikes(ThisControlParadigm).use_trace_fragment(ThisTrial,:);
-                        set(handles.ax1_ignored_data,'XData',time(ignored_fragments),'YData',V(ignored_fragments),'Color',[.5 .5 .5],'Parent',handles.ax1);
-                        if pref.ssDebug
-                            disp('Ignoring part of the trace')
-                        end
-                    end
-                end
-            end
-        end
-
-
-        if get(handles.sine_control,'Value')
-            % operate in 1 second blocks
-            % for z = round(1/(pref.deltat)):round(1/(pref.deltat)):length(V)
-            %     textbar(z,length(V))
-            %     a = max([z - round(1/(pref.deltat)) 1]);
-            %     temp = V(a:z);
-            %     s = std(temp);
-            %     % rm_this = temp>2*s | temp < -2*s;
-            %     x = (1:length(temp))';
-            %     ff = fit(x(:),temp(:),'sin1');
-            %     V(a:z) = V(a:z) - ff(x)';
-
-            % end
-            % set(handles.ax1_data,'XData',time,'YData',V,'Color','k','Parent',handles.ax1); 
-        end
-
-        % do we have to find spikes too?
-        V_censored = V;
-        if any(ignored_fragments)
-            V_censored(ignored_fragments) = NaN;
-        end
-        if get(findmode,'Value') == 1
-        
-            if pref.ssDebug
-                disp('plotResp 1304: invoking findSpikes...')
-            end
-            loc = findSpikes(V_censored); 
-            set(method_control,'Enable','on')
-
-            % do we already have sorted spikes?
-            if length(spikes) < ThisControlParadigm
-                % no spikes
-      
-
-                loc = findSpikes(V_censored); % disp('pref.ssDebug-1284')
-                set(method_control,'Enable','on')
-                if get(autosort_control,'Value') == 1
-                    % sort spikes and show them
-                   
-                    [A,B] = autosort;
-                    set(handles.ax1_A_spikes,'XData',time(A),'YData',V(A),'Marker','o','MarkerSize',pref.marker_size,'Parent',handles.ax1,'MarkerEdgeColor','r','LineStyle','none');
-                    set(handles.ax1_B_spikes,'XData',time(B),'YData',V(B),'Marker','o','MarkerSize',pref.marker_size,'Parent',handles.ax1,'MarkerEdgeColor','b','LineStyle','none');
-                else
-                    set(handles.ax1_all_spikes,'XData',time(loc),'YData',V(loc),'Marker','o','MarkerSize',pref.marker_size,'Parent',handles.ax1,'MarkerEdgeColor','m','LineStyle','none');
-                    set(handles.ax1_A_spikes,'XData',NaN,'YData',NaN);
-                    set(handles.ax1_B_spikes,'XData',NaN,'YData',NaN);
-
-                end
-            else
-           
-                % maybe?
-                if ThisTrial <= width(spikes(ThisControlParadigm).A) 
-              
-                    % check...
-                    if max(spikes(ThisControlParadigm).A(ThisTrial,:))
-                        % yes, have spikes
-              
-                        A = find(spikes(ThisControlParadigm).A(ThisTrial,:));
-                        try
-                            B = find(spikes(ThisControlParadigm).B(ThisTrial,:));
-                        catch
-                            warning('B spikes missing for this trial...')
-                            B = [];
-                        end
-                        loc = [A B];
-                        set(handles.ax1_A_spikes,'XData',time(A),'YData',V(A),'Marker','o','MarkerSize',pref.marker_size,'Parent',handles.ax1,'MarkerEdgeColor','r','LineStyle','none');
-                        set(handles.ax1_B_spikes,'XData',time(B),'YData',V(B),'Marker','o','MarkerSize',pref.marker_size,'Parent',handles.ax1,'MarkerEdgeColor','b','LineStyle','none');
-                    else
     
-                        if get(autosort_control,'Value') == 1
-                            % sort spikes and show them
-                            [A,B] = autosort;
-                            set(handles.ax1_A_spikes,'XData',time(A),'YData',V(A),'Marker','o','MarkerSize',pref.marker_size,'Parent',handles.ax1,'MarkerEdgeColor','r','LineStyle','none');
-                            set(handles.ax1_B_spikes,'XData',time(B),'YData',V(B),'Marker','o','MarkerSize',pref.marker_size,'Parent',handles.ax1,'MarkerEdgeColor','b','LineStyle','none');
-                        else
-                            console('No need to autosort')
-                            % no need to autosort, just show the identified peaks
-                            set(handles.ax1_A_spikes,'XData',NaN,'YData',NaN);
-                            set(handles.ax1_B_spikes,'XData',NaN,'YData',NaN);
-                            set(handles.ax1_all_spikes,'XData',time(loc),'YData',V(loc),'Marker','o','MarkerSize',pref.marker_size,'Parent',handles.ax1,'MarkerEdgeColor','m','LineStyle','none');
-                        end
-                    end
-                else
-                    % no spikes
-                    if get(autosort_control,'Value') == 1
-                        % sort spikes and show them
-                        [A,B] = autosort;
-                        set(handles.ax1_A_spikes,'XData',time(A),'YData',V(A),'Marker','o','MarkerSize',pref.marker_size,'Parent',handles.ax1,'MarkerEdgeColor','r','LineStyle','none');
-                            set(handles.ax1_B_spikes,'XData',time(B),'YData',V(B),'Marker','o','MarkerSize',pref.marker_size,'Parent',handles.ax1,'MarkerEdgeColor','b','LineStyle','none');
-                    else
-                        % no need to autosort, no spikes to show
-                        set(handles.ax1_A_spikes,'XData',NaN,'YData',NaN);
-                            set(handles.ax1_B_spikes,'XData',NaN,'YData',NaN);
-                            set(handles.ax1_all_spikes,'XData',time(loc),'YData',V(loc),'Marker','o','MarkerSize',pref.marker_size,'Parent',handles.ax1,'MarkerEdgeColor','m','LineStyle','none');
-                    end
-                end
-            end
-
-
-            xlim = get(handles.ax1,'XLim');
-            
-            if xlim(1) < min(time)
-                xlim(1) = min(time);
-            end
-            if xlim(2) > max(time)
-                xlim(1) = min(time);
-                xlim(2) = max(time);
-            end
-            xlim(2) = (floor(xlim(2)/pref.deltat))*pref.deltat;
-            xlim(1) = (floor(xlim(1)/pref.deltat))*pref.deltat;
-            
-            ylim(2) = max(V(find(time==xlim(1)):find(time==xlim(2))));
-            ylim(1) = min(V(find(time==xlim(1)):find(time==xlim(2))));
-            yr = 2*nanstd(V(find(time==xlim(1)):find(time==xlim(2))));
-
-            if (isnan(yr)) || any(isnan(xlim)) || any(isnan(ylim))
-
-                xlim(2) = time(find(isnan(V),1,'first')-1);
-                xlim(1) = pref.deltat;
-                ylim(2) = max(V(1:find(isnan(V),1,'first')-1));
-                ylim(1) = min(V(1:find(isnan(V),1,'first')-1));
-                yr = 2*std(V(find(time==xlim(1)):find(time==xlim(2))));
-            else
-
-                if yr==0
-                    set(handles.ax1,'YLim',[ylim(1)-1 ylim(2)+1]);
-                else
-                    set(handles.ax1,'YLim',[ylim(1)-yr ylim(2)+yr]);
-                end
-            end
-
-        else
-            % ('No need to find spikes...')
-            set(handles.ax1,'YLim',[min(V) max(V)]);
-            set(method_control,'Enable','off')
-        end
-
-        % this exception exists because XLimits weirdly go to [0 1] and "manual" even though I don't set them. 
-        xl  =get(handles.ax1,'XLim');
-        if xl(2) == 1
-            set(handles.ax1,'XLim',[min(time) max(time)]);
-            set(handles.ax1,'XLimMode','auto')
-        else
-            % unless the X-limits have been manually changed, fix them
-            if strcmp(get(handles.ax1,'XLimMode'),'auto')
-                set(handles.ax1,'XLim',[min(time) max(time)]);
-                % we spoof this because we want to distinguish this case from when the user zooms
-                set(handles.ax1,'XLimMode','auto')
-            end
-        end
-    end
-
-    function plotStim(~,~)
-        % plot the stimulus and other things in handles.ax2
-        n = structureElementLength(data); 
-        miny = Inf; maxy = -Inf;
-        if n(ThisControlParadigm)
-            plotwhat = get(stim_channel,'String');
-            nchannels = length(get(stim_channel,'Value'));
-            plot_these = get(stim_channel,'Value');
-            c = jet(nchannels);
-            if nchannels == 1
-                c = [0 0 0];
-            end
-            for i = 1:nchannels
-                
-                if plot_these(i) > length(fieldnames(data))
-                    temp= ControlParadigm(ThisControlParadigm).Outputs(plot_these(i) - length(fieldnames(data)),:);
-                else
-                    plotthis = plotwhat{plot_these(i)};
-                    eval(strcat('temp=data(ThisControlParadigm).',plotthis,';'));
-                    temp = temp(ThisTrial,:);
-                end
-                time = pref.deltat*(1:length(temp));
-
-                set(handles.ax2_data,'XData',time,'YData',temp,'Color',c(i,:),'Parent',handles.ax2);
-                miny  =min([miny min(temp)]);
-                maxy  =max([maxy max(temp)]);
-            end
-        end
-
-        % rescale the Y axis appropriately
-        if ~isinf(sum(abs([maxy miny])))
-            if maxy > miny
-                set(handles.ax2,'YLim',[miny maxy+.1*(maxy-miny)]);
-            end
-        end
-
-        % plot the control signals using thick lines
-        if n(ThisControlParadigm)
-            plotwhat = get(handles.valve_channel,'String');
-            nchannels = length(get(handles.valve_channel,'Value'));
-            plot_these = get(handles.valve_channel,'Value');
-            c = jet(nchannels);
-            if nchannels == 1
-                c = [0 0 0];
-            end
-
-            ymax = get(handles.ax2,'YLim');
-            ymin = ymax(1); ymax = ymax(2); 
-            y0 = (ymax- .1*(ymax-ymin));
-            dy = (ymax-y0)/nchannels;
-            thisy = ymax;
-
-            % first try to erase all the old stuff
-            for i = 1:10
-                set(handles.ax2_control_signals(i),'XData',NaN,'YData',NaN);
-            end
-
-            for i = 1:nchannels
-                temp=ControlParadigm(ThisControlParadigm).Outputs(plot_these(i),:);
-                if pref.plot_control
-                    % plot the control signal directly
-                    time = pref.deltat*(1:length(temp));
-                    set(handles.ax2_data,'XData',time,'YData',temp,'LineWidth',1); hold on;
-                    try
-                        set(handles.ax2,'YLim',[min(temp) max(temp)]);
-                    catch
-                    end
-                else
-                    temp(temp>0)=1;
-                    time = pref.deltat*(1:length(temp));
-                    thisy = thisy - dy;
-                    temp = temp*thisy;
-                    temp(temp==0) = NaN;
-                    set(handles.ax2_control_signals(i),'XData',time,'YData',temp,'Color',c(i,:),'LineWidth',5,'Parent',handles.ax2); hold on;
-                end
-            end
-        end
-        
-    end
 
     function plotValve(~,~)
         % get the channels to plot
         handles.valve_channels = get(handles.valve_channel,'Value');
         c = jet(length(handles.valve_channels));
         for i = 1:length(handles.valve_channels)
-            this_valve = ControlParadigm(ThisControlParadigm).Outputs(handles.valve_channels(i),:);
+            this_valve = ControlParadigm(s.this_paradigm).Outputs(handles.valve_channels(i),:);
         end
         plotStim;
     end
@@ -1402,13 +992,13 @@ handles.main_fig = [];
 
     function redo(~,~)
         % need to reset spikes
-        if length(spikes) >= ThisControlParadigm
-            if width(spikes(ThisControlParadigm).A) >= ThisTrial
-                spikes(ThisControlParadigm).A(ThisTrial,:) = 0;
-                spikes(ThisControlParadigm).B(ThisTrial,:) = 0;
-                spikes(ThisControlParadigm).amplitudes_A(ThisTrial,:) = 0;
-                spikes(ThisControlParadigm).amplitudes_B(ThisTrial,:) = 0;
-                spikes(ThisControlParadigm).use_trace_fragment(ThisTrial,:) = 1;
+        if length(spikes) >= s.this_paradigm
+            if width(spikes(s.this_paradigm).A) >= ThisTrial
+                spikes(s.this_paradigm).A(ThisTrial,:) = 0;
+                spikes(s.this_paradigm).B(ThisTrial,:) = 0;
+                spikes(s.this_paradigm).amplitudes_A(ThisTrial,:) = 0;
+                spikes(s.this_paradigm).amplitudes_B(ThisTrial,:) = 0;
+                spikes(s.this_paradigm).use_trace_fragment(ThisTrial,:) = 1;
             else
                 % all cool
             end
@@ -1604,23 +1194,7 @@ handles.main_fig = [];
         save(strcat(path_name,file_name),'metadata','-append')
     end
 
-    function updateDiscardControl(~,~)
-        if isfield(spikes,'discard')
-            discard_this = false;
-            try
-                discard_this = spikes(ThisControlParadigm).discard(ThisTrial);
-            catch
-            end
-            if discard_this
-                set(discard_control,'Value',1,'String','Discarded!','FontWeight','bold')
-            else
-                set(discard_control,'Value',0,'String','Discard','FontWeight','normal')
-            end
-        else
-            % nothing has been discarded
-            set(discard_control,'Value',0,'String','Discard','FontWeight','normal')
-        end
-    end
+
 
 
 

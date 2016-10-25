@@ -58,13 +58,13 @@ handles.resp_channel = uicontrol(handles.datapanel,'units','normalized','Positio
 
 
 % file I/O
-uicontrol(handles.main_fig,'units','normalized','Position',[.10 .92 .07 .07],'Style', 'pushbutton', 'String', 'Load File','FontSize',s.pref.fs,'FontWeight',s.pref.fw,'callback',@s.loadFileCallback);
-uicontrol(handles.main_fig,'units','normalized','Position',[.05 .93 .03 .05],'Style', 'pushbutton', 'String', '<','FontSize',s.pref.fs,'FontWeight',s.pref.fw,'callback',@s.loadFileCallback);
-uicontrol(handles.main_fig,'units','normalized','Position',[.19 .93 .03 .05],'Style', 'pushbutton', 'String', '>','FontSize',s.pref.fs,'FontWeight',s.pref.fw,'callback',@s.loadFileCallback);
+uicontrol(handles.main_fig,'units','normalized','Position',[.10 .92 .07 .07],'Style', 'pushbutton', 'String', 'Load File','FontSize',s.pref.fs,'FontWeight',s.pref.fw,'callback',@s.loadFile);
+uicontrol(handles.main_fig,'units','normalized','Position',[.05 .93 .03 .05],'Style', 'pushbutton', 'String', '<','FontSize',s.pref.fs,'FontWeight',s.pref.fw,'callback',@s.loadFile);
+uicontrol(handles.main_fig,'units','normalized','Position',[.19 .93 .03 .05],'Style', 'pushbutton', 'String', '>','FontSize',s.pref.fs,'FontWeight',s.pref.fw,'callback',@s.loadFile);
 
 % paradigms and trials
 handles.datachooserpanel = uipanel('Title','Paradigms and Trials','Position',[.03 .75 .25 .16]);
-handles.paradigm_chooser = uicontrol(handles.datachooserpanel,'units','normalized','Position',[.25 .75 .5 .20],'Style', 'popupmenu', 'String', 'Choose Paradigm','callback',@chooseParadigmCallback,'Enable','off');
+handles.paradigm_chooser = uicontrol(handles.datachooserpanel,'units','normalized','Position',[.25 .75 .5 .20],'Style', 'popupmenu', 'String', 'Choose Paradigm','callback',@s.chooseParadigmCallback,'Enable','off');
 handles.next_paradigm = uicontrol(handles.datachooserpanel,'units','normalized','Position',[.75 .65 .15 .33],'Style', 'pushbutton', 'String', '>','callback',@s.chooseParadigmCallback,'Enable','off');
 handles.prev_paradigm = uicontrol(handles.datachooserpanel,'units','normalized','Position',[.05 .65 .15 .33],'Style', 'pushbutton', 'String', '<','callback',@s.chooseParadigmCallback,'Enable','off');
 
