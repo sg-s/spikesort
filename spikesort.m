@@ -1116,8 +1116,8 @@ discard_control = uicontrol(handles.main_fig,'units','normalized','Position',[.1
             Aspiketimes = find(spikes(ThisControlParadigm).A(ThisTrial,:));
             Bspiketimes = find(spikes(ThisControlParadigm).B(ThisTrial,:));
 
-            dA= (((Aspiketimes-p(1))/(xrange)).^2  + ((V(Aspiketimes) - p(2))/(5*yrange)).^2);
-            dB= (((Bspiketimes-p(1))/(xrange)).^2  + ((V(Bspiketimes) - p(2))/(5*yrange)).^2);
+            dA = vectorise(((Aspiketimes-p(1))/xrange).^2)  + vectorise(((V(Aspiketimes)-p(2))/(5*yrange)).^2);
+            dB = vectorise(((Bspiketimes-p(1))/xrange).^2)  + vectorise(((V(Bspiketimes)-p(2))/(5*yrange)).^2);
             dist_to_A = min(dA);
             dist_to_B = min(dB);
             if dist_to_A < dist_to_B
@@ -1136,7 +1136,7 @@ discard_control = uicontrol(handles.main_fig,'units','normalized','Position',[.1
         elseif get(mode_A2B,'Value')==1 
             % find the closest A spike
             Aspiketimes = find(spikes(ThisControlParadigm).A(ThisTrial,:));
-            dA= (((Aspiketimes-p(1))/(xrange)).^2  + ((V(Aspiketimes) - p(2))/(5*yrange)).^2);
+            dA = vectorise(((Aspiketimes-p(1))/xrange).^2)  + vectorise(((V(Aspiketimes)-p(2))/(5*yrange)).^2);
             [~,closest_spike] = min(dA);
             spikes(ThisControlParadigm).A(ThisTrial,Aspiketimes(closest_spike)) = 0;
             spikes(ThisControlParadigm).B(ThisTrial,Aspiketimes(closest_spike)) = 1;
@@ -1148,7 +1148,7 @@ discard_control = uicontrol(handles.main_fig,'units','normalized','Position',[.1
         elseif get(mode_B2A,'Value')==1
             % find the closest B spike
             Bspiketimes = find(spikes(ThisControlParadigm).B(ThisTrial,:));
-            dB= (((Bspiketimes-p(1))/(xrange)).^2  + ((V(Bspiketimes) - p(2))/(5*yrange)).^2);
+            dB = vectorise(((Bspiketimes-p(1))/xrange).^2)  + vectorise(((V(Bspiketimes)-p(2))/(5*yrange)).^2);
             [~,closest_spike] = min(dB);
             spikes(ThisControlParadigm).A(ThisTrial,Bspiketimes(closest_spike)) = 1;
             spikes(ThisControlParadigm).B(ThisTrial,Bspiketimes(closest_spike)) = 0;
