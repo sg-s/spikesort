@@ -10,3 +10,5 @@ method = str2func(method);
 
 method(s);
  
+s.removeDoublets;
+ 

@@ -1,65 +1,5 @@
 % old spikesort
 
-% check dependencies 
-dependencies = {'prettyFig','manualCluster','computeOnsOffs','dataHash','gitHash','argInNames','cache','bandPass','oss','raster2','sem','rsquare','spiketimes2f','tsne'};
-for si = 1:length(dependencies)
-    err_message = ['spikesort needs ' dependencies{si} ' to run, which was not found. Read the docs. to make sure you have installed all dependencies.'];
-    assert(exist(dependencies{si},'file')==2,err_message)
-end
-
-if verLessThan('matlab', '8.0.1')
-    error('Need MATLAB 2014b or better to run')
-end
-
-% check the signal processing toolbox version
-if verLessThan('signal','6.22')
-    error('Need Signal Processing toolbox version 6.22 or higher')
-end
-
-
-
-% add src folder to path
-addpath([fileparts(which(mfilename)) oss 'src'])
-
-% generate placeholder variables
-ControlParadigm = [];
-data = [];
-SamplingRate = [];
-OutputChannelNames = [];
-metadata = [];
-timestamps = [];
-s.this_paradigm = 1;
-ThisTrial = 1;
-temp = [];
-spikes.A = 0;
-spikes.B = 0;
-spikes.artifacts = 0;
-R = 0; % this holds the dimensionality reduced data
-V = 0; % holds the current trace
-Vf = 0; % filtered V
-V_snippets = [];
-time = 0;
-loc =0; % holds current spike times
-file_name = [];
-path_name = [];
-filter_index = [];
-
-% handles
-handles.valve_channel = [];
-handles.load_waitbar = [];
-handles.h_scatter1 = [];
-handles.h_scatter2 = [];
-handles.main_fig = [];
-
-%               ##     ##    ###    ##    ## ########    ##     ## #### 
-%               ###   ###   ## ##   ##   ##  ##          ##     ##  ##  
-%               #### ####  ##   ##  ##  ##   ##          ##     ##  ##  
-%               ## ### ## ##     ## #####    ######      ##     ##  ##  
-%               ##     ## ######### ##  ##   ##          ##     ##  ##  
-%               ##     ## ##     ## ##   ##  ##          ##     ##  ##  
-%               ##     ## ##     ## ##    ## ########     #######  #### 
-
-
 
 %% begin subfunctions
 % all subfunctions here are listed alphabetically
@@ -74,22 +14,7 @@ handles.main_fig = [];
         end
     end
 
-    function addTag(src,~)
-        % matlab wrapper for tag, which adds BSD tags to the file we are working on. *nix only. 
-        tag = get(src,'String');
-        temp = whos('file_name');
-        if ~isempty(file_name) && strcmp(temp.class,'char')
-            % tag the file with the given tag
-            clear es
-            es{1} = 'tag -a ';
-            es{2} = tag;
-            es{3} = strcat(path_name,file_name);
-            try
-                unix(strjoin(es));
-            catch
-            end
-        end
-    end
+
 
     function [A,B,N] = autosort()
         % automatically sorts data, if possible. 
@@ -213,9 +138,7 @@ handles.main_fig = [];
         plotResp;
     end
 
-    function reloadPreferences(~,~)
-        pref = readPref;
-    end
+    
 
 
     function [A,B,N] = findCluster(~,~)
@@ -245,10 +168,7 @@ handles.main_fig = [];
         end
         clear es
         
-        % try to remove doublets
-        if pref.remove_doublets
-            [A,B]=removeDoublets(A,B);
-        end
+        
 
         % mark them
         set(handles.ax1_A_spikes,'XData',time(A),'YData',V(A),'Marker','o','MarkerSize',pref.marker_size,'Parent',handles.ax1,'MarkerEdgeColor','r','LineStyle','none');
@@ -273,9 +193,7 @@ handles.main_fig = [];
             spikes(s.this_paradigm).amplitudes_B = sparse(ThisTrial,length(time));
 
         end
-        spikes(s.this_paradigm).A(ThisTrial,A) = 1;
-        spikes(s.this_paradigm).B(ThisTrial,B) = 1;
-        spikes(s.this_paradigm).N(ThisTrial,N) = 1;
+        
 
         % also save spike amplitudes
         try
@@ -294,147 +212,7 @@ handles.main_fig = [];
 
 
 
-    function firingRatePlot(~,~)
-        if pref.show_r2
-            figure('outerposition',[0 0 1200 800],'PaperUnits','points','PaperSize',[1200 800]); hold on
-            sp(1)=subplot(2,4,1:3); hold on
-            sp(2)=subplot(2,4,5:7); hold on
-            sp(3)=subplot(2,4,4); hold on
-            sp(4)=subplot(2,4,8); hold on
-        else
-            figure('outerposition',[0 0 1000 800],'PaperUnits','points','PaperSize',[1000 800]); hold on
-            sp(1)=subplot(2,1,1); hold on
-            sp(2)=subplot(2,1,2); hold on
-        end
-        ylabel(sp(1),'Firing Rate (Hz)')
-        title(sp(1),'A neuron')
-        title(sp(2),'B neuron')
-        ylabel(sp(2),'Firing Rate (Hz)')
-        xlabel(sp(2),'Time (s)')
-        
-        haz_data = [];
-        for i = 1:length(spikes)
-            if length(spikes(i).A) > 1
-                haz_data = [haz_data i];
-            end
-        end
-        if length(haz_data) == 1
-            c = [0 0 0];
-        else
-            c = parula(length(haz_data));
-        end
-        L = {};
-        f_waitbar = waitbar(0.1, 'Computing Firing rates...');
-        for i = 1:length(haz_data)
-            l(i) = plot(sp(1),NaN,NaN,'Color',c(i,:));
-            waitbar((i-1)/length(spikes),f_waitbar);
-            if length(spikes(haz_data(i)).A) > 1
 
-                % do A
-                time = (1:length(spikes(haz_data(i)).A))/SamplingRate;
-                [fA,tA] = spiketimes2f(spikes(haz_data(i)).A,time,pref.firing_rate_dt,pref.firing_rate_window_size);
-                tA = tA(:);
-                % remove trials with no spikes
-                fA(:,sum(fA) == 0) = [];
-
-            
-                % censor fA when we ignore some data
-                if isfield(spikes,'use_trace_fragment')
-                    if any(sum(spikes(haz_data(i)).use_trace_fragment') < length(spikes(haz_data(i)).A))
-                        % there is excluded data somewhere
-                        for j = 1:width(spikes(haz_data(i)).use_trace_fragment)
-                            try
-                                fA(spikes(haz_data(i)).use_trace_fragment(j,1:10:end),j) = NaN;
-                            catch
-                            end
-                        end
-                    end
-                end
-
-                if width(fA) > 1
-                    if pref.show_firing_rate_trials
-                        for j = 1:width(fA)
-                            l(i) = plot(sp(1),tA,fA(:,j),'Color',c(i,:));
-                        end
-                    else
-                       l(i) = plot(sp(1),tA,nanmean(fA,2),'Color',c(i,:));
-                    end
-                    if pref.show_firing_rate_r2
-                        hash = dataHash(fA);
-                        cached_data = (cache(hash));
-                        if isempty(cached_data)
-                            r2 = rsquare(fA);
-                        else
-                            r2 = cached_data;
-                            cache(hash,r2);
-                        end
-                        axes(sp(3))
-                        imagescnan(r2)
-                        caxis([0 1])
-                        colorbar
-                        axis image
-                        axis off
-                        
-                    end
-                else
-                    try
-                       l(i) = plot(sp(1),tA,(fA),'Color',c(i,:));
-                    catch
-                        % no data, ignore.
-                    end
-                end
-                
-
-                % do B    
-                time = (1:length(spikes(haz_data(i)).B))/SamplingRate;
-                [fB,tB] = spiketimes2f(spikes(haz_data(i)).B,time);
-                tB = tB(:);
-                % remove trials with no spikes
-                fB(:,sum(fB) == 0) = [];
-
-                if width(fB) > 1
-                    if pref.show_firing_rate_trials
-                        for j = 1:width(fB)
-                            l(i) = plot(sp(2),tA,fB(:,j),'Color',c(i,:));
-                        end
-                    else
-                       l(i) = plot(sp(2),tB,nanmean(fB,2),'Color',c(i,:));
-                    end
-                    if pref.show_firing_rate_r2
-                        hash = dataHash(fB);
-                        cached_data = (cache(hash));
-                        if isempty(cached_data)
-                            r2 = rsquare(fB);
-                        else
-                            r2 = cached_data;
-                            cache(hash,r2);
-                        end
-                        axes(sp(4))
-                        imagescnan(r2)
-                        caxis([0 1])
-                        colorbar
-                        axis image
-                        axis off
-                    end
-                else
-                    try
-                       l(i) = plot(sp(2),tB,(fB),'Color',c(i,:));
-                    catch
-                    end
-                end
-
-
-                L = [L strrep(ControlParadigm(haz_data(i)).Name,'_','-')];
-                
-            end
-        end
-        
-        legend(l,L)
-        close(f_waitbar)
-        linkaxes(sp(1:2))
-        prettyFig('font_units','points');
-        console('Made a firing rate plot.')
-    end
 
     function generateSummary(~,~)
         allfiles = dir(strcat(path_name,'*.mat'));
@@ -970,154 +748,8 @@ handles.main_fig = [];
         plotStim;
     end
 
-    function rasterPlot(~,~)
-        figure('outerposition',[0 0 1000 500],'PaperUnits','points','PaperSize',[1000 500]); hold on
-        yoffset = 0;
-        ytick=0;
-        L ={};
-        for i = 1:length(spikes)
-            if length(spikes(i).A) > 1
-                raster2(spikes(i).A,spikes(i).B,yoffset);
-                yoffset = yoffset + width(spikes(i).A)*2 + 1;
-                ytick = [ytick yoffset];
-                L = [L strrep(ControlParadigm(i).Name,'_','-')];
-                
-            end
-        end
-        set(gca,'YTick',ytick(1:end-1)+diff(ytick)/2,'YTickLabel',L,'box','on')
-        xlabel('Time (s)')
-        console('Made a raster plot.')
-    
-    end
 
-    function redo(~,~)
-        % need to reset spikes
-        if length(spikes) >= s.this_paradigm
-            if width(spikes(s.this_paradigm).A) >= ThisTrial
-                spikes(s.this_paradigm).A(ThisTrial,:) = 0;
-                spikes(s.this_paradigm).B(ThisTrial,:) = 0;
-                spikes(s.this_paradigm).amplitudes_A(ThisTrial,:) = 0;
-                spikes(s.this_paradigm).amplitudes_B(ThisTrial,:) = 0;
-                spikes(s.this_paradigm).use_trace_fragment(ThisTrial,:) = 1;
-            else
-                % all cool
-            end
-        else
-            % should have no problem
-        end       
 
-        % update the plot
-        plotResp;
-
-        % save the clear
-        save(strcat(path_name,file_name),'spikes','-append')
-
-    end
-
-    function [R,V_snippets] = reduceDimensions(method)
-
-        % take snippets for each putative spike
-        R = [];
-        V_snippets = NaN(pref.t_before+pref.t_after,length(loc));
-        if loc(1) < pref.t_before+1
-            loc(1) = [];
-            V_snippets(:,1) = []; 
-        end
-        if loc(end) + pref.t_after+1 > length(V)
-            loc(end) = [];
-            V_snippets(:,end) = [];
-        end
-        for i = 1:length(loc)
-            V_snippets(:,i) = V(loc(i)-pref.t_before+1:loc(i)+pref.t_after);
-        end
-
-        if pref.ssDebug
-            disp('These many V_snippets:')
-            disp(length(V_snippets))
-        end
-
-        % update the spike markings
-        set(handles.ax1_all_spikes,'XData',time(loc),'YData',V(loc),'Marker','o','MarkerSize',pref.marker_size,'Parent',handles.ax1,'MarkerEdgeColor','g','LineStyle','none');
-
-        % now do different things based on the method chosen
-        methodname = get(method_control,'String');
-        methodname = strcat('ssdm_',methodname{method});
-        req_arg = argInNames(methodname); % find out what arguments the external method needs
-        % start constructing the eval string
-        es = strcat('R=',methodname,'(');
-        for ri =  1:length(req_arg)
-            es = strcat(es,req_arg{ri},',');
-        end
-        clear ri
-        es = es(1:end-1);
-        es = strcat(es,');');
-        try
-            eval(es);
-        catch exc
-            disp(exc.stack(1))
-            ms = strcat(methodname, ' ran into an error: ', exc.message,'. Look at the command window for more details.');
-            msgbox(ms,'spikesort');
-            return
-        end
-        clear es
-    end
-
-    
-
-    function [A,B] = removeDoublets(A,B)
-        % remove B doublets and assign one of them to A
-        % get the refractory time 
-        B2A_cand = B(diff(B) < pref.doublet_distance);
-        B2A_alt = B(find(diff(B) < pref.doublet_distance)+1);
-        B2A = NaN*B2A_cand;
-        
-        % for each candidate, find the one in the pair that is further away from adjacent A spikes
-        for i = 1:length(B2A_cand)
-            if min(abs(B2A_cand(i)-A)) < min(abs(B2A_alt(i)-A))
-                % candidate closer to A spike
-                B2A(i) = B2A_cand(i);
-            else
-                % alternate closer to A spike
-                B2A(i) = B2A_alt(i);
-            end
-        end
-
-        if pref.ssDebug
-            disp('B2A doublet resolution. #spikes swapped:')
-            disp(length(B2A))
-        end
-        % swap 
-        A = sort(unique([A(:); B2A(:)]));
-        B = setdiff(B,B2A);
-
-        % remove A doublets and assign one of them to B
-        A2B_cand = A(diff(A) < pref.doublet_distance);
-        A2B_alt = A(find(diff(A) < pref.doublet_distance)+1);
-
-        % don't undo what we just did
-        temp = ismember(A2B_alt,unique([B2A_cand B2A_alt])) | ismember(A2B_cand,unique([B2A_cand B2A_alt]));
-        A2B_cand(temp) = [];
-        A2B_alt(temp) = [];
-        
-        % for each candidate, find the one in the pair that is further away from adjacent B spikes
-        for i = 1:length(A2B_cand)
-            if min(abs(A2B_cand(i)-B)) < min(abs(A2B_alt(i)-B))
-                % candidate closer to B spike
-            else
-                % alternate closer to B spike
-                A2B_cand(i) = A2B_alt(i);
-            end
-        end
-
-        % swap 
-        B = sort(unique([B(:); A2B_cand(:)]));
-        A = setdiff(A,A2B_cand);
-
-        if pref.ssDebug
-            disp('A2B doublet resolution. #spikes swapped:')
-            disp(length(A2B_cand))
-        end
-    end
 
     function scroll(~,event)
         xlimits = get(handles.ax1,'XLim');
@@ -1193,7 +825,4 @@ handles.main_fig = [];
 
 
 
-
-
-end
 

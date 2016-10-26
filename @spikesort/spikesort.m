@@ -31,11 +31,12 @@ classdef spikesort < handle & matlab.mixin.CustomDisplay
         V_snippets % matrix of snippets around spike peaks
         time % vector of timestamps
         loc  % holds current spike times
-        use_this_fragment
+        
 
         A % stores A spikes of this trace
         B % stores B spikes of this trace
         N % stores identified noise in this trace
+        use_this_fragment
 
         this_trial
         this_paradigm
@@ -69,6 +70,19 @@ classdef spikesort < handle & matlab.mixin.CustomDisplay
             build_numbers = checkDeps(toolboxes);
             s.version_name = strcat('spikesort for Kontroller (Build-',oval(build_numbers(2)),')'); 
 
+            if verLessThan('matlab', '8.0.1')
+                error('Need MATLAB 2014b or better to run')
+            end
+
+            % check the signal processing toolbox version
+            if verLessThan('signal','6.22')
+                error('Need Signal Processing toolbox version 6.22 or higher')
+            end
+
+            % add src folder to path
+            addpath([fileparts(fileparts(which(mfilename))) oss 'src'])
+
+
             % load preferences
             s.pref = readPref(fileparts(fileparts(which(mfilename))));
 
@@ -87,34 +101,36 @@ classdef spikesort < handle & matlab.mixin.CustomDisplay
         end
 
         function s = set.A(s,value)
+            s.A = value;
+            s.saveData;
             if isempty(value)
                 return
             else
-                s.A = value;
                 set(s.handles.ax1_all_spikes,'XData',NaN,'YData',NaN);
                 set(s.handles.ax1_A_spikes,'XData',s.time(s.A),'YData',s.filtered_voltage(s.A));
                 set(s.handles.ax1_A_spikes,'Marker','o','Color',s.pref.A_spike_colour,'LineStyle','none')
-                s.saveData;
             end
         end % end set A
 
         function s = set.B(s,value)
+            s.B = value;
+            s.saveData;
             if isempty(value)
                 return
             else
-                s.B = value;
                 set(s.handles.ax1_all_spikes,'XData',NaN,'YData',NaN);
                 set(s.handles.ax1_B_spikes,'XData',s.time(s.B),'YData',s.filtered_voltage(s.B));
                 set(s.handles.ax1_B_spikes,'Marker','o','Color',s.pref.B_spike_colour,'LineStyle','none')
-                s.saveData;
+                
             end
         end % end set B
 
         function s = set.loc(s,value)
+            s.loc = value;
             if isempty(value)
                 return
             else
-                s.loc = value;
+                
                 set(s.handles.ax1_all_spikes,'XData',s.time(s.loc),'YData',s.filtered_voltage(s.loc));
                 set(s.handles.ax1_all_spikes,'Marker','o','Color',s.pref.putative_spike_colour,'LineStyle','none')
             end

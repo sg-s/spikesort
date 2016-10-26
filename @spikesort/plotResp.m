@@ -4,7 +4,7 @@ function [] = plotResp(s,src,~)
 
 % clear some old stuff
 set(s.handles.ax1_ignored_data,'XData',NaN,'YData',NaN);
-
+set(s.handles.ax1_all_spikes,'XData',NaN,'YData',NaN);
 set(s.handles.ax1_B_spikes,'XData',NaN,'YData',NaN);
 set(s.handles.ax1_A_spikes,'XData',NaN,'YData',NaN);
 set(s.handles.ax1_spike_marker,'XData',NaN,'YData',NaN);
@@ -24,7 +24,6 @@ s.N = [];
 
 % unpack some stuff
 data = s.current_data.data;
-ControlParadigm = s.current_data.ControlParadigm;
 if isfield(s.current_data,'spikes')
     spikes = s.current_data.spikes;
 else
@@ -61,8 +60,10 @@ end
 
 if get(s.handles.filtermode,'Value') == 1
     if s.pref.ssDebug 
-        disp('plotResp 1251: filtering trace...')
+        cprintf('green','\n[INFO]')
+        cprintf('text',' filtering trace...')
     end
+    tic
     lc = 1/s.pref.band_pass(1);
     lc = floor(lc/s.pref.deltat);
     hc = 1/s.pref.band_pass(2);
@@ -72,6 +73,10 @@ if get(s.handles.filtermode,'Value') == 1
         error('this case is not usable yet. need to clean up trace...')
     else
         [s.filtered_voltage,s.LFP] = bandPass(s.raw_voltage,lc,hc);
+    end
+    t = toc;
+    if s.pref.ssDebug 
+        fprintf([' DONE in ' oval(t) ' sec'])
     end
 end 
 
@@ -122,15 +127,23 @@ if get(s.handles.findmode,'Value') == 1
             % check...
             if max(spikes(s.this_paradigm).A(s.this_trial,:)) || max(spikes(s.this_paradigm).B(s.this_trial,:))
                 % yes, have spikes
-                s.A = find(spikes(s.this_paradigm).A(s.this_trial,:));
-                try
-                    s.B = find(spikes(s.this_paradigm).B(s.this_trial,:));
-                catch
-                    warning('B spikes missing for this trial...')
-                    s.B = [];
+                if s.pref.ssDebug 
+                    cprintf('green','\n[INFO]')
+                    cprintf('text',' Spikes already found in this trial.')
                 end
-                s.loc = [s.A s.B];
-                return
+                A = find(spikes(s.this_paradigm).A(s.this_trial,:));
+                try
+                    B = find(spikes(s.this_paradigm).B(s.this_trial,:));
+                catch
+                    if s.pref.ssDebug 
+                        cprintf('red','\n[WARN]')
+                        cprintf('text',' B spikes missing.')
+                    end
+                    B = [];
+                end
+                s.loc = [A B];
+                s.A = A;
+                s.B = B; % be careful in the order of this assignation 
             else
                 % no spikes here, need to find them
                 find_spikes = true;
@@ -142,51 +155,27 @@ if get(s.handles.findmode,'Value') == 1
     end
 
 else
-    % ('No need to find spikes...')
+    if s.pref.ssDebug 
+        cprintf('green','\n[INFO]')
+        cprintf('text',' No need to find spikes')
+    end
     set(s.handles.ax1,'YLim',[min(s.filtered_voltage) max(s.filtered_voltage)]);
     set(s.handles.method_control,'Enable','off')
 end
 
 if find_spikes
+    if s.pref.ssDebug 
+        cprintf('green','\n[INFO]')
+        cprintf('text',' Finding spikes...')
+    end
+    tic;
     s.loc = findSpikes(s.filtered_voltage); 
+    t = toc;
+    if s.pref.ssDebug 
+        fprintf([' DONE in ' oval(t) ' sec'])
+    end
     set(s.handles.method_control,'Enable','on')
 end
 
 % fix the axis
 set(s.handles.ax1,'XLim',[min(s.time) max(s.time)]);
-
-% ok, we have identified 
-
-return
-
-set(s.handles.ax1_A_spikes,'XData',s.time(A),'YData',V(A),'Marker','o','MarkerSize',s.pref.marker_size,'Parent',s.handles.ax1,'MarkerEdgeColor','r','LineStyle','none');
-                set(s.handles.ax1_B_spikes,'XData',s.time(B),'YData',V(B),'Marker','o','MarkerSize',s.pref.marker_size,'Parent',s.handles.ax1,'MarkerEdgeColor','b','LineStyle','none');
-
-
-                                if get(s.handles.autosort_control,'Value') == 1
-                    % sort spikes and show them
-                    [A,B] = autosort;
-                    set(s.handles.ax1_A_spikes,'XData',s.time(A),'YData',V(A),'Marker','o','MarkerSize',s.pref.marker_size,'Parent',s.handles.ax1,'MarkerEdgeColor','r','LineStyle','none');
-                    set(s.handles.ax1_B_spikes,'XData',s.time(B),'YData',V(B),'Marker','o','MarkerSize',s.pref.marker_size,'Parent',s.handles.ax1,'MarkerEdgeColor','b','LineStyle','none');
-                else
-                    
-                    % no need to autosort, just show the identified peaks
-                    set(s.handles.ax1_A_spikes,'XData',NaN,'YData',NaN);
-                    set(s.handles.ax1_B_spikes,'XData',NaN,'YData',NaN);
-                    set(s.handles.ax1_all_spikes,'XData',s.time(s.loc),'YData',V(s.loc),'Marker','o','MarkerSize',s.pref.marker_size,'Parent',s.handles.ax1,'MarkerEdgeColor','m','LineStyle','none');
-                end
-
-% this exception exists because XLimits weirdly go to [0 1] and "manual" even though I don't set them. 
-xl  =get(s.handles.ax1,'XLim');
-if xl(2) == 1
-    set(s.handles.ax1,'XLim',[min(s.time) max(s.time)]);
-    set(s.handles.ax1,'XLimMode','auto')
-else
-    % unless the X-limits have been manually changed, fix them
-    if strcmp(get(s.handles.ax1,'XLimMode'),'auto')
-        set(s.handles.ax1,'XLim',[min(s.time) max(s.time)]);
-        % we spoof this because we want to distinguish this case from when the user zooms
-        set(s.handles.ax1,'XLimMode','auto')
-    end
-end
-end

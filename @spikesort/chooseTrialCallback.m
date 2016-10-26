@@ -17,7 +17,7 @@ if src == s.handles.trial_chooser
     s.plotResp(@chooseTrialCallback);
 elseif src == s.handles.next_trial
     if s.this_trial < n
-        s.this_trial = s.this_trial +1;
+        s.this_trial = s.this_trial + 1;
         set(s.handles.trial_chooser,'Value',s.this_trial);
         % update the plots
         s.plotStim;

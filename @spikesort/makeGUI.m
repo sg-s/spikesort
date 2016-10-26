@@ -17,7 +17,7 @@ uimenu(handles.menu1,'Label','Firing Rate','Callback',@s.firingRatePlot);
 handles.menu2 = uimenu('Label','Tools');
 uimenu(handles.menu2,'Label','Template Match','Callback',@s.matchTemplate);
 handles.remove_artifacts_menu = uimenu(handles.menu2,'Label','Remove Artifacts','Callback',@removeArtifacts,'Checked',s.pref.remove_artifacts);
-uimenu(handles.menu2,'Label','Reload s.preferences','Callback',@s.reloadPreferences,'Separator','on');
+uimenu(handles.menu2,'Label','Reload preferences','Callback',@s.reloadPreferences,'Separator','on');
 uimenu(handles.menu2,'Label','Reset zoom','Callback',@s.resetZoom);
 delete(temp([1:8 11:15]))
 
@@ -51,7 +51,7 @@ handles.datapanel = uipanel('Title','Data','Position',[.8 .57 .16 .4]);
 uicontrol(handles.datapanel,'units','normalized','Position',[.02 .9 .510 .10],'Style', 'text', 'String', 'Control Signal','FontSize',s.pref.fs,'FontWeight',s.pref.fw);
 handles.valve_channel = uicontrol(handles.datapanel,'units','normalized','Position',[.03 .68 .910 .25],'Style', 'listbox', 'String', '','FontSize',s.pref.fs,'FontWeight',s.pref.fw,'Callback',@plotValve,'Min',0,'Max',2);
 uicontrol(handles.datapanel,'units','normalized','Position',[.01 .56 .510 .10],'Style', 'text', 'String', 'Stimulus','FontSize',s.pref.fs,'FontWeight',s.pref.fw);
-handles.stim_channel = uicontrol(handles.datapanel,'units','normalized','Position',[.03 .38 .910 .20],'Style', 'listbox', 'String', '','FontSize',s.pref.fs,'FontWeight',s.pref.fw,'Callback',@plotStim);
+handles.stim_channel = uicontrol(handles.datapanel,'units','normalized','Position',[.03 .38 .910 .20],'Style', 'listbox', 'String', '','FontSize',s.pref.fs,'FontWeight',s.pref.fw,'Callback',@s.plotStim);
 
 uicontrol(handles.datapanel,'units','normalized','Position',[.01 .25 .610 .10],'Style', 'text', 'String', 'Response','FontSize',s.pref.fs,'FontWeight',s.pref.fw);
 handles.resp_channel = uicontrol(handles.datapanel,'units','normalized','Position',[.01 .01 .910 .25],'Style', 'listbox', 'String', '','FontSize',s.pref.fs,'FontWeight',s.pref.fw);
@@ -77,14 +77,14 @@ handles.dimredpanel = uipanel('Title','Dimensionality Reduction','Position',[.25
 all_plugin_names = {s.installed_plugins.name};
 dim_red_plugins = all_plugin_names(find(strcmp({s.installed_plugins.plugin_type},'dim-red')));
 
-handles.method_control = uicontrol(handles.dimredpanel,'Style','popupmenu','String',dim_red_plugins,'units','normalized','Position',[.02 .6 .9 .2],'Callback',@s.reduceDimensionsCallback,'Enable','off');
+handles.method_control = uicontrol(handles.dimredpanel,'Style','popupmenu','String',dim_red_plugins,'units','normalized','Position',[.02 .6 .9 .2],'Callback',@s.reduceDimensionsCallback,'Enable','off','FontSize',20);
 
 % find the available methods for clustering
 all_plugin_names = {s.installed_plugins.name};
 cluster_plugins = all_plugin_names(find(strcmp({s.installed_plugins.plugin_type},'cluster')));
 
 handles.cluster_panel = uipanel('Title','Clustering','Position',[.43 .92 .17 .07]);
-handles.cluster_control = uicontrol(handles.cluster_panel,'Style','popupmenu','String',cluster_plugins,'units','normalized','Position',[.02 .6 .9 .2],'Callback',@s.clusterCallback,'Enable','off');
+handles.cluster_control = uicontrol(handles.cluster_panel,'Style','popupmenu','String',cluster_plugins,'units','normalized','Position',[.02 .6 .9 .2],'Callback',@s.clusterCallback,'Enable','off','FontSize',20);
 
 
 % metadata panel

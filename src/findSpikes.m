@@ -31,7 +31,7 @@ end
 
 
 if pref.ssDebug
-    disp('findSpikes 512: found these many spikes:')
-    disp(length(loc))
+	cprintf('green','\n[INFO]')
+    cprintf('text',[' found ' oval(length(loc)) ' spikes'])
 end
 
