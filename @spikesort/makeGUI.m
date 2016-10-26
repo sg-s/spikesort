@@ -74,29 +74,17 @@ handles.prev_trial = uicontrol(handles.datachooserpanel,'units','normalized','Po
 
 % dimension reduction and clustering panels
 handles.dimredpanel = uipanel('Title','Dimensionality Reduction','Position',[.25 .92 .17 .07]);
-% find the available methods
-look_here = [fileparts(mfilename('fullpath')) oss 'src' oss];
- % this is where we should look for methods
-avail_methods=dir(strcat(look_here,'ssdm_*.m'));
-avail_methods={avail_methods.name};
-for oi = 1:length(avail_methods)
-    temp = avail_methods{oi};
-    avail_methods{oi} = temp(6:end-2);
-end
-clear oi; 
-handles.method_control = uicontrol(handles.dimredpanel,'Style','popupmenu','String',avail_methods,'units','normalized','Position',[.02 .6 .9 .2],'Callback',@s.reduceDimensionsCallback,'Enable','off');
+all_plugin_names = {s.installed_plugins.name};
+dim_red_plugins = all_plugin_names(find(strcmp({s.installed_plugins.plugin_type},'dim-red')));
+
+handles.method_control = uicontrol(handles.dimredpanel,'Style','popupmenu','String',dim_red_plugins,'units','normalized','Position',[.02 .6 .9 .2],'Callback',@s.reduceDimensionsCallback,'Enable','off');
 
 % find the available methods for clustering
+all_plugin_names = {s.installed_plugins.name};
+cluster_plugins = all_plugin_names(find(strcmp({s.installed_plugins.plugin_type},'cluster')));
 
-avail_methods = dir(strcat(look_here,'sscm_*.m'));
-avail_methods = {avail_methods.name};
-for oi = 1:length(avail_methods)
-    temp = avail_methods{oi};
-    avail_methods{oi} = temp(6:end-2);
-end
-clear oi
 handles.cluster_panel = uipanel('Title','Clustering','Position',[.43 .92 .17 .07]);
-handles.cluster_control = uicontrol(handles.cluster_panel,'Style','popupmenu','String',avail_methods,'units','normalized','Position',[.02 .6 .9 .2],'Callback',@findCluster,'Enable','off');
+handles.cluster_control = uicontrol(handles.cluster_panel,'Style','popupmenu','String',cluster_plugins,'units','normalized','Position',[.02 .6 .9 .2],'Callback',@s.clusterCallback,'Enable','off');
 
 
 % metadata panel

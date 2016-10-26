@@ -85,11 +85,8 @@ try
     fl = fieldnames(s.current_data.data);
 
     % also add all the control signals
-    try
-        set(s.handles.stim_channel,'String',[fl(:); s.OutputChannelNames]);
-    catch
-        set(s.handles.stim_channel,'String',[fl(:) s.OutputChannelNames]);
-    end
+    set(s.handles.stim_channel,'String',[fl(:); s.OutputChannelNames(:)]);
+
 
     % update response listbox with all the input channel names
     set(s.handles.resp_channel,'String',fl);
@@ -175,7 +172,10 @@ try
     % check for amplitudes 
     waitbar(.7,s.handles.load_waitbar,'Checking to see amplitude data exists...')
     % check if we have spike_amplitude data
-    spikes = s.current_data.spikes;
+    spikes = [];
+    if isfield(s.current_data,'spikes')
+        spikes = s.current_data.spikes;
+    end
     if length(spikes)
         for i = 1:length(spikes)
             for j = 1:width(spikes(i).A)

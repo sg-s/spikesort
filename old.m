@@ -1062,10 +1062,7 @@ handles.main_fig = [];
         clear es
     end
 
-    function reduceDimensionsCallback(~,~)
-        method=(get(method_control,'Value'));
-        [R,V_snippets] = reduceDimensions(method);
-    end
+    
 
     function [A,B] = removeDoublets(A,B)
         % remove B doublets and assign one of them to A

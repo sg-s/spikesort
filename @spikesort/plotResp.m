@@ -4,30 +4,41 @@ function [] = plotResp(s,src,~)
 
 % clear some old stuff
 set(s.handles.ax1_ignored_data,'XData',NaN,'YData',NaN);
-set(s.handles.ax1_all_spikes,'XData',NaN,'YData',NaN);
+
 set(s.handles.ax1_B_spikes,'XData',NaN,'YData',NaN);
 set(s.handles.ax1_A_spikes,'XData',NaN,'YData',NaN);
 set(s.handles.ax1_spike_marker,'XData',NaN,'YData',NaN);
-s.V = [];
-s.Vf = [];
-s.time = [];
+
+s.R = []; % this holds the dimensionality reduced data
+s.filtered_voltage = []; % holds the current trace that is shown on screen
+s.raw_voltage = [];
+s.LFP = [];
+s.V_snippets = [];% matrix of snippets around spike peaks
+s.time = []; % vector of timestamps
+s.loc = []; % holds current spike times
+s.use_this_fragment = [];
+
+s.A = [];
+s.B = [];
+s.N = [];
 
 % unpack some stuff
 data = s.current_data.data;
 ControlParadigm = s.current_data.ControlParadigm;
-spikes = s.current_data.spikes;
-
-n = structureElementLength(data); 
-
-if n(s.this_paradigm)
-    plotwhat = get(s.handles.resp_channel,'String');
-    plotthis = plotwhat{get(s.handles.resp_channel,'Value')};
-    eval(strcat('temp=data(s.this_paradigm).',plotthis,';'));
-    temp = temp(s.this_trial,:);
-    time = s.pref.deltat*(1:length(temp));
+if isfield(s.current_data,'spikes')
+    spikes = s.current_data.spikes;
 else
-    return    
+    spikes = [];
 end
+
+
+plotwhat = get(s.handles.resp_channel,'String');
+plotthis = plotwhat{get(s.handles.resp_channel,'Value')};
+temp = data(s.this_paradigm).(plotthis);
+temp = temp(s.this_trial,:);
+s.time = s.pref.deltat*(1:length(temp));
+
+s.raw_voltage = temp;
 
 % check if we have chosen to discard this
 if isfield(spikes,'discard')
@@ -35,7 +46,7 @@ if isfield(spikes,'discard')
         if spikes(s.this_paradigm).discard(s.this_trial) == 1
             % set the control
             set(s.handles.discard_control,'Value',1);
-            set(s.handles.ax1_data,'XData',time,'YData',temp,'Color','k','Parent',s.handles.ax1);
+            set(s.handles.ax1_data,'XData',s.time,'YData',s.raw_voltage,'Color','k','Parent',s.handles.ax1);
             return
         else
 
@@ -46,7 +57,7 @@ if isfield(spikes,'discard')
     end
 end
 
-V = temp;
+
 
 if get(s.handles.filtermode,'Value') == 1
     if s.pref.ssDebug 
@@ -57,168 +68,123 @@ if get(s.handles.filtermode,'Value') == 1
     hc = 1/s.pref.band_pass(2);
     hc = floor(hc/s.pref.deltat);
     if s.pref.useFastBandPass
-        [V,Vf] = fastBandPass(V,lc,hc);
+        [s.filtered_voltage,s.LFP] = fastBandPass(s.raw_voltage,lc,hc);
+        error('this case is not usable yet. need to clean up trace...')
     else
-        [V,Vf] = bandPass(V,lc,hc);
+        [s.filtered_voltage,s.LFP] = bandPass(s.raw_voltage,lc,hc);
     end
 end 
+
 
 % if strcmp(get(s.handles.remove_artifacts_menu,'Checked'),'on')
 %     this_control = ControlParadigm(s.this_paradigm).Outputs;
 %     V = removeArtifactsUsingTemplate(V,this_control,pref);
 % end
 
-set(s.handles.ax1_data,'XData',time,'YData',V,'Color','k','Parent',s.handles.ax1); 
+set(s.handles.ax1_data,'XData',s.time,'YData',s.filtered_voltage,'Color','k','Parent',s.handles.ax1); 
 
 % check if we are discarding part of the trace
-ignored_fragments = 0*V;
-if isfield(spikes,'use_trace_fragment')
-    if length(spikes) < s.this_paradigm
-    else
-        if ~isempty(spikes(s.this_paradigm).use_trace_fragment)
-            if width(spikes(s.this_paradigm).use_trace_fragment) < s.this_trial
-            else
-                ignored_fragments = ~spikes(s.this_paradigm).use_trace_fragment(s.this_trial,:);
-                set(s.handles.ax1_ignored_data,'XData',time(ignored_fragments),'YData',V(ignored_fragments),'Color',[.5 .5 .5],'Parent',s.handles.ax1);
-                if s.pref.ssDebug
-                    disp('Ignoring part of the trace')
-                end
-            end
-        end
-    end
-end
+% s.use_this_fragment = 1+0*s.filtered_voltage;
+% if isfield(spikes,'use_trace_fragment')
+%     error('not coded! error 81')
+%     if length(spikes) < s.this_paradigm
+%     else
+%         if ~isempty(spikes(s.this_paradigm).use_trace_fragment)
+%             if width(spikes(s.this_paradigm).use_trace_fragment) < s.this_trial
+%             else
+%                 ignored_fragments = ~spikes(s.this_paradigm).use_trace_fragment(s.this_trial,:);
+%                 set(s.handles.ax1_ignored_data,'XData',s.time(ignored_fragments),'YData',V(ignored_fragments),'Color',[.5 .5 .5],'Parent',s.handles.ax1);
+%                 if s.pref.ssDebug
+%                     disp('Ignoring part of the trace')
+%                 end
+%             end
+%         end
+%     end
+% end
 
+
+% V_censored = V;
+% if any(ignored_fragments)
+%     V_censored(ignored_fragments) = NaN;
+% end
 
 % do we have to find spikes too?
-V_censored = V;
-if any(ignored_fragments)
-    V_censored(ignored_fragments) = NaN;
-end
+find_spikes = false;
 if get(s.handles.findmode,'Value') == 1
-
-    if s.pref.ssDebug
-        disp('plotResp 1304: invoking findSpikes...')
-    end
-    loc = findSpikes(V_censored); 
-    set(s.handles.method_control,'Enable','on')
 
     % do we already have sorted spikes?
     if length(spikes) < s.this_paradigm
         % no spikes
-
-
-        loc = findSpikes(V_censored); 
-        set(s.handles.method_control,'Enable','on')
-        if get(s.handles.autosort_control,'Value') == 1
-            % sort spikes and show them
-           
-            [A,B] = autosort;
-            set(s.handles.ax1_A_spikes,'XData',time(A),'YData',V(A),'Marker','o','MarkerSize',s.pref.marker_size,'Parent',s.handles.ax1,'MarkerEdgeColor','r','LineStyle','none');
-            set(s.handles.ax1_B_spikes,'XData',time(B),'YData',V(B),'Marker','o','MarkerSize',s.pref.marker_size,'Parent',s.handles.ax1,'MarkerEdgeColor','b','LineStyle','none');
-        else
-            set(s.handles.ax1_all_spikes,'XData',time(loc),'YData',V(loc),'Marker','o','MarkerSize',s.pref.marker_size,'Parent',s.handles.ax1,'MarkerEdgeColor','m','LineStyle','none');
-            set(s.handles.ax1_A_spikes,'XData',NaN,'YData',NaN);
-            set(s.handles.ax1_B_spikes,'XData',NaN,'YData',NaN);
-
-        end
+        find_spikes = true;
     else
-   
-        % maybe?
+        % maybe we already have spikes? check
         if s.this_trial <= width(spikes(s.this_paradigm).A) 
-      
             % check...
-            if max(spikes(s.this_paradigm).A(s.this_trial,:))
+            if max(spikes(s.this_paradigm).A(s.this_trial,:)) || max(spikes(s.this_paradigm).B(s.this_trial,:))
                 % yes, have spikes
-      
-                A = find(spikes(s.this_paradigm).A(s.this_trial,:));
+                s.A = find(spikes(s.this_paradigm).A(s.this_trial,:));
                 try
-                    B = find(spikes(s.this_paradigm).B(s.this_trial,:));
+                    s.B = find(spikes(s.this_paradigm).B(s.this_trial,:));
                 catch
                     warning('B spikes missing for this trial...')
-                    B = [];
+                    s.B = [];
                 end
-                loc = [A B];
-                set(s.handles.ax1_A_spikes,'XData',time(A),'YData',V(A),'Marker','o','MarkerSize',s.pref.marker_size,'Parent',s.handles.ax1,'MarkerEdgeColor','r','LineStyle','none');
-                set(s.handles.ax1_B_spikes,'XData',time(B),'YData',V(B),'Marker','o','MarkerSize',s.pref.marker_size,'Parent',s.handles.ax1,'MarkerEdgeColor','b','LineStyle','none');
+                s.loc = [s.A s.B];
+                return
             else
-
-                if get(autosort_control,'Value') == 1
-                    % sort spikes and show them
-                    [A,B] = autosort;
-                    set(s.handles.ax1_A_spikes,'XData',time(A),'YData',V(A),'Marker','o','MarkerSize',s.pref.marker_size,'Parent',s.handles.ax1,'MarkerEdgeColor','r','LineStyle','none');
-                    set(s.handles.ax1_B_spikes,'XData',time(B),'YData',V(B),'Marker','o','MarkerSize',s.pref.marker_size,'Parent',s.handles.ax1,'MarkerEdgeColor','b','LineStyle','none');
-                else
-                    
-                    % no need to autosort, just show the identified peaks
-                    set(s.handles.ax1_A_spikes,'XData',NaN,'YData',NaN);
-                    set(s.handles.ax1_B_spikes,'XData',NaN,'YData',NaN);
-                    set(s.handles.ax1_all_spikes,'XData',time(loc),'YData',V(loc),'Marker','o','MarkerSize',s.pref.marker_size,'Parent',s.handles.ax1,'MarkerEdgeColor','m','LineStyle','none');
-                end
+                % no spikes here, need to find them
+                find_spikes = true;
             end
         else
             % no spikes
-            if get(s.handles.autosort_control,'Value') == 1
-                % sort spikes and show them
-                [A,B] = autosort;
-                set(s.handles.ax1_A_spikes,'XData',time(A),'YData',V(A),'Marker','o','MarkerSize',s.pref.marker_size,'Parent',s.handles.ax1,'MarkerEdgeColor','r','LineStyle','none');
-                    set(s.handles.ax1_B_spikes,'XData',time(B),'YData',V(B),'Marker','o','MarkerSize',s.pref.marker_size,'Parent',s.handles.ax1,'MarkerEdgeColor','b','LineStyle','none');
-            else
-                % no need to autosort, no spikes to show
-                set(s.handles.ax1_A_spikes,'XData',NaN,'YData',NaN);
-                    set(s.handles.ax1_B_spikes,'XData',NaN,'YData',NaN);
-                    set(s.handles.ax1_all_spikes,'XData',time(loc),'YData',V(loc),'Marker','o','MarkerSize',s.pref.marker_size,'Parent',s.handles.ax1,'MarkerEdgeColor','m','LineStyle','none');
-            end
-        end
-    end
-
-
-    xlim = get(s.handles.ax1,'XLim');
-    
-    if xlim(1) < min(time)
-        xlim(1) = min(time);
-    end
-    if xlim(2) > max(time)
-        xlim(1) = min(time);
-        xlim(2) = max(time);
-    end
-    xlim(2) = (floor(xlim(2)/s.pref.deltat))*s.pref.deltat;
-    xlim(1) = (floor(xlim(1)/s.pref.deltat))*s.pref.deltat;
-    
-    ylim(2) = max(V(find(time==xlim(1)):find(time==xlim(2))));
-    ylim(1) = min(V(find(time==xlim(1)):find(time==xlim(2))));
-    yr = 2*nanstd(V(find(time==xlim(1)):find(time==xlim(2))));
-
-    if (isnan(yr)) || any(isnan(xlim)) || any(isnan(ylim))
-
-        xlim(2) = time(find(isnan(V),1,'first')-1);
-        xlim(1) = s.pref.deltat;
-        ylim(2) = max(V(1:find(isnan(V),1,'first')-1));
-        ylim(1) = min(V(1:find(isnan(V),1,'first')-1));
-        yr = 2*std(V(find(time==xlim(1)):find(time==xlim(2))));
-    else
-
-        if yr==0
-            set(s.handles.ax1,'YLim',[ylim(1)-1 ylim(2)+1]);
-        else
-            set(s.handles.ax1,'YLim',[ylim(1)-yr ylim(2)+yr]);
+            find_spikes = true;
         end
     end
 
 else
     % ('No need to find spikes...')
-    set(s.handles.ax1,'YLim',[min(V) max(V)]);
+    set(s.handles.ax1,'YLim',[min(s.filtered_voltage) max(s.filtered_voltage)]);
     set(s.handles.method_control,'Enable','off')
 end
+
+if find_spikes
+    s.loc = findSpikes(s.filtered_voltage); 
+    set(s.handles.method_control,'Enable','on')
+end
+
+% fix the axis
+set(s.handles.ax1,'XLim',[min(s.time) max(s.time)]);
+
+% ok, we have identified 
+
+return
+
+set(s.handles.ax1_A_spikes,'XData',s.time(A),'YData',V(A),'Marker','o','MarkerSize',s.pref.marker_size,'Parent',s.handles.ax1,'MarkerEdgeColor','r','LineStyle','none');
+                set(s.handles.ax1_B_spikes,'XData',s.time(B),'YData',V(B),'Marker','o','MarkerSize',s.pref.marker_size,'Parent',s.handles.ax1,'MarkerEdgeColor','b','LineStyle','none');
+
+
+                                if get(s.handles.autosort_control,'Value') == 1
+                    % sort spikes and show them
+                    [A,B] = autosort;
+                    set(s.handles.ax1_A_spikes,'XData',s.time(A),'YData',V(A),'Marker','o','MarkerSize',s.pref.marker_size,'Parent',s.handles.ax1,'MarkerEdgeColor','r','LineStyle','none');
+                    set(s.handles.ax1_B_spikes,'XData',s.time(B),'YData',V(B),'Marker','o','MarkerSize',s.pref.marker_size,'Parent',s.handles.ax1,'MarkerEdgeColor','b','LineStyle','none');
+                else
+                    
+                    % no need to autosort, just show the identified peaks
+                    set(s.handles.ax1_A_spikes,'XData',NaN,'YData',NaN);
+                    set(s.handles.ax1_B_spikes,'XData',NaN,'YData',NaN);
+                    set(s.handles.ax1_all_spikes,'XData',s.time(s.loc),'YData',V(s.loc),'Marker','o','MarkerSize',s.pref.marker_size,'Parent',s.handles.ax1,'MarkerEdgeColor','m','LineStyle','none');
+                end
 
 % this exception exists because XLimits weirdly go to [0 1] and "manual" even though I don't set them. 
 xl  =get(s.handles.ax1,'XLim');
 if xl(2) == 1
-    set(s.handles.ax1,'XLim',[min(time) max(time)]);
+    set(s.handles.ax1,'XLim',[min(s.time) max(s.time)]);
     set(s.handles.ax1,'XLimMode','auto')
 else
     % unless the X-limits have been manually changed, fix them
     if strcmp(get(s.handles.ax1,'XLimMode'),'auto')
-        set(s.handles.ax1,'XLim',[min(time) max(time)]);
+        set(s.handles.ax1,'XLim',[min(s.time) max(s.time)]);
         % we spoof this because we want to distinguish this case from when the user zooms
         set(s.handles.ax1,'XLimMode','auto')
     end

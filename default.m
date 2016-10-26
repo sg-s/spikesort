@@ -15,10 +15,14 @@ deltat = 1e-4; % what is the time step of the data?
 
 %% ~~~~~~~~~~~~~~~~~  GENERAL  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-ssDebug = false; 			% should spikesort run in debug mode?
-useFastBandPass = true; 	% use a fast, FFT-based bandPass? 
+ssDebug = true; 			% should spikesort run in debug mode?
+useFastBandPass = false; 	% use a fast, FFT-based bandPass? 
 
 %% ~~~~~~~~~~~~~~~~~  DISPLAY  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+putative_spike_colour = 'm';
+A_spike_colour = 'r';
+B_spike_colour = 'b';
 
 % display preferences
 marker_size = 5; 			% how big the spike indicators are
@@ -67,5 +71,12 @@ template_amount = 0;
 use_off_template = false;
 use_on_template = false;
 
+%% ~~~~~~~~~~~~~~~~~  tSNE parameters ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+no_dims = 2;
+init_dims = 10;
+perplexity = 60;
+theta = .5;
+max_iter = 400;
 
 

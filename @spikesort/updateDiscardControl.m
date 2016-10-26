@@ -1,7 +1,12 @@
 function updateDiscardControl(s,~,~)
 
 % unpack data
-spikes = s.current_data.spikes;
+try
+    spikes = s.current_data.spikes;
+catch
+    set(s.handles.discard_control,'Value',0,'String','Discard','FontWeight','normal')
+    return
+end
 
 if isfield(spikes,'discard')
     discard_this = false;

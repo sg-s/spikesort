@@ -1,4 +1,4 @@
-% PCA
+% spikesort plugin
 % plugin_type = 'dim-red';
 % plugin_dimension = 2; 
 % 
@@ -9,6 +9,6 @@
 % 
 % This work is licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License. 
 % To view a copy of this license, visit http://creativecommons.org/licenses/by-nc-sa/4.0/.
-function ssdm_2DPCA(s)
-R = pca(V_snippets);
+function PCA(s)
+R = pca(s.V_snippets);
 s.R = R(:,1:2)';
