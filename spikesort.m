@@ -857,7 +857,7 @@ discard_control = uicontrol(handles.main_fig,'units','normalized','Position',[.1
 
             % also add all the control signals
             try
-                set(stim_channel,'String',[fl(:); OutputChannelNames]);
+                set(stim_channel,'String',[fl(:); OutputChannelNames(:)]);
             catch
                 set(stim_channel,'String',[fl(:) OutputChannelNames]);
             end
