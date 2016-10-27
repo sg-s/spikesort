@@ -12,3 +12,6 @@ method(s);
  
 s.removeDoublets;
  
+% also calculate the spike amplitudes 
+s.current_data.spikes(s.this_paradigm).amplitudes_A(s.this_trial,s.A) = s.spikeAmplitudes(s.filtered_voltage,s.A);
+s.current_data.spikes(s.this_paradigm).amplitudes_B(s.this_trial,s.B) = s.spikeAmplitudes(s.filtered_voltage,s.B);

@@ -598,95 +598,6 @@
 
     end
 
-    function modify(p)
-        % check that the point is within the axes
-        ylimits = get(handles.ax1,'YLim');
-        if p(2) > ylimits(2) || p(2) < ylimits(1)
-            console('Rejecting point: Y exceeded')
-            return
-        end
-        xlimits = get(handles.ax1,'XLim');
-        if p(1) > xlimits(2) || p(1) < xlimits(1)
-            console('Rejecting point: X exceeded')
-            return
-        end
-
-        p(1) = p(1)/pref.deltat;
-        xrange = (xlimits(2) - xlimits(1))/pref.deltat;
-        yrange = ylimits(2) - ylimits(1);
-        % get the width over which to search for spikes dynamically from the zoom factor
-        s = floor((.005*xrange));
-        if get(mode_new_A,'Value')==1
-            % snip out a small waveform around the point
-            if pref.invert_V
-                [~,loc] = min(V(floor(p(1)-s:p(1)+s)));
-            else
-                [~,loc] = max(V(floor(p(1)-s:p(1)+s)));
-            end
-            spikes(s.this_paradigm).A(ThisTrial,-s+loc+floor(p(1))) = 1;
-            A = find(spikes(s.this_paradigm).A(ThisTrial,:));
-            spikes(s.this_paradigm).amplitudes_A(ThisTrial,A)  =  ssdm_1DAmplitudes(V,A);
-        elseif get(mode_new_B,'Value')==1
-            % snip out a small waveform around the point
-            if pref.invert_V
-                [~,loc] = min(V(floor(p(1)-s:p(1)+s)));
-            else
-                [~,loc] = max(V(floor(p(1)-s:p(1)+s)));
-            end
-            spikes(s.this_paradigm).B(ThisTrial,-s+loc+floor(p(1))) = 1;
-            B = find(spikes(s.this_paradigm).B(ThisTrial,:));
-            spikes(s.this_paradigm).amplitudes_B(ThisTrial,B)  =  ssdm_1DAmplitudes(V,B);
-        elseif get(mode_delete,'Value')==1
-            % find the closest spike
-            Aspiketimes = find(spikes(s.this_paradigm).A(ThisTrial,:));
-            Bspiketimes = find(spikes(s.this_paradigm).B(ThisTrial,:));
-
-            dA= (((Aspiketimes-p(1))/(xrange)).^2  + ((V(Aspiketimes) - p(2))/(5*yrange)).^2);
-            dB= (((Bspiketimes-p(1))/(xrange)).^2  + ((V(Bspiketimes) - p(2))/(5*yrange)).^2);
-            dist_to_A = min(dA);
-            dist_to_B = min(dB);
-            if dist_to_A < dist_to_B
-                [~,closest_spike] = min(dA);
-                spikes(s.this_paradigm).A(ThisTrial,Aspiketimes(closest_spike)) = 0;
-                spikes(s.this_paradigm).N(ThisTrial,Aspiketimes(closest_spike)) = 1;
-                A = find(spikes(s.this_paradigm).A(ThisTrial,:));
-                spikes(s.this_paradigm).amplitudes_A(ThisTrial,A)  =  ssdm_1DAmplitudes(V,A);
-            else
-                [~,closest_spike] = min(dB);
-                spikes(s.this_paradigm).B(ThisTrial,Bspiketimes(closest_spike)) = 0;
-                spikes(s.this_paradigm).N(ThisTrial,Aspiketimes(closest_spike)) = 1;
-                B = find(spikes(s.this_paradigm).B(ThisTrial,:));
-                spikes(s.this_paradigm).amplitudes_B(ThisTrial,B)  =  ssdm_1DAmplitudes(V,B);
-            end
-        elseif get(mode_A2B,'Value')==1 
-            % find the closest A spike
-            Aspiketimes = find(spikes(s.this_paradigm).A(ThisTrial,:));
-            dA= (((Aspiketimes-p(1))/(xrange)).^2  + ((V(Aspiketimes) - p(2))/(5*yrange)).^2);
-            [~,closest_spike] = min(dA);
-            spikes(s.this_paradigm).A(ThisTrial,Aspiketimes(closest_spike)) = 0;
-            spikes(s.this_paradigm).B(ThisTrial,Aspiketimes(closest_spike)) = 1;
-            A = find(spikes(s.this_paradigm).A(ThisTrial,:));
-            spikes(s.this_paradigm).amplitudes_A(ThisTrial,A)  =  ssdm_1DAmplitudes(V,A);
-            B = find(spikes(s.this_paradigm).B(ThisTrial,:));
-            spikes(s.this_paradigm).amplitudes_B(ThisTrial,B)  =  ssdm_1DAmplitudes(V,B);
-
-        elseif get(mode_B2A,'Value')==1
-            % find the closest B spike
-            Bspiketimes = find(spikes(s.this_paradigm).B(ThisTrial,:));
-            dB= (((Bspiketimes-p(1))/(xrange)).^2  + ((V(Bspiketimes) - p(2))/(5*yrange)).^2);
-            [~,closest_spike] = min(dB);
-            spikes(s.this_paradigm).A(ThisTrial,Bspiketimes(closest_spike)) = 1;
-            spikes(s.this_paradigm).B(ThisTrial,Bspiketimes(closest_spike)) = 0;
-            A = find(spikes(s.this_paradigm).A(ThisTrial,:));
-            spikes(s.this_paradigm).amplitudes_A(ThisTrial,A)  =  ssdm_1DAmplitudes(V,A);
-            B = find(spikes(s.this_paradigm).B(ThisTrial,:));
-            spikes(s.this_paradigm).amplitudes_B(ThisTrial,B)  =  ssdm_1DAmplitudes(V,B);
-        end
-
-        % update plot
-        plotResp(@modify);
-
-    end
 
     function modifyTraceDiscard(src,~)
         % first get the viewport
@@ -730,11 +641,6 @@
         plotResp(@modifyTraceDiscard);
     end
 
-    function mousecallback(~,~)
-        p = get(handles.ax1,'CurrentPoint');
-        p = p(1,1:2);
-        modify(p)
-    end
 
     
 
@@ -750,69 +656,6 @@
 
 
 
-
-    function scroll(~,event)
-        xlimits = get(handles.ax1,'XLim');
-        xrange = (xlimits(2) - xlimits(1));
-        scroll_amount = event.VerticalScrollCount;
-        if pref.smart_scroll
-            if scroll_amount < 0
-                if xlimits(1) <= min(time)
-                    return
-                else
-                    newlim(1) = max([min(time) (xlimits(1)-.2*xrange)]);
-                    newlim(2) = newlim(1)+xrange;
-                end
-            else
-                if xlimits(2) >= max(time)
-                    return
-                else
-                    newlim(2) = min([max(time) (xlimits(2)+.2*xrange)]);
-                    newlim(1) = newlim(2)-xrange;
-                end
-            end
-        else
-            % find number of spikes in view
-            n_spikes_in_view = length(loc(loc>(xlimits(1)/pref.deltat) & loc<(xlimits(2)/pref.deltat)));
-            if scroll_amount > 0
-                try
-                    newlim(1) = min([max(time) (xlimits(1)+.2*xrange)]);
-                    newlim(2) = loc(find(loc > newlim(1)/pref.deltat,1,'first') + n_spikes_in_view)*pref.deltat;
-                catch
-                end
-            else
-                try
-                    newlim(2) = max([min(time)+xrange (xlimits(2)-.2*xrange)]);
-                    newlim(1) = loc(find(loc < newlim(2)/pref.deltat,1,'last') - n_spikes_in_view)*pref.deltat;
-                catch
-                end
-            end
-        end
-        
-        try
-            set(handles.ax1,'Xlim',newlim)
-        catch
-        end
-
-        xlim = get(handles.ax1,'XLim');
-        if xlim(1) < min(time)
-            xlim(1) = min(time);
-        end
-        if xlim(2) > max(time)
-            xlim(2) = max(time);
-        end
-        xlim(2) = (floor(xlim(2)/pref.deltat))*pref.deltat;
-        xlim(1) = (floor(xlim(1)/pref.deltat))*pref.deltat;
-        ylim(2) = max(V(find(time==xlim(1)):find(time==xlim(2))));
-        ylim(1) = min(V(find(time==xlim(1)):find(time==xlim(2))));
-        yr = 2*std(V(find(time==xlim(1)):find(time==xlim(2))));
-        if yr==0
-            set(handles.ax1,'YLim',[ylim(1)-1 ylim(2)+1]);
-        else
-            set(handles.ax1,'YLim',[ylim(1)-yr ylim(2)+yr]);
-        end
-
-    end
 
     function templateMatch(~,~)
         plotResp(@templateMatch);

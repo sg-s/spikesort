@@ -63,10 +63,10 @@ classdef spikesort < handle & matlab.mixin.CustomDisplay
 
 
     methods
-        function s = spikesort
+        function s = spikesort()
 
             % check for dependencies
-            toolboxes = {'srinivas.gs_mtools','spikesort','t-sne','bhtsne'};
+            toolboxes = {'srinivas.gs_mtools','spikesort','bhtsne'};
             build_numbers = checkDeps(toolboxes);
             s.version_name = strcat('spikesort for Kontroller (Build-',oval(build_numbers(2)),')'); 
 
@@ -102,7 +102,6 @@ classdef spikesort < handle & matlab.mixin.CustomDisplay
 
         function s = set.A(s,value)
             s.A = value;
-            s.saveData;
             if isempty(value)
                 return
             else
@@ -114,7 +113,6 @@ classdef spikesort < handle & matlab.mixin.CustomDisplay
 
         function s = set.B(s,value)
             s.B = value;
-            s.saveData;
             if isempty(value)
                 return
             else
@@ -135,6 +133,25 @@ classdef spikesort < handle & matlab.mixin.CustomDisplay
                 set(s.handles.ax1_all_spikes,'Marker','o','Color',s.pref.putative_spike_colour,'LineStyle','none')
             end
         end % end set loc
+
+        function delete(s)
+            if s.pref.ssDebug > 5
+                cprintf('green','[INFO] ')
+                cprintf('text','spikesort shutting down \n')
+            end
+
+            % save everything
+            s.saveData;
+
+            % try to shut down the GUI
+            try
+                delete(s.handles.main_fig)
+            catch
+            end
+
+            delete(s)
+        end
+
     end % end general methods
 
 end % end classdef

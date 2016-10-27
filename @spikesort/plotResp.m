@@ -178,4 +178,6 @@ if find_spikes
 end
 
 % fix the axis
-set(s.handles.ax1,'XLim',[min(s.time) max(s.time)]);
+if all(get(s.handles.ax1,'XLim') == [0 1])
+    set(s.handles.ax1,'XLim',[min(s.time) max(s.time)]);
+end

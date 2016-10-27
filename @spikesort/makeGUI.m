@@ -5,7 +5,7 @@ function [s] = makeGUI(s)
 
 
 % make the master figure, and the axes to plot the voltage traces
-handles.main_fig = figure('position',[50 50 1200 700], 'Toolbar','figure','Menubar','none','Name',s.version_name,'NumberTitle','off','IntegerHandle','off','WindowButtonDownFcn',@mousecallback,'WindowScrollWheelFcn',@s.scroll,'CloseRequestFcn',@s.close);
+handles.main_fig = figure('position',[50 50 1200 700], 'Toolbar','figure','Menubar','none','Name',s.version_name,'NumberTitle','off','IntegerHandle','off','WindowButtonDownFcn',@s.mouseCallback,'WindowScrollWheelFcn',@s.scroll,'CloseRequestFcn',@s.close);
 temp =  findall(handles.main_fig,'Type','uitoggletool','-or','Type','uipushtool');
 
 % make plots menu

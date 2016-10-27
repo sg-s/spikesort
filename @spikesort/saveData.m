@@ -1,9 +1,13 @@
 function saveData(s)
 
+if isempty(s.current_data)
+	return
+end
+
 % unpack
 spikes = s.current_data.spikes;
 
-if isempty(s.time)
+if isempty(s.time) 
 	return
 end
 
