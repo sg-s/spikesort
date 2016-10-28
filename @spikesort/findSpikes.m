@@ -5,16 +5,18 @@
 % 
 % This work is licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License. 
 % To view a copy of this license, visit http://creativecommons.org/licenses/by-nc-sa/4.0/.
-function loc = findSpikes(V)
+function findSpikes(s,~,~)
 
-pref = readPref(fileparts(fileparts(which(mfilename))));
+pref = s.pref;
+V = s.filtered_voltage;
 
-% get param
-mpp = pref.minimum_peak_prominence;
-if isstr(mpp)
-    % guess some nice value
-    mpp = nanstd(V)/2;
+if get(s.handles.prom_auto_control,'Value')
+	%guess some nice value
+	mpp = nanstd(V)/2;
+else
+	mpp = get(s.handles.spike_prom_slider,'Value');
 end
+
 mpd = pref.minimum_peak_distance;
 mpw = pref.minimum_peak_width;
 v_cutoff = pref.V_cutoff;
@@ -35,3 +37,4 @@ if pref.ssDebug
     cprintf('text',[' found ' oval(length(loc)) ' spikes'])
 end
 
+s.loc = loc;

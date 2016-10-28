@@ -80,6 +80,11 @@ if get(s.handles.filtermode,'Value') == 1
     end
 end 
 
+% update the prominence bounds based on the data
+set(s.handles.prom_ub_control,'String',nanstd(s.filtered_voltage)*5)
+set(s.handles.spike_prom_slider,'Max',nanstd(s.filtered_voltage*5))
+set(s.handles.spike_prom_slider,'Value',nanstd(s.filtered_voltage))
+
 
 % if strcmp(get(s.handles.remove_artifacts_menu,'Checked'),'on')
 %     this_control = ControlParadigm(s.this_paradigm).Outputs;
@@ -169,7 +174,7 @@ if find_spikes
         cprintf('text',' Finding spikes...')
     end
     tic;
-    s.loc = findSpikes(s.filtered_voltage); 
+    s.findSpikes;
     t = toc;
     if s.pref.ssDebug 
         fprintf([' DONE in ' oval(t) ' sec'])

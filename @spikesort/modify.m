@@ -10,12 +10,12 @@ V = s.filtered_voltage;
 % check that the point is within the axes
 ylimits = get(s.handles.ax1,'YLim');
 if p(2) > ylimits(2) || p(2) < ylimits(1)
-    console('Rejecting point: Y exceeded')
+    % console('Rejecting point: Y exceeded')
     return
 end
 xlimits = get(s.handles.ax1,'XLim');
 if p(1) > xlimits(2) || p(1) < xlimits(1)
-    console('Rejecting point: X exceeded')
+    % console('Rejecting point: X exceeded')
     return
 end
 

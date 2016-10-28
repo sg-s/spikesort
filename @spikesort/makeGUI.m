@@ -5,7 +5,7 @@ function [s] = makeGUI(s)
 
 
 % make the master figure, and the axes to plot the voltage traces
-handles.main_fig = figure('position',[50 50 1200 700], 'Toolbar','figure','Menubar','none','Name',s.version_name,'NumberTitle','off','IntegerHandle','off','WindowButtonDownFcn',@s.mouseCallback,'WindowScrollWheelFcn',@s.scroll,'CloseRequestFcn',@s.close);
+handles.main_fig = figure('position',[50 50 1200 700], 'Toolbar','figure','Menubar','none','Name',s.version_name,'NumberTitle','off','IntegerHandle','off','WindowButtonDownFcn',@s.mouseCallback,'WindowScrollWheelFcn',@s.scroll,'CloseRequestFcn',@s.close,'Color','w');
 temp =  findall(handles.main_fig,'Type','uitoggletool','-or','Type','uipushtool');
 
 % make plots menu
@@ -47,7 +47,7 @@ end
 % make all the panels
 
 % datapanel (allows you to choose what to plot where)
-handles.datapanel = uipanel('Title','Data','Position',[.8 .57 .16 .4]);
+handles.datapanel = uipanel('Title','Data','Position',[.85 .57 .14 .4],'BackgroundColor',[1 1 1]);
 uicontrol(handles.datapanel,'units','normalized','Position',[.02 .9 .510 .10],'Style', 'text', 'String', 'Control Signal','FontSize',s.pref.fs,'FontWeight',s.pref.fw);
 handles.valve_channel = uicontrol(handles.datapanel,'units','normalized','Position',[.03 .68 .910 .25],'Style', 'listbox', 'String', '','FontSize',s.pref.fs,'FontWeight',s.pref.fw,'Callback',@plotValve,'Min',0,'Max',2);
 uicontrol(handles.datapanel,'units','normalized','Position',[.01 .56 .510 .10],'Style', 'text', 'String', 'Stimulus','FontSize',s.pref.fs,'FontWeight',s.pref.fw);
@@ -63,7 +63,7 @@ uicontrol(handles.main_fig,'units','normalized','Position',[.05 .93 .03 .05],'St
 uicontrol(handles.main_fig,'units','normalized','Position',[.19 .93 .03 .05],'Style', 'pushbutton', 'String', '>','FontSize',s.pref.fs,'FontWeight',s.pref.fw,'callback',@s.loadFile);
 
 % paradigms and trials
-handles.datachooserpanel = uipanel('Title','Paradigms and Trials','Position',[.03 .75 .25 .16]);
+handles.datachooserpanel = uipanel('Title','Paradigms and Trials','Position',[.03 .75 .25 .16],'BackgroundColor',[1 1 1]);
 handles.paradigm_chooser = uicontrol(handles.datachooserpanel,'units','normalized','Position',[.25 .75 .5 .20],'Style', 'popupmenu', 'String', 'Choose Paradigm','callback',@s.chooseParadigmCallback,'Enable','off');
 handles.next_paradigm = uicontrol(handles.datachooserpanel,'units','normalized','Position',[.75 .65 .15 .33],'Style', 'pushbutton', 'String', '>','callback',@s.chooseParadigmCallback,'Enable','off');
 handles.prev_paradigm = uicontrol(handles.datachooserpanel,'units','normalized','Position',[.05 .65 .15 .33],'Style', 'pushbutton', 'String', '<','callback',@s.chooseParadigmCallback,'Enable','off');
@@ -72,8 +72,21 @@ handles.trial_chooser = uicontrol(handles.datachooserpanel,'units','normalized',
 handles.next_trial = uicontrol(handles.datachooserpanel,'units','normalized','Position',[.75 .15 .15 .33],'Style', 'pushbutton', 'String', '>','callback',@s.chooseTrialCallback,'Enable','off');
 handles.prev_trial = uicontrol(handles.datachooserpanel,'units','normalized','Position',[.05 .15 .15 .33],'Style', 'pushbutton', 'String', '<','callback',@s.chooseTrialCallback,'Enable','off');
 
+
+% spike detection panel
+handles.spike_detection_panel = uipanel('Title','Spike detection','Position',[.3 .77 .3 .2],'BackgroundColor',[1 1 1]);
+uicontrol(handles.spike_detection_panel,'units','normalized','Position',[0 .88 .5 .1],'Style','text','String','Peak Prominence:','FontSize',s.pref.fs,'FontWeight','normal','BackgroundColor','w')
+handles.prom_auto_control = uicontrol(handles.spike_detection_panel,'units','normalized','Position',[.5 .8 .3 .2],'Style','togglebutton','String','AUTO','FontSize',s.pref.fs,'Callback',@s.togglePromControl);
+handles.prom_ub_control = uicontrol(handles.spike_detection_panel,'units','normalized','Position',[.73 .65 .2 .15],'Style','edit','String','1','FontSize',s.pref.fs,'Callback',@s.updateSpikePromSlider);
+handles.spike_prom_slider = uicontrol(handles.spike_detection_panel,'units','normalized','Position',[.01 .63 .7 .15],'Style','Slider','Min',0,'Max',1,'Value',.5,'Callback',@s.findSpikes);
+try    % R2013b and older
+   addlistener(handles.spike_prom_slider,'ActionEvent',@s.findSpikes);
+catch  % R2014a and newer
+   addlistener(handles.spike_prom_slider,'ContinuousValueChange',@s.findSpikes);
+end
+
 % dimension reduction and clustering panels
-handles.dimredpanel = uipanel('Title','Dimensionality Reduction','Position',[.25 .92 .17 .07]);
+handles.dimredpanel = uipanel('Title','Dimensionality Reduction','Position',[.3 .67 .3 .07],'BackgroundColor',[1 1 1]);
 all_plugin_names = {s.installed_plugins.name};
 dim_red_plugins = all_plugin_names(find(strcmp({s.installed_plugins.plugin_type},'dim-red')));
 
@@ -83,18 +96,17 @@ handles.method_control = uicontrol(handles.dimredpanel,'Style','popupmenu','Stri
 all_plugin_names = {s.installed_plugins.name};
 cluster_plugins = all_plugin_names(find(strcmp({s.installed_plugins.plugin_type},'cluster')));
 
-handles.cluster_panel = uipanel('Title','Clustering','Position',[.43 .92 .17 .07]);
+handles.cluster_panel = uipanel('Title','Clustering','Position',[.30 .57 .3 .07],'BackgroundColor',[1 1 1]);
 handles.cluster_control = uicontrol(handles.cluster_panel,'Style','popupmenu','String',cluster_plugins,'units','normalized','Position',[.02 .6 .9 .2],'Callback',@s.clusterCallback,'Enable','off','FontSize',20);
 
 
 % metadata panel
-handles.metadata_panel = uipanel('Title','Metadata','Position',[.29 .57 .21 .15]);
+handles.metadata_panel = uipanel('Title','Metadata','Position',[.62 .57 .11 .4],'BackgroundColor',[1 1 1]);
 handles.metadata_text_control = uicontrol(handles.metadata_panel,'Style','edit','String','','units','normalized','Position',[.03 .3 .94 .7],'Callback',@s.updateMetadata,'Enable','off','Max',5,'Min',1,'HorizontalAlignment','left');
-uicontrol(handles.metadata_panel,'Style','pushbutton','String','Generate Summary','units','normalized','Position',[.03 .035 .45 .2],'Callback',@s.generateSummary);
-
+uicontrol(handles.metadata_panel,'Style','pushbutton','String','Generate Summary','units','normalized','Position',[.03 .035 .94 .1],'Callback',@s.generateSummary);
 
 % manual override panel
-handles.manualpanel = uibuttongroup(handles.main_fig,'Title','Manual Override','Position',[.68 .56 .11 .34]);
+handles.manualpanel = uibuttongroup(handles.main_fig,'Title','Manual Override','Position',[.735 .57 .11 .4]);
 uicontrol(handles.manualpanel,'units','normalized','Position',[.1 7/8 .8 1/9],'Style','pushbutton','String','Mark All in View','Callback',@s.markAllCallback);
 handles.mode_new_A = uicontrol(handles.manualpanel,'units','normalized','Position',[.1 6/8 .8 1/9], 'Style', 'radiobutton', 'String', '+A','FontSize',s.pref.fs);
 handles.mode_new_B = uicontrol(handles.manualpanel,'units','normalized','Position',[.1 5/8 .8 1/9], 'Style', 'radiobutton', 'String', '+B','FontSize',s.pref.fs);
@@ -119,7 +131,7 @@ handles.discard_control = uicontrol(handles.main_fig,'units','normalized','Posit
 % disable tagging on non unix systems
 if ispc
 else
-    handles.tag_control = uicontrol(handles.metadata_panel,'Style','edit','String','+Tag, or -Tag','units','normalized','Position',[.5 .035 .45 .2],'Callback',@s.addTag);
+    handles.tag_control = uicontrol(handles.metadata_panel,'Style','edit','String','+Tag, or -Tag','units','normalized','Position',[.03 .15 .9 .1],'Callback',@s.addTag);
 
     % modify environment to get paths for non-matlab code right
     if ~ismac

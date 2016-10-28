@@ -66,9 +66,9 @@ classdef spikesort < handle & matlab.mixin.CustomDisplay
         function s = spikesort()
 
             % check for dependencies
-            toolboxes = {'srinivas.gs_mtools','spikesort','bhtsne'};
-            build_numbers = checkDeps(toolboxes);
-            s.version_name = strcat('spikesort for Kontroller (Build-',oval(build_numbers(2)),')'); 
+            % toolboxes = {'srinivas.gs_mtools','spikesort','bhtsne'};
+            % build_numbers = checkDeps(toolboxes);
+            % s.version_name = strcat('spikesort for Kontroller (Build-',oval(build_numbers(2)),')'); 
 
             if verLessThan('matlab', '8.0.1')
                 error('Need MATLAB 2014b or better to run')
@@ -126,6 +126,7 @@ classdef spikesort < handle & matlab.mixin.CustomDisplay
         function s = set.loc(s,value)
             s.loc = value;
             if isempty(value)
+                set(s.handles.ax1_all_spikes,'XData',NaN,'YData',NaN);
                 return
             else
                 
