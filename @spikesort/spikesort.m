@@ -20,10 +20,10 @@ classdef spikesort < handle & matlab.mixin.CustomDisplay
         path_name
 
         % data handling
-        current_data
-        OutputChannelNames
+        output_channel_names
+        sampling_rate
 
-        % core variables for current trace
+        % current voltage trace
         R  % this holds the dimensionality reduced data
         filtered_voltage  % holds the current trace that is shown on screen
         raw_voltage
@@ -31,6 +31,10 @@ classdef spikesort < handle & matlab.mixin.CustomDisplay
         V_snippets % matrix of snippets around spike peaks
         time % vector of timestamps
         loc  % holds current spike times
+
+        % auxillary current data
+        stimulus
+        control_signals
         
 
         A % stores A spikes of this trace
@@ -44,7 +48,8 @@ classdef spikesort < handle & matlab.mixin.CustomDisplay
         % plugins
         installed_plugins
 
-
+        % some control variables
+        filter_trace = true;
 
         % UI
         handles % a structure that handles everything else
@@ -134,6 +139,57 @@ classdef spikesort < handle & matlab.mixin.CustomDisplay
                 set(s.handles.ax1_all_spikes,'Marker','o','Color',s.pref.putative_spike_colour,'LineStyle','none')
             end
         end % end set loc
+
+        function s = set.raw_voltage(s,value)
+
+            s.raw_voltage = value;
+
+            if isempty(value)
+                return
+            else
+                assert(isvector(value),'Raw voltage is not a vector')
+            end
+
+            
+
+            % when the raw voltage is set, we filter it (if need be), and display it
+            if s.filter_trace
+                if s.pref.ssDebug 
+                    cprintf('green','\n[INFO]')
+                    cprintf('text',' filtering trace...')
+                end
+
+                lc = 1/s.pref.band_pass(1);
+                lc = floor(lc/s.pref.deltat);
+                hc = 1/s.pref.band_pass(2);
+                hc = floor(hc/s.pref.deltat);
+                if s.pref.useFastBandPass
+                    [s.filtered_voltage,s.LFP] = fastBandPass(s.raw_voltage,lc,hc);
+                    error('this case is not usable yet. need to clean up trace...')
+                else
+                    [s.filtered_voltage,s.LFP] = bandPass(s.raw_voltage,lc,hc);
+                end
+
+            else
+                % do nothing
+            end  
+
+            s.time = s.pref.deltat*(1:length(s.raw_voltage));
+
+            % and display it
+            if s.filter_trace
+                set(s.handles.ax1_data,'XData',s.time,'YData',s.filtered_voltage,'Color','k','Parent',s.handles.ax1);
+            else
+                set(s.handles.ax1_data,'XData',s.time,'YData',s.raw_voltage,'Color','k','Parent',s.handles.ax1);
+            end
+
+            % fix the axis
+            if all(get(s.handles.ax1,'XLim') == [0 1])
+                set(s.handles.ax1,'XLim',[min(s.time) max(s.time)]);
+            end
+
+
+        end
 
         function delete(s)
             if s.pref.ssDebug > 5

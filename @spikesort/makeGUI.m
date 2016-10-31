@@ -118,7 +118,7 @@ uicontrol(handles.manualpanel,'units','normalized','Position',[.1 0/8 .8 1/9],'S
 
 
 % various toggle switches and pushbuttons
-handles.filtermode = uicontrol(handles.main_fig,'units','normalized','Position',[.03 .69 .12 .05],'Style','togglebutton','String','Filter','Value',1,'Callback',@s.plotResp,'Enable','off');
+handles.filtermode = uicontrol(handles.main_fig,'units','normalized','Position',[.03 .69 .12 .05],'Style','togglebutton','String','Filter','Value',s.filter_trace,'Callback',@s.plotResp,'Enable','off');
 handles.findmode = uicontrol(handles.main_fig,'units','normalized','Position',[.16 .69 .12 .05],'Style','togglebutton','String','Find Spikes','Value',1,'Callback',@s.plotResp,'Enable','off');
 
 handles.redo_control = uicontrol(handles.main_fig,'units','normalized','Position',[.03 .64 .12 .05],'Style','pushbutton','String','Redo','Value',0,'Callback',@s.redo,'Enable','off');

@@ -115,17 +115,57 @@ brew install tag
 
 ## Plugin architecture
 
-`spikesort` is built around a plugin architecture for the two most important things it does: 
+`spikesort` is built around a plugin architecture for the three most important things it does: 
 
-* dimensionality reduction of spike shapes
-* clustering 
+* Data handling
+* Dimensionality reduction of spike shapes
+* Clustering 
 
 ### Writing your own plugins
 
-Writing your own plugins is really easy: `spikesort` does the heavy lifting in figuring out how to talk to it, and all you have to is write a function that conforms to a few standards:
+Writing your own plugins is really easy: plugins are methods that you can simply drop into the spikesort classdef folder (`@spikesort`), and `spikesort` automatically figures out which methods are plugins (see naming convention below)
 
-#### Naming
-Dimensionality reduction plugins have to be called `ssdm_foo.m` and clustering method plugins have to be called `sscm_bar.m`. Put them in the same folder as 	`spikesort` and it will automatically include them. 
+#### Naming and Plugin declaration
+Plugins can be named whatever you want, though you should use `camelCase` for all methods. The first three lines of every plugin should conform to the following convention:
+
+```matlab
+% spikesort plugin
+% plugin_type = 'dim-red';
+% plugin_dimension = 2; 
+% 
+
+```
+
+The first line identifies the method as a spikesort plugin, and the second line determines the type of plugin it is. Currently, plugins can be of four types:
+
+1. `dim-red`
+2. `cluster`
+3. `read-data`
+4. `save-data`
+5. `load-file`
+
+If you are writing a `read-data` or `save-data` or `load-file` plugin, the convention for the first three lines is as follows:
+
+ ```matlab
+% spikesort plugin
+% plugin_type = 'load-file';
+% data_extension = 'kontroller'
+% 
+```
+`data_extension` identifies the extension that `spikesort` binds that plugin to. 
+
+`load-file` plugins are expected to populate the following fields in the `spikesort` object:
+
+```
+output_channel_names
+sampling_rate
+this_trial
+this_paradigm
+handles.paradigm_chooser.String
+```
+
+
+
 
 #### Outputs
 A dimensionality reduction plugin is a function must return a variable called `R`, that is usually a vector or a matrix (but can be whatever you want)

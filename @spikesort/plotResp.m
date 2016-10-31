@@ -35,7 +35,7 @@ plotwhat = get(s.handles.resp_channel,'String');
 plotthis = plotwhat{get(s.handles.resp_channel,'Value')};
 temp = data(s.this_paradigm).(plotthis);
 temp = temp(s.this_trial,:);
-s.time = s.pref.deltat*(1:length(temp));
+
 
 s.raw_voltage = temp;
 
@@ -56,29 +56,6 @@ if isfield(spikes,'discard')
     end
 end
 
-
-
-if get(s.handles.filtermode,'Value') == 1
-    if s.pref.ssDebug 
-        cprintf('green','\n[INFO]')
-        cprintf('text',' filtering trace...')
-    end
-    tic
-    lc = 1/s.pref.band_pass(1);
-    lc = floor(lc/s.pref.deltat);
-    hc = 1/s.pref.band_pass(2);
-    hc = floor(hc/s.pref.deltat);
-    if s.pref.useFastBandPass
-        [s.filtered_voltage,s.LFP] = fastBandPass(s.raw_voltage,lc,hc);
-        error('this case is not usable yet. need to clean up trace...')
-    else
-        [s.filtered_voltage,s.LFP] = bandPass(s.raw_voltage,lc,hc);
-    end
-    t = toc;
-    if s.pref.ssDebug 
-        fprintf([' DONE in ' oval(t) ' sec'])
-    end
-end 
 
 % update the prominence bounds based on the data
 set(s.handles.prom_ub_control,'String',nanstd(s.filtered_voltage)*5)
@@ -182,7 +159,4 @@ if find_spikes
     set(s.handles.method_control,'Enable','on')
 end
 
-% fix the axis
-if all(get(s.handles.ax1,'XLim') == [0 1])
-    set(s.handles.ax1,'XLim',[min(s.time) max(s.time)]);
-end
+

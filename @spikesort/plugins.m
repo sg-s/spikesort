@@ -1,11 +1,13 @@
 %% plugins.m
 % shows the installed plugins with associated methods
+% plugins can 
 % 
 function varargout = plugins(s)
 
 p.name = '';
 p.plugin_type = '';
 p.plugin_dimension = [];
+p.data_extension = '';
 
 
 if ~nargout
@@ -26,6 +28,7 @@ for i = 1:length(m)
     p(c).name = strrep(m(i).name,'.m','');
     
     plugin_type = 'unknown';
+    data_extension = 'n/a';
     plugin_dimension = NaN;
 
     eval(strrep(t{2},'%',''));
@@ -33,6 +36,7 @@ for i = 1:length(m)
 
     p(c).plugin_dimension = plugin_dimension;
     p(c).plugin_type = plugin_type;
+    p(c).data_extension = data_extension;
     c = c + 1;
 end
 
