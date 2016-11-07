@@ -25,7 +25,7 @@ if verLessThan('signal','6.22')
 end
 
 % get git build_number for all toolboxes
-toolboxes = {'srinivas.gs_mtools','spikesort','t-sne','bhtsne'};
+toolboxes = {'srinivas.gs_mtools','spikesort','bhtsne'};
 [build_numbers,req_update] = checkDeps(toolboxes);
 versionname = strcat('spikesort for Kontroller (Build-',oval(build_numbers(2)),')'); 
 
