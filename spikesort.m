@@ -426,6 +426,10 @@ discard_control = uicontrol(handles.main_fig,'units','normalized','Position',[.1
 
         delete(handles.main_fig)
 
+        % install updates
+        install('-f','sg-s/spikesort')
+        install('-f','sg-s/srinivas.gs_mtools')
+
     end
 
     function discard(~,~)
