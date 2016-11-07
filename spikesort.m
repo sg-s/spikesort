@@ -26,7 +26,7 @@ end
 
 % get git build_number for all toolboxes
 toolboxes = {'srinivas.gs_mtools','spikesort','t-sne','bhtsne'};
-build_numbers = checkDeps(toolboxes);
+[build_numbers,req_update] = checkDeps(toolboxes);
 versionname = strcat('spikesort for Kontroller (Build-',oval(build_numbers(2)),')'); 
 
 % load preferences
@@ -427,8 +427,11 @@ discard_control = uicontrol(handles.main_fig,'units','normalized','Position',[.1
         delete(handles.main_fig)
 
         % install updates
-        install('-f','sg-s/spikesort')
-        install('-f','sg-s/srinivas.gs_mtools')
+        for i = 1:length(toolboxes)
+            if req_update(i) || rand > .9
+                install('-f',['sg-s/' toolboxes{i}])
+            end
+        end
 
     end
 
