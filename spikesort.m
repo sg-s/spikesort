@@ -9,7 +9,7 @@
 function [] = spikesort()
 
 % check dependencies 
-dependencies = {'prettyFig','manualCluster','computeOnsOffs','dataHash','gitHash','argInNames','cache','bandPass','oss','raster2','sem','rsquare','spiketimes2f','tsne'};
+dependencies = {'prettyFig','manualCluster','computeOnsOffs','dataHash','gitHash','argInNames','cache','bandPass','oss','raster2','sem','rsquare','spiketimes2f'};
 for si = 1:length(dependencies)
     err_message = ['spikesort needs ' dependencies{si} ' to run, which was not found. Read the docs. to make sure you have installed all dependencies.'];
     assert(exist(dependencies{si},'file')==2,err_message)
@@ -428,7 +428,7 @@ discard_control = uicontrol(handles.main_fig,'units','normalized','Position',[.1
 
         % install updates
         for i = 1:length(toolboxes)
-            if req_update(i) || rand > .9
+            if req_update(i) || rand > .95
                 install('-f',['sg-s/' toolboxes{i}])
             end
         end

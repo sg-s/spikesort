@@ -25,7 +25,7 @@ marker_size = 5; 			% how big the spike indicators are
 show_r2 = false;			% show r2 in firing rate plot
 fs = 14; 					% UI font size
 fw = 'bold'; 				% UI font weight
-plot_control = true; 		% should spikesort plot the control signals instead of the stimulus?
+plot_control = false; 		% should spikesort plot the control signals instead of the stimulus?
 
 % UI
 smart_scroll = true; 				% intelligently scroll so we keep # visible spikes constant 
