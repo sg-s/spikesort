@@ -22,10 +22,6 @@ temp = {temp.Name};
 paradigms_with_data = find(structureElementLength(m.data));
 s.handles.paradigm_chooser.String = temp(paradigms_with_data);
 
-% go to the first trial and paradigm with data
-s.this_trial = 1;
-s.this_paradigm  = paradigms_with_data(1);
-
 % populate some fields for the UX
 set(s.handles.valve_channel,'String',s.output_channel_names)
 
@@ -39,4 +35,8 @@ set(s.handles.stim_channel,'String',[fl(:); s.output_channel_names(:)]);
 % update response listbox with all the input channel names
 set(s.handles.resp_channel,'String',fl);
 
+
+% go to the first trial and paradigm with data
+s.this_trial = 1;
+s.this_paradigm  = paradigms_with_data(1);
 

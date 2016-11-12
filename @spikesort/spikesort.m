@@ -41,6 +41,9 @@ classdef spikesort < handle & matlab.mixin.CustomDisplay
         B % stores B spikes of this trace
         N % stores identified noise in this trace
         use_this_fragment
+        A_amplitude
+        B_amplitude
+
 
         this_trial
         this_paradigm
@@ -132,6 +135,8 @@ classdef spikesort < handle & matlab.mixin.CustomDisplay
             s.loc = value;
             if isempty(value)
                 set(s.handles.ax1_all_spikes,'XData',NaN,'YData',NaN);
+                set(s.handles.ax1_A_spikes,'XData',NaN,'YData',NaN);
+                set(s.handles.ax1_B_spikes,'XData',NaN,'YData',NaN);
                 return
             else
                 
@@ -150,45 +155,22 @@ classdef spikesort < handle & matlab.mixin.CustomDisplay
                 assert(isvector(value),'Raw voltage is not a vector')
             end
 
-            
+            s.plotResp;
+        end
 
-            % when the raw voltage is set, we filter it (if need be), and display it
-            if s.filter_trace
-                if s.pref.ssDebug 
-                    cprintf('green','\n[INFO]')
-                    cprintf('text',' filtering trace...')
-                end
+        function s = set.filter_trace(s,value)
+            s.filter_trace = value;
+            s.plotResp;
+        end % end set filter_trace
 
-                lc = 1/s.pref.band_pass(1);
-                lc = floor(lc/s.pref.deltat);
-                hc = 1/s.pref.band_pass(2);
-                hc = floor(hc/s.pref.deltat);
-                if s.pref.useFastBandPass
-                    [s.filtered_voltage,s.LFP] = fastBandPass(s.raw_voltage,lc,hc);
-                    error('this case is not usable yet. need to clean up trace...')
-                else
-                    [s.filtered_voltage,s.LFP] = bandPass(s.raw_voltage,lc,hc);
-                end
+        function s = set.this_paradigm(s,value)
+            s.this_paradigm = value;
+            s.readData;
+        end
 
-            else
-                % do nothing
-            end  
-
-            s.time = s.pref.deltat*(1:length(s.raw_voltage));
-
-            % and display it
-            if s.filter_trace
-                set(s.handles.ax1_data,'XData',s.time,'YData',s.filtered_voltage,'Color','k','Parent',s.handles.ax1);
-            else
-                set(s.handles.ax1_data,'XData',s.time,'YData',s.raw_voltage,'Color','k','Parent',s.handles.ax1);
-            end
-
-            % fix the axis
-            if all(get(s.handles.ax1,'XLim') == [0 1])
-                set(s.handles.ax1,'XLim',[min(s.time) max(s.time)]);
-            end
-
-
+        function s = set.this_trial(s,value)
+            s.this_trial = value;
+            s.readData;
         end
 
         function delete(s)

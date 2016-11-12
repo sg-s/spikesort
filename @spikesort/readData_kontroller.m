@@ -4,6 +4,10 @@
 % 
 function s = readData_kontroller(s,src,event)
 
+if isempty(s.this_paradigm) || isempty(s.this_trial)
+	return
+end
+
 % read the voltage trace for the current file
 m = matfile([s.path_name s.file_name]);
 this_data = m.data(1,s.this_paradigm);

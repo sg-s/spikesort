@@ -44,15 +44,22 @@ assert(length(plugin_to_use) == 1,'[ERR 41] Too many plugins bound to this file 
 eval(['file_load_handle = @s.' s.installed_plugins(plugin_to_use).name ';'])
 file_load_handle();
 
-% populate the 
+% enable all controls
+set(s.handles.method_control,'Enable','on')
+set(s.handles.sine_control,'Enable','on');
+set(s.handles.autosort_control,'Enable','on');
+set(s.handles.redo_control,'Enable','on');
+set(s.handles.filtermode,'Enable','on');
+set(s.handles.cluster_control,'Enable','on');
+set(s.handles.prev_trial,'Enable','on');
+set(s.handles.next_trial,'Enable','on');
+set(s.handles.prev_paradigm,'Enable','on');
+set(s.handles.next_paradigm,'Enable','on');
+set(s.handles.trial_chooser,'Enable','on');
+set(s.handles.paradigm_chooser,'Enable','on');
+set(s.handles.discard_control,'Enable','on');
+set(s.handles.metadata_text_control,'Enable','on')
 
-% then do some post-load stuff, like loading the first trace so that we see something when we load the file
-plugin_to_use = find(strcmp('read-data',{s.installed_plugins.plugin_type}).*(strcmp(chosen_data_ext,{s.installed_plugins.data_extension})));
-assert(~isempty(plugin_to_use),'[ERR 42] Could not figure out how to read data from file.')
-assert(length(plugin_to_use) == 1,'[ERR 43] Too many plugins bound to this file type. ')
-
-eval(['read_data_handle = @s.' s.installed_plugins(plugin_to_use).name ';'])
-read_data_handle();
 
     
 % temp = load(strcat(s.path_name,s.file_name),'-mat');
@@ -140,22 +147,6 @@ read_data_handle();
 
 %     set(s.handles.main_fig,'Name',strcat(s.version_name,'--',s.file_name))
 
-%     % enable all controls
-%     waitbar(.7,s.handles.load_waitbar,'Enabling UI...')
-%     set(s.handles.sine_control,'Enable','on');
-%     set(s.handles.autosort_control,'Enable','on');
-%     set(s.handles.redo_control,'Enable','on');
-%     set(s.handles.findmode,'Enable','on');
-%     set(s.handles.filtermode,'Enable','on');
-%     set(s.handles.cluster_control,'Enable','on');
-%     set(s.handles.prev_trial,'Enable','on');
-%     set(s.handles.next_trial,'Enable','on');
-%     set(s.handles.prev_paradigm,'Enable','on');
-%     set(s.handles.next_paradigm,'Enable','on');
-%     set(s.handles.trial_chooser,'Enable','on');
-%     set(s.handles.paradigm_chooser,'Enable','on');
-%     set(s.handles.discard_control,'Enable','on');
-%     set(s.handles.metadata_text_control,'Enable','on')
 
 %     % check for amplitudes 
 %     waitbar(.7,s.handles.load_waitbar,'Checking to see amplitude data exists...')

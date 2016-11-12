@@ -64,25 +64,30 @@ uicontrol(handles.main_fig,'units','normalized','Position',[.19 .93 .03 .05],'St
 
 % paradigms and trials
 handles.datachooserpanel = uipanel('Title','Paradigms and Trials','Position',[.03 .75 .25 .16],'BackgroundColor',[1 1 1]);
-handles.paradigm_chooser = uicontrol(handles.datachooserpanel,'units','normalized','Position',[.25 .75 .5 .20],'Style', 'popupmenu', 'String', 'Choose Paradigm','callback',@s.chooseParadigmCallback,'Enable','off');
-handles.next_paradigm = uicontrol(handles.datachooserpanel,'units','normalized','Position',[.75 .65 .15 .33],'Style', 'pushbutton', 'String', '>','callback',@s.chooseParadigmCallback,'Enable','off');
-handles.prev_paradigm = uicontrol(handles.datachooserpanel,'units','normalized','Position',[.05 .65 .15 .33],'Style', 'pushbutton', 'String', '<','callback',@s.chooseParadigmCallback,'Enable','off');
+handles.paradigm_chooser = uicontrol(handles.datachooserpanel,'units','normalized','Position',[.25 .75 .5 .20],'Style', 'popupmenu', 'String', 'Choose Paradigm','callback',@s.updateTrialsParadigms,'Enable','off');
+handles.next_paradigm = uicontrol(handles.datachooserpanel,'units','normalized','Position',[.75 .65 .15 .33],'Style', 'pushbutton', 'String', '>','callback',@s.updateTrialsParadigms,'Enable','off');
+handles.prev_paradigm = uicontrol(handles.datachooserpanel,'units','normalized','Position',[.05 .65 .15 .33],'Style', 'pushbutton', 'String', '<','callback',@s.updateTrialsParadigms,'Enable','off');
 
-handles.trial_chooser = uicontrol(handles.datachooserpanel,'units','normalized','Position',[.25 .27 .5 .20],'Style', 'popupmenu', 'String', 'Choose Trial','callback',@s.chooseTrialCallback,'Enable','off');
-handles.next_trial = uicontrol(handles.datachooserpanel,'units','normalized','Position',[.75 .15 .15 .33],'Style', 'pushbutton', 'String', '>','callback',@s.chooseTrialCallback,'Enable','off');
-handles.prev_trial = uicontrol(handles.datachooserpanel,'units','normalized','Position',[.05 .15 .15 .33],'Style', 'pushbutton', 'String', '<','callback',@s.chooseTrialCallback,'Enable','off');
+handles.trial_chooser = uicontrol(handles.datachooserpanel,'units','normalized','Position',[.25 .27 .5 .20],'Style', 'popupmenu', 'String', 'Choose Trial','callback',@s.updateTrialsParadigms,'Enable','off');
+handles.next_trial = uicontrol(handles.datachooserpanel,'units','normalized','Position',[.75 .15 .15 .33],'Style', 'pushbutton', 'String', '>','callback',@s.updateTrialsParadigms,'Enable','off');
+handles.prev_trial = uicontrol(handles.datachooserpanel,'units','normalized','Position',[.05 .15 .15 .33],'Style', 'pushbutton', 'String', '<','callback',@s.updateTrialsParadigms,'Enable','off');
 
 
 % spike detection panel
 handles.spike_detection_panel = uipanel('Title','Spike detection','Position',[.3 .77 .3 .2],'BackgroundColor',[1 1 1]);
 uicontrol(handles.spike_detection_panel,'units','normalized','Position',[0 .88 .5 .1],'Style','text','String','Peak Prominence:','FontSize',s.pref.fs,'FontWeight','normal','BackgroundColor','w')
-handles.prom_auto_control = uicontrol(handles.spike_detection_panel,'units','normalized','Position',[.5 .8 .3 .2],'Style','togglebutton','String','AUTO','FontSize',s.pref.fs,'Callback',@s.togglePromControl);
+handles.prom_auto_control = uicontrol(handles.spike_detection_panel,'units','normalized','Position',[.5 .8 .3 .2],'Style','togglebutton','String','MANUAL','Value',0,'FontSize',s.pref.fs,'Callback',@s.togglePromControl);
 handles.prom_ub_control = uicontrol(handles.spike_detection_panel,'units','normalized','Position',[.73 .65 .2 .15],'Style','edit','String','1','FontSize',s.pref.fs,'Callback',@s.updateSpikePromSlider);
 handles.spike_prom_slider = uicontrol(handles.spike_detection_panel,'units','normalized','Position',[.01 .63 .7 .15],'Style','Slider','Min',0,'Max',1,'Value',.5,'Callback',@s.findSpikes);
 try    % R2013b and older
    addlistener(handles.spike_prom_slider,'ActionEvent',@s.findSpikes);
 catch  % R2014a and newer
    addlistener(handles.spike_prom_slider,'ContinuousValueChange',@s.findSpikes);
+end
+if s.pref.invert_V
+    handles.spike_sign_control = uicontrol(handles.spike_detection_panel,'units','normalized','Position',[.01 .4 .5 .2],'Style','togglebutton','String','Finding -ve spikes','Value',0,'FontSize',s.pref.fs,'Callback',@s.toggleSpikeSign);
+else
+    handles.spike_sign_control = uicontrol(handles.spike_detection_panel,'units','normalized','Position',[.01 .4 .5 .2],'Style','togglebutton','String','Finding +ve spikes','Value',1,'FontSize',s.pref.fs,'Callback',@s.toggleSpikeSign);
 end
 
 % dimension reduction and clustering panels
@@ -118,8 +123,12 @@ uicontrol(handles.manualpanel,'units','normalized','Position',[.1 0/8 .8 1/9],'S
 
 
 % various toggle switches and pushbuttons
-handles.filtermode = uicontrol(handles.main_fig,'units','normalized','Position',[.03 .69 .12 .05],'Style','togglebutton','String','Filter','Value',s.filter_trace,'Callback',@s.plotResp,'Enable','off');
-handles.findmode = uicontrol(handles.main_fig,'units','normalized','Position',[.16 .69 .12 .05],'Style','togglebutton','String','Find Spikes','Value',1,'Callback',@s.plotResp,'Enable','off');
+handles.filtermode = uicontrol(handles.main_fig,'units','normalized','Position',[.03 .69 .12 .05],'Style','togglebutton','String','Filter','Value',s.filter_trace,'Callback',@s.toggleFilter,'Enable','off');
+if s.filter_trace
+    set(handles.filtermode,'String','Filter is ON')
+else
+    set(handles.filtermode,'String','Filter is ON')
+end
 
 handles.redo_control = uicontrol(handles.main_fig,'units','normalized','Position',[.03 .64 .12 .05],'Style','pushbutton','String','Redo','Value',0,'Callback',@s.redo,'Enable','off');
 handles.autosort_control = uicontrol(handles.main_fig,'units','normalized','Position',[.16 .64 .12 .05],'Style','togglebutton','String','Autosort','Value',0,'Enable','off','Callback',@autosortCallback);

@@ -1,35 +1,13 @@
 function saveData(s)
 
-if isempty(s.current_data)
-	return
-end
+% figure out which plugin to use to save data
+[~,~,chosen_data_ext] = fileparts(s.file_name);
+chosen_data_ext(1) =  [];
 
-% unpack
-spikes = s.current_data.spikes;
+plugin_to_use = find(strcmp('save-data',{s.installed_plugins.plugin_type}).*(strcmp(chosen_data_ext,{s.installed_plugins.data_extension})));
+assert(~isempty(plugin_to_use),'[ERR 42] Could not figure out how to save data to file.')
+assert(length(plugin_to_use) == 1,'[ERR 43] Too many plugins bound to this file type. ')
 
-if isempty(s.time) 
-	return
-end
+eval(['save_data_handle = @s.' s.installed_plugins(plugin_to_use).name ';'])
+save_data_handle();
 
-spikes(s.this_paradigm).A(s.this_trial,:) = sparse(1,length(s.time));      
-spikes(s.this_paradigm).B(s.this_trial,:) = sparse(1,length(s.time));
-spikes(s.this_paradigm).N(s.this_trial,:) = sparse(1,length(s.time));
-spikes(s.this_paradigm).amplitudes_A(s.this_trial,:) = sparse(1,length(s.time));
-spikes(s.this_paradigm).amplitudes_B(s.this_trial,:) = sparse(1,length(s.time));
-spikes(s.this_paradigm).A(s.this_trial,s.A) = 1;
-spikes(s.this_paradigm).B(s.this_trial,s.B) = 1;
-spikes(s.this_paradigm).N(s.this_trial,s.N) = 1;
-
-% repack
-s.current_data.spikes = spikes;
-
-try
-    if ~isempty(s.path_name) && ~isempty(s.file_name) 
-
-        if ischar(s.path_name) && ischar(s.file_name)
-            save(strcat(s.path_name,s.file_name),'spikes','-append')
-        end
-    end
-catch
-    warning('Error saving data!')
-end

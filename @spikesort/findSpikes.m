@@ -8,7 +8,11 @@
 function findSpikes(s,~,~)
 
 pref = s.pref;
-V = s.filtered_voltage;
+if s.filter_trace
+	V = s.filtered_voltage;
+else
+	V = s.raw_voltage;
+end
 
 if get(s.handles.prom_auto_control,'Value')
 	%guess some nice value
