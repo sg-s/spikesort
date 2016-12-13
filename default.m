@@ -16,7 +16,7 @@ deltat = 1e-4; % what is the time step of the data?
 %% ~~~~~~~~~~~~~~~~~  GENERAL  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ssDebug = false; 			% should spikesort run in debug mode?
-useFastBandPass = true; 	% use a fast, FFT-based bandPass? 
+useFastBandPass = false; 	% use a fast, FFT-based bandPass? 
 
 %% ~~~~~~~~~~~~~~~~~  DISPLAY  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -53,7 +53,7 @@ minimum_peak_width = 1;
 minimum_peak_distance = 1; 			% how separated should the peaks be?
 V_cutoff = -1; 						% ignore peaks beyond this limit 
 band_pass = [100 1000]; 			% in Hz. band pass V to find spikes more easily 
-invert_V = true; 					% sometimes, it is easier to find spikes if you invert V
+invert_V = false; 					% sometimes, it is easier to find spikes if you invert V
 
 % spike resolution
 remove_doublets = true;				% resolve doublet peaks, which are very likely AB or BA, not AA or BB
