@@ -850,6 +850,18 @@ discard_control = uicontrol(handles.main_fig,'units','normalized','Position',[.1
             end
             if isfield(temp,'spikes')
                 spikes = temp.spikes;
+            else
+                % no spikes, create spikes as an exact mirror of the data
+                disp('Looks like a new file, will create the spikes variable...')
+                for i = 1:length(data)
+                    if ~isempty((data(i).voltage))
+                        spikes(i).A = sparse(size(data(i).voltage,1),size(data(i).voltage,2));
+                        spikes(i).B = sparse(size(data(i).voltage,1),size(data(i).voltage,2));
+                        spikes(i).amplitudes_A = sparse(size(data(i).voltage,1),size(data(i).voltage,2));
+                        spikes(i).amplitudes_B = sparse(size(data(i).voltage,1),size(data(i).voltage,2));
+                    end
+
+                end
             end
             clear temp
 
