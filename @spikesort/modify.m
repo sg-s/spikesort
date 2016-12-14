@@ -1,6 +1,11 @@
 
 function modify(s,p)
 
+if s.verbosity > 5
+    cprintf('green','\n[INFO] ')
+    cprintf('text',[mfilename ' called'])
+end
+
 % compatability layer
 spikes = s.current_data.spikes;
 A = spikes.A;

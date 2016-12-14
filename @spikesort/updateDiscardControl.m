@@ -1,5 +1,10 @@
 function updateDiscardControl(s,~,~)
 
+if s.verbosity > 5
+    cprintf('green','\n[INFO] ')
+    cprintf('text',[mfilename ' called'])
+end
+
 % unpack data
 try
     spikes = s.current_data.spikes;

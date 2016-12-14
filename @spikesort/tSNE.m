@@ -9,6 +9,12 @@
 
 function tSNE(s)
 
+if s.verbosity > 5
+    cprintf('green','\n[INFO] ')
+    cprintf('text',[mfilename ' called'])
+end
+
+
 % always use the fast tSNE algorith, as it is internally cached
 disp(['hash of V_snippets is ' dataHash(s.V_snippets)])
 s.R = fast_tsne(s.V_snippets, s.pref.no_dims, s.pref.init_dims, s.pref.perplexity,s.pref.theta, s.pref.max_iter)';

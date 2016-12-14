@@ -1,5 +1,10 @@
 function chooseTrialCallback(s,src,~)
 
+if s.verbosity > 5
+    cprintf('green','\n[INFO] ')
+    cprintf('text',[mfilename ' called'])
+end
+
 % unpack some stuff
 data = s.current_data.data;
 

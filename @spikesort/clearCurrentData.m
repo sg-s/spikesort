@@ -2,6 +2,11 @@
 
 function s = clearCurrentData(s)
 
+if s.verbosity > 5
+    cprintf('green','\n[INFO] ')
+    cprintf('text',[mfilename ' called'])
+end
+
 s.R  = [];  % this holds the dimensionality reduced data
 s.filtered_voltage = []; % holds the current trace that is shown on screen
 s.raw_voltage = [];

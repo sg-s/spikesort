@@ -1,5 +1,10 @@
 function saveData(s)
 
+if s.verbosity > 5
+    cprintf('green','\n[INFO] ')
+    cprintf('text',[mfilename ' called'])
+end
+
 % figure out which plugin to use to save data
 [~,~,chosen_data_ext] = fileparts(s.file_name);
 chosen_data_ext(1) =  [];

@@ -158,6 +158,15 @@ classdef spikesort < handle & matlab.mixin.CustomDisplay
             s.plotResp;
         end
 
+        function s = set.stimulus(s,value)
+            s.stimulus = value;
+            if isempty(value)
+                return
+            end
+
+            s.plotStim;
+        end
+
         function s = set.filter_trace(s,value)
             s.filter_trace = value;
             s.plotResp;

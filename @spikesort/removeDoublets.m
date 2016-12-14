@@ -1,5 +1,10 @@
 function removeDoublets(s)
 
+if s.verbosity > 5
+    cprintf('green','\n[INFO] ')
+    cprintf('text',[mfilename ' called'])
+end
+
 % try to remove doublets
 if ~s.pref.remove_doublets
     return

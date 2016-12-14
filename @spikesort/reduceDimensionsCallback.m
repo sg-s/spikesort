@@ -2,6 +2,10 @@
 
 function reduceDimensionsCallback(s,~,~)
 
+if s.verbosity > 5
+    cprintf('green','\n[INFO] ')
+    cprintf('text',[mfilename ' called'])
+end
 
 method = (get(s.handles.method_control,'Value'));
 temp = get(s.handles.method_control,'String');

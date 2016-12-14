@@ -1,5 +1,10 @@
 function firingRatePlot(s,~,~)
 
+if s.verbosity > 5
+    cprintf('green','\n[INFO] ')
+    cprintf('text',[mfilename ' called'])
+end
+
 % compatbility layer with legacy code
 pref = s.pref;
 spikes = s.current_data.spikes; 

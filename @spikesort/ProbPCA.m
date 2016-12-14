@@ -11,5 +11,11 @@
 % To view a copy of this license, visit http://creativecommons.org/licenses/by-nc-sa/4.0/.
 
 function R = ProbPCA(s)
+
+if s.verbosity > 5
+    cprintf('green','\n[INFO] ')
+    cprintf('text',[mfilename ' called'])
+end
+	
 [~,R]=ppca(s.V_snippets',2);
 s.R = R(:,1:2)';

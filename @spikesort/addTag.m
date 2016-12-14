@@ -1,4 +1,10 @@
 function addTag(s,src,~)
+
+if s.verbosity > 5
+    cprintf('green','\n[INFO] ')
+    cprintf('text',[mfilename ' called'])
+end
+	
 % matlab wrapper for tag, which adds BSD tags to the file we are working on. *nix only. 
 tag = get(src,'String');
 

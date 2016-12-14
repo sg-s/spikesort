@@ -4,6 +4,11 @@
 % 
 function s = loadFile_kontroller(s,src,event)
 
+if s.verbosity > 5
+    cprintf('green','\n[INFO] ')
+    cprintf('text',[mfilename ' called'])
+end
+
 % read the file
 m = matfile([s.path_name s.file_name]);
 
@@ -39,4 +44,5 @@ set(s.handles.resp_channel,'String',fl);
 % go to the first trial and paradigm with data
 s.this_trial = 1;
 s.this_paradigm  = paradigms_with_data(1);
+
 

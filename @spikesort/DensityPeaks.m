@@ -9,6 +9,11 @@
 % 
 function DensityPeaks(s)
 
+if s.verbosity > 5
+    cprintf('green','\n[INFO] ')
+    cprintf('text',[mfilename ' called'])
+end
+
 % unpack data
 
 L = densityPeaks(s.R,'n_clusters',3,'percent',2);

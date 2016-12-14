@@ -10,6 +10,11 @@
 % To view a copy of this license, visit http://creativecommons.org/licenses/by-nc-sa/4.0/.
 function varargout = spikeAmplitudes(s,V,loc)
 
+if s.verbosity > 5
+    cprintf('green','\n[INFO] ')
+    cprintf('text',[mfilename ' called'])
+end
+
 h = (40*1e-4)/s.pref.deltat; % deltat in seconds
 % 1D - find total spike amplitude for each
 R = zeros*loc;

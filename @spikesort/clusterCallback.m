@@ -2,6 +2,10 @@
 
 function clusterCallback(s,~,~)
 
+if s.verbosity > 5
+    cprintf('green','\n[INFO] ')
+    cprintf('text',[mfilename ' called'])
+end
 
 cluster_method_handle = (get(s.handles.cluster_control,'Value'));
 temp = get(s.handles.cluster_control,'String');

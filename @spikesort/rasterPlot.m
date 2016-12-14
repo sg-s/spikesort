@@ -1,5 +1,10 @@
 function rasterPlot(s,~,~)
 
+if s.verbosity > 5
+    cprintf('green','\n[INFO] ')
+    cprintf('text',[mfilename ' called'])
+end
+
 figure('outerposition',[0 0 1000 500],'PaperUnits','points','PaperSize',[1000 500]); hold on
 yoffset = 0;
 ytick = 0;

@@ -16,6 +16,11 @@
 % largely built out of legacy code I wrote in 2011 for Carlotta's spike sorting
 function ManualCluster(s)
 
+if s.verbosity > 5
+    cprintf('green','\n[INFO] ')
+    cprintf('text',[mfilename ' called'])
+end
+
 % unpack
 R = s.R;
 V_snippets = s.V_snippets;

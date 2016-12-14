@@ -7,6 +7,11 @@
 % To view a copy of this license, visit http://creativecommons.org/licenses/by-nc-sa/4.0/.
 function findSpikes(s,~,~)
 
+if s.verbosity > 5
+    cprintf('green','\n[INFO] ')
+    cprintf('text',[mfilename ' called'])
+end
+
 pref = s.pref;
 if s.filter_trace
 	V = s.filtered_voltage;
@@ -36,7 +41,7 @@ else
 end
 
 
-if pref.ssDebug
+if s.verbosity
 	cprintf('green','\n[INFO]')
     cprintf('text',[' found ' oval(length(loc)) ' spikes'])
 end

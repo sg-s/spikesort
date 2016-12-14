@@ -2,6 +2,11 @@
 
 function scroll(s,~,event)
 
+if s.verbosity > 5
+    cprintf('green','\n[INFO] ')
+    cprintf('text',[mfilename ' called'])
+end
+
 % unpack some data
 V = s.filtered_voltage;
 loc = s.loc;

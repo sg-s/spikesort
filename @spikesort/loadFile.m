@@ -2,6 +2,11 @@
 
 function s = loadFile(s,src,~)
 
+if s.verbosity > 5
+    cprintf('green','\n[INFO] ')
+    cprintf('text',[mfilename ' called'])
+end
+
 % reset some pushbuttons and other things
 s.clearCurrentData;
 
@@ -51,10 +56,12 @@ set(s.handles.autosort_control,'Enable','on');
 set(s.handles.redo_control,'Enable','on');
 set(s.handles.filtermode,'Enable','on');
 set(s.handles.cluster_control,'Enable','on');
-set(s.handles.prev_trial,'Enable','on');
-set(s.handles.next_trial,'Enable','on');
-set(s.handles.prev_paradigm,'Enable','on');
-set(s.handles.next_paradigm,'Enable','on');
+
+% set(s.handles.prev_trial,'Enable','on');
+% set(s.handles.next_trial,'Enable','on');
+% set(s.handles.prev_paradigm,'Enable','on');
+% set(s.handles.next_paradigm,'Enable','on');
+
 set(s.handles.trial_chooser,'Enable','on');
 set(s.handles.paradigm_chooser,'Enable','on');
 set(s.handles.discard_control,'Enable','on');

@@ -2,7 +2,10 @@
 
 function [s] = makeGUI(s)
 
-
+if s.verbosity > 5
+    cprintf('green','\n[INFO] ')
+    cprintf('text',[mfilename ' called'])
+end
 
 % make the master figure, and the axes to plot the voltage traces
 handles.main_fig = figure('position',[50 50 1200 700], 'Toolbar','figure','Menubar','none','Name',s.version_name,'NumberTitle','off','IntegerHandle','off','WindowButtonDownFcn',@s.mouseCallback,'WindowScrollWheelFcn',@s.scroll,'CloseRequestFcn',@s.close,'Color','w');
