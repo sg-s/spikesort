@@ -5,6 +5,9 @@ if s.verbosity > 5
     cprintf('text',[mfilename ' called'])
 end
 
+% first save what we have here
+s.saveData;
+
 switch src 
 case s.handles.next_paradigm
 	s.this_paradigm = s.this_paradigm + 1;

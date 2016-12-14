@@ -30,6 +30,14 @@ s.raw_voltage = this_data.voltage(s.this_trial,:);
 % read the stimulus trace for the current file for the current trial 
 s.stimulus = this_data.PID(s.this_trial,:);
 
+% is this already sorted? 
+if any(strcmp('spikes',who(m)))
+	this_spikes = m.spikes(1,s.this_paradigm);
+	s.A = find(this_spikes.A(s.this_trial,:));
+	s.B = find(this_spikes.B(s.this_trial,:));
+	s.N = find(this_spikes.N(s.this_trial,:));
+end
+
 % update the trial chooser with the number of trials we have in this paradigm 
 ntrials = size(this_data.voltage,1);
 trial_text = {};
