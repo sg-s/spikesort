@@ -1,3 +1,7 @@
+# DEPRECATION NOTICE
+
+`spikesort` in this form will not be developed further. It will be replaced by a modern, class-based framework that is data and method agnostic. See [here](https://github.com/sg-s/spikesort/tree/v2-class-based) for information on how it is progressing, or if you want to try it out.
+
 # spikesort
 
 Spike sorting for Kontroller
