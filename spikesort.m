@@ -429,7 +429,10 @@ discard_control = uicontrol(handles.main_fig,'units','normalized','Position',[.1
         % install updates
         for i = 1:length(toolboxes)
             if req_update(i) || rand > .95
-                install('-f',['sg-s/' toolboxes{i}])
+                try
+                    install('-f',['sg-s/' toolboxes{i}])
+                catch
+                end
             end
         end
 
