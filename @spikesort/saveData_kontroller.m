@@ -27,7 +27,7 @@ else
     load([s.path_name s.file_name],'-mat','data')
     % create it, and make an entry for ever single one in data
     nparadigms = length(m.data);
-    for i = 1:length(nparadigms)
+    for i = 1:nparadigms
         spikes(i).A = sparse(0*data(i).voltage);
         spikes(i).B = sparse(0*data(i).voltage);
         spikes(i).N = sparse(0*data(i).voltage);

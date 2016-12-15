@@ -111,6 +111,7 @@ classdef spikesort < handle & matlab.mixin.CustomDisplay
         function s = set.A(s,value)
             s.A = value;
             if isempty(value)
+                set(s.handles.ax1_A_spikes,'XData',NaN,'YData',NaN);
                 return
             else
                 set(s.handles.ax1_all_spikes,'XData',NaN,'YData',NaN);
@@ -122,6 +123,7 @@ classdef spikesort < handle & matlab.mixin.CustomDisplay
         function s = set.B(s,value)
             s.B = value;
             if isempty(value)
+                set(s.handles.ax1_B_spikes,'XData',NaN,'YData',NaN);
                 return
             else
                 set(s.handles.ax1_all_spikes,'XData',NaN,'YData',NaN);

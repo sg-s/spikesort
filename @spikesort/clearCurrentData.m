@@ -7,6 +7,12 @@ if s.verbosity > 5
     cprintf('text',[mfilename ' called'])
 end
 
+s.A = [];
+s.B = [];
+s.N = [];
+s.A_amplitude = [];
+s.B_amplitude = [];
+
 s.R  = [];  % this holds the dimensionality reduced data
 s.filtered_voltage = []; % holds the current trace that is shown on screen
 s.raw_voltage = [];

@@ -43,5 +43,7 @@ if s.handles.prom_auto_control.Value
 	end
 end
 
-% find spikes 
-s.findSpikes;
+% find spikes if we have to...
+if isempty([s.A(:); s.B(:)])
+	s.findSpikes;
+end

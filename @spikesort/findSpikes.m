@@ -12,6 +12,10 @@ if s.verbosity > 5
     cprintf('text',[mfilename ' called'])
 end
 
+if ~isempty(s.A) || ~isempty(s.B)
+    return
+end
+
 pref = s.pref;
 if s.filter_trace
 	V = s.filtered_voltage;
