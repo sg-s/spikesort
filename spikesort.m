@@ -238,7 +238,7 @@ discard_control = uicontrol(handles.main_fig,'units','normalized','Position',[.1
             clear es
             es{1} = 'tag -a ';
             es{2} = tag;
-            es{3} = strcat(path_name,file_name);
+            es{3} = ['"' path_name file_name '"'];
             try
                 unix(strjoin(es));
             catch
@@ -1023,7 +1023,7 @@ discard_control = uicontrol(handles.main_fig,'units','normalized','Position',[.1
             if isunix
                 clear es
                 es{1} = 'tag -l ';
-                es{2} = strcat(path_name,file_name);
+                es{2} = ['"' strcat(path_name,file_name) '"'];
                 [~,temp] = unix(strjoin(es));
                 set(tag_control,'String',temp(strfind(temp,'.mat')+5:end-1));
             end
