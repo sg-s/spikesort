@@ -1,4 +1,6 @@
-% ssdm_2DPCA.m
+% spikesort plugin
+% plugin_type = 'dim-red';
+% plugin_dimension = 2; 
 % 
 % this is a plugin for spikesort.m
 % reduces spikes to a amplitude, measured from the minimum to preceding maximum.
@@ -7,6 +9,13 @@
 % 
 % This work is licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License. 
 % To view a copy of this license, visit http://creativecommons.org/licenses/by-nc-sa/4.0/.
-function R = ssdm_2DPCA(V_snippets)
-R = pca(V_snippets);
-R = R(:,1:2)';
+
+function R = ProbPCA(s)
+
+if s.verbosity > 5
+    cprintf('green','\n[INFO] ')
+    cprintf('text',[mfilename ' called'])
+end
+	
+[~,R]=ppca(s.V_snippets',2);
+s.R = R(:,1:2)';

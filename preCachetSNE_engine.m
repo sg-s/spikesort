@@ -14,7 +14,10 @@ function [] = preCachetSNE_engine()
 variable_name = 'voltage';
 
 % use pref.m to change how this function behaves.
+
 pref = readPref(fileparts(which(mfilename)));
+dbm = ['The hash of the pref. file I read is ' dataHash(pref)];
+system(['echo "' dbm '" >> spikesort.log']);
 
 % add src to path
 % add src folder to path
@@ -84,7 +87,9 @@ for i = 1:length(allfiles)
 						    % run the fast tSNE algorithm on this
 						    dbm = ['starting fast_tsne @ ' datestr(now) '.working on paradigm: ' oval(j) ' , trial: ' oval(k)];
 							system(['echo "' dbm '" >> spikesort.log']);
-						    fast_tsne(V_snippets,2,10,60);
+							dbm = ['The hash of this data is: ' dataHash(V_snippets)];
+							system(['echo "' dbm '" >> spikesort.log']);
+						    fast_tsne(V_snippets,2,10,60,.5);
 						else
 							error('You need bhtsne to use this.')
 						end

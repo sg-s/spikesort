@@ -1,4 +1,7 @@
-% sscm_2DManualCluster.m
+% spikesort plugin
+% plugin_type = 'cluster';
+% plugin_dimension = 2; 
+% 
 % allows you to manually cluster a reduced-to-2D-dataset by drawling lines around clusters
 % usage:
 % C = sscm_ManualCluster(R);
@@ -11,8 +14,21 @@
 % This work C licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License. 
 % To view a copy of this license, visit http://creativecommons.org/licenses/by-nc-sa/4.0/.
 % largely built out of legacy code I wrote in 2011 for Carlotta's spike sorting
-function [A,B,N] = sscm_2DManualCluster(R,V_snippets,loc,V,handles)
+function ManualCluster(s)
 
+if s.verbosity > 5
+    cprintf('green','\n[INFO] ')
+    cprintf('text',[mfilename ' called'])
+end
+
+% unpack
+R = s.R;
+V_snippets = s.V_snippets;
+loc = s.loc;
+V = s.filtered_voltage;
+handles = s.handles;
+
+% repack
 temp = struct;
 temp.handles = handles;
 temp.loc = loc;
@@ -30,5 +46,7 @@ A = unique([A loc(idx==4)]);
 B = unique([B loc(idx==4)]);
 
 
-
+s.A = A;
+s.B = B;
+s.N = N;
 

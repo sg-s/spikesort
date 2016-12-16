@@ -15,10 +15,7 @@ deltat = 1e-4; % what is the time step of the data?
 
 %% ~~~~~~~~~~~~~~~~~  GENERAL  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-<<<<<<< HEAD
-ssDebug = false; 			% should spikesort run in debug mode?
-=======
->>>>>>> v2-class-based
+ssDebug = true; 			% should spikesort run in debug mode?
 useFastBandPass = false; 	% use a fast, FFT-based bandPass? 
 
 %% ~~~~~~~~~~~~~~~~~  DISPLAY  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -32,7 +29,7 @@ marker_size = 5; 			% how big the spike indicators are
 show_r2 = false;			% show r2 in firing rate plot
 fs = 14; 					% UI font size
 fw = 'bold'; 				% UI font weight
-plot_control = false; 		% should spikesort plot the control signals instead of the stimulus?
+plot_control = true; 		% should spikesort plot the control signals instead of the stimulus?
 
 % UI
 smart_scroll = true; 				% intelligently scroll so we keep # visible spikes constant 
@@ -60,7 +57,7 @@ minimum_peak_width = 1;
 minimum_peak_distance = 1; 			% how separated should the peaks be?
 V_cutoff = -1; 						% ignore peaks beyond this limit 
 band_pass = [100 1000]; 			% in Hz. band pass V to find spikes more easily 
-invert_V = false; 					% sometimes, it is easier to find spikes if you invert V
+invert_V = true; 					% sometimes, it is easier to find spikes if you invert V
 
 % spike resolution
 remove_doublets = true;				% resolve doublet peaks, which are very likely AB or BA, not AA or BB
@@ -83,5 +80,6 @@ theta = .5;
 max_iter = 400;
 
 multicore_tsne_path = '~/anaconda3/bin'; % change this to the path where MultiCoreTSNE is installed 
+
 
 
