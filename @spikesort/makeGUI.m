@@ -24,7 +24,6 @@ uimenu(handles.menu2,'Label','Reload preferences','Callback',@s.reloadPreference
 uimenu(handles.menu2,'Label','Reset zoom','Callback',@s.resetZoom);
 delete(temp([1:8 11:15]))
 
-
 % make the two axes
 handles.ax1 = axes('parent',handles.main_fig,'Position',[0.07 0.05 0.87 0.29]); hold on
 handles.jump_back = uicontrol(handles.main_fig,'units','normalized','Position',[0 .04 .04 .50],'Style', 'pushbutton', 'String', '<','callback',@s.jump);
@@ -156,6 +155,9 @@ else
     end
 
 end
+
+% make a pop-over for busy messages
+handles.popup = uicontrol('parent',handles.main_fig,'units','normalized','Position',[0 .57 1 .46],'Style', 'text', 'String', {'','','','Embedding...'},'FontSize',24,'FontWeight','normal','Visible','off');
 
 
 s.handles = handles;

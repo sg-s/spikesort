@@ -1,5 +1,7 @@
 # spikesort
 
+> Looking for the old `spikesort`? Go [here](https://github.com/sg-s/spikesort/tree/bf519e8e0caaf886ea14cc87c3b94d424574241d)
+
 `spikesort` is a framework written in MATLAB to help you sort spikes from single-channel extracellular recordings. It is 
 
 1. *highly modular* Almost everything is written as a plugin. `spikesort` is a [MATLAB class](https://www.mathworks.com/help/matlab/matlab_oop/classes-in-the-matlab-language.html), and plugins are methods defined within the class. 
@@ -11,7 +13,7 @@
 
 `spikesort` is written in MATLAB. It should work on any OS that modern MATLAB runs on, but has only been tested on macOS Sierra. 
 
-The best way to install spikesort is through my package manager: 
+The best way to install `spikesort` is through my package manager: 
 
 ```
 % copy and paste this code in your MATLAB prompt
@@ -31,9 +33,9 @@ Or, if you have `git` installed:
 git clone git@github.com:sg-s/spikesort.git
 ````
 
-Don't forget to download, install and configure the other packages too. 
+Don't forget to download, install and configure the other packages too (see below). 
 
-### install [bhtsne](https://github.com/lvdmaaten/bhtsne) and [t-sne](https://github.com/sg-s/t-sne)
+### install [bhtsne](https://github.com/lvdmaaten/bhtsne) 
 
 If you used `install.m` to install spikesort, you already have these toolbox. However, you need to compile to run. On *nix-like systems, navigate to the folder it is in (should be `~/code/bhtsne/`) and run the following:
 
@@ -43,7 +45,7 @@ g++ sptree.cpp tsne.cpp -o bh_tsne -O2
 
 Note that my fork of `bhtsne` may have modifications, and this is what you should use with `spikesort`. If you're running Windows, you need to use whatever compiler you have to compile this. See [this](https://github.com/sg-s/bhtsne) for instructions on how to build the binary.
 
-### install tag
+### install `tag`
 
 On macOS, `spikesort` supports file tagging. To get this working, you need to have [homebrew](http://brew.sh) installed. You can then install `tag` using
 
@@ -51,9 +53,27 @@ On macOS, `spikesort` supports file tagging. To get this working, you need to ha
 brew install tag
 ````
 
+### install [Multicore-TSNE](https://github.com/DmitryUlyanov/Multicore-TSNE)
+
+This implementation of t-SNE is the the fastest I know of, and gets faster the more cores you throw at it. Follow the installation instructions [here](https://github.com/DmitryUlyanov/Multicore-TSNE#install). macOS users, [see this](https://github.com/DmitryUlyanov/Multicore-TSNE/issues/1#issuecomment-262938483) for installation troubleshooting. 
+
+You then need to tell MATLAB where `Multicore-TSNE is installed`. To do this, 
+
+1. first determine where it is installed (`pip show MulticoreTSNE`)
+2. Copy and paste this code to your MATLAB `startup.m` (use `edit startup.m`)
+
+```matlab
+a_path = '/path/to/MulticoreTSNE';
+path1 = getenv('PATH');
+if isempty(strfind(path1,[pathsep a_path]))
+    path1 = [a_path pathsep path1];
+end
+setenv('PATH', path1);
+```
+
 ## Limitations and Scope
 
-* sorting into only two groups (A and B) is supported. spikesort will not support more than 2 groups in the anticipated future. 
+* sorting into only two neurons/units (A and B) is supported. spikesort will *not* support more than 2 units in the anticipated future. 
 * Only 1 recording electrode is supported at a time. No support for multi-electrode arrays, nor will `spikesort` ever have support for MEAs. 
 
 
@@ -109,16 +129,9 @@ handles.paradigm_chooser.String
 ```
 
 
-
-
 # License 
 
 [GPL v3](http://gplv3.fsf.org/)
 
 If you plan to use `spikesort` for a publication, please [write to me](http://srinivas.gs/#contact) for appropriate citation. 
-
-`spikesort` also includes the following code from third parties, which are under their own licenses:
-
-1. [t-SNE](https://lvdmaaten.github.io/tsne/) from Laurens van der Maaten
-2. [Multicore t-SNE](https://github.com/DmitryUlyanov/Multicore-TSNE) from Dmitry Ulyanov
 

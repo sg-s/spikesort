@@ -15,7 +15,6 @@ deltat = 1e-4; % what is the time step of the data?
 
 %% ~~~~~~~~~~~~~~~~~  GENERAL  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-ssDebug = true; 			% should spikesort run in debug mode?
 useFastBandPass = false; 	% use a fast, FFT-based bandPass? 
 
 %% ~~~~~~~~~~~~~~~~~  DISPLAY  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

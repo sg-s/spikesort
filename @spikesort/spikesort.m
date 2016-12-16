@@ -11,7 +11,7 @@ classdef spikesort < handle & matlab.mixin.CustomDisplay
 
     properties
         % meta
-        version_name = 'automatically-generated';
+        version_name = 'spikesort';
         build_number = 'automatically-generated';
         pref % stores the preferences
 
@@ -58,7 +58,7 @@ classdef spikesort < handle & matlab.mixin.CustomDisplay
         handles % a structure that handles everything else
 
         % debug
-        verbosity = 10;
+        verbosity = 0;
 
     end % end properties 
 
@@ -96,6 +96,10 @@ classdef spikesort < handle & matlab.mixin.CustomDisplay
 
             % figure out what plugins are installed, and link them
             s = plugins(s);
+
+            % get the version name and number
+            s.build_number = ['v' strtrim(fileread([fileparts(fileparts(which(mfilename))) oss 'build_number']))];
+            s.version_name = ['spikesort (' s.build_number ')'];
 
             % make gui
             s.makeGUI;
@@ -185,7 +189,7 @@ classdef spikesort < handle & matlab.mixin.CustomDisplay
         end
 
         function delete(s)
-            if s.pref.ssDebug > 5
+            if s.verbosity > 5
                 cprintf('green','[INFO] ')
                 cprintf('text','spikesort shutting down \n')
             end

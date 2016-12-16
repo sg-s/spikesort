@@ -9,7 +9,7 @@ end
 
 % when the raw voltage is set, we filter it (if need be), and display it
 if s.filter_trace
-    if s.pref.ssDebug 
+    if s.verbosity
         cprintf('green','\n[INFO]')
         cprintf('text',' filtering trace...')
     end

@@ -14,15 +14,6 @@ if s.verbosity > 5
     cprintf('text',[mfilename ' called'])
 end
 
-[~,home_path] = system('cd ~; pwd');
-a_path = strrep(s.pref.multicore_tsne_path,'~',strtrim(home_path));
-path1 = getenv('PATH');
-if isempty(strfind(path1,[pathsep a_path]))
-    path1 = [a_path pathsep path1];
-end
-
-setenv('PATH', path1);
-
 % write the V_snippets to disk
 Vs = s.V_snippets;
 save('Vs.mat','Vs')
@@ -35,5 +26,4 @@ s.R = h5read('data.h5','/R');
 % clean up
 delete('data.h5')
 delete('Vs.mat')
-
 
