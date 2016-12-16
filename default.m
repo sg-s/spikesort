@@ -79,4 +79,6 @@ perplexity = 60;
 theta = .5;
 max_iter = 400;
 
+multicore_tsne_path = '~/anaconda3/bin'; % change this to the path where MultiCoreTSNE is installed 
+
 
