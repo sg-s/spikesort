@@ -57,7 +57,7 @@ brew install tag
 
 This implementation of t-SNE is the the fastest I know of, and gets faster the more cores you throw at it. Follow the installation instructions [here](https://github.com/DmitryUlyanov/Multicore-TSNE#install). macOS users, [see this](https://github.com/DmitryUlyanov/Multicore-TSNE/issues/1#issuecomment-262938483) for installation troubleshooting. 
 
-You then need to tell MATLAB where `Multicore-TSNE is installed`. To do this, 
+You then need to tell MATLAB where `Multicore-TSNE` is installed. To do this, 
 
 1. first determine where it is installed (`pip show MulticoreTSNE`)
 2. Copy and paste this code to your MATLAB `startup.m` (use `edit startup.m`)
@@ -78,6 +78,8 @@ setenv('PATH', path1);
 
 
 ## Architecture
+
+![](images/arch.png)
 
 `spikesort` is built around a plugin architecture for the three most important things it does: 
 

@@ -33,7 +33,7 @@ for i = 1:length(B2A_cand)
     end
 end
 
-if s.pref.ssDebug
+if s.verbosity
     cprintf('green','\n[INFO]')
     cprintf('text', [' B2A doublet resolution.' oval(length(B2A)) ' spikes swapped'])
 
@@ -65,7 +65,7 @@ end
 B = sort(unique([B(:); A2B_cand(:)]));
 A = setdiff(A,A2B_cand);
 
-if s.pref.ssDebug
+if s.verbosity
     cprintf('green','\n[INFO]')
     cprintf('text', [' B2A doublet resolution.' oval(length(A2B_cand)) ' spikes swapped'])
 end
