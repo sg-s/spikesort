@@ -60,6 +60,10 @@ classdef spikesort < handle & matlab.mixin.CustomDisplay
         % debug
         verbosity = 0;
 
+        % auto-update
+        req_update
+        req_toolboxes
+
     end % end properties 
 
     methods (Access = protected)
@@ -103,6 +107,10 @@ classdef spikesort < handle & matlab.mixin.CustomDisplay
 
             % make gui
             s.makeGUI;
+
+            % configure somethings for auto-update
+            s.req_toolboxes = {'srinivas.gs_mtools','bhtsne','spikesort'};
+            [~,s.req_update] = checkDeps(s.req_toolboxes);
 
             if ~nargout
                 cprintf('red','[WARN] ')
@@ -201,6 +209,13 @@ classdef spikesort < handle & matlab.mixin.CustomDisplay
             try
                 delete(s.handles.main_fig)
             catch
+            end
+
+            % trigger an auto-update if needed
+            for i = 1:length(s.req_toolboxes)
+                if s.req_update(i) 
+                    install('-f',['sg-s/' s.req_toolboxes{i}])
+                end
             end
 
             delete(s)
