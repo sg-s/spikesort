@@ -24,17 +24,38 @@ elseif strcmp(get(src,'String'),'<')
     if isempty(s.file_name)
         return
     else
-        disp('need to save existing data, and then go to the previous file')
-        keyboard
-
+        s.saveData;
+        
+        % get the list of files
+        [~,~,ext]=fileparts(s.file_name);
+        allfiles = dir([s.path_name '*' ext]);
+        % remove hidden files that begin with a ".
+        allfiles(cellfun(@(x) strcmp(x(1),'.'),{allfiles.name})) = [];
+        % permute the list so that the current file is last
+        allfiles = circshift({allfiles.name},[0,length(allfiles)-find(strcmp(s.file_name,{allfiles.name}))])';
+        % pick the previous one 
+        s.file_name = allfiles{end-1};
+        % figure out what the filter_index is
+        filter_index = find(strcmp(['*' ext],allowed_file_extensions));
         
     end
 else
     if isempty(s.file_name)
         return
     else
-        disp('need to save existing data, and then go to the NEXT file')
-        keyboard
+        s.saveData;
+
+        % get the list of files
+        [~,~,ext]=fileparts(s.file_name);
+        allfiles = dir([s.path_name '*' ext]);
+        % remove hidden files that begin with a ".
+        allfiles(cellfun(@(x) strcmp(x(1),'.'),{allfiles.name})) = [];
+        % permute the list so that the current file is last
+        allfiles = circshift({allfiles.name},[0,length(allfiles)-find(strcmp(s.file_name,{allfiles.name}))])';
+        % pick the first one 
+        s.file_name = allfiles{1};
+        % figure out what the filter_index is
+        filter_index = find(strcmp(['*' ext],allowed_file_extensions));
         
     end
 end
