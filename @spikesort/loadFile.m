@@ -25,6 +25,9 @@ elseif strcmp(get(src,'String'),'<')
         return
     else
         s.saveData;
+
+        s.this_trial = [];
+        s.this_paradigm = [];
         
         % get the list of files
         [~,~,ext]=fileparts(s.file_name);
@@ -44,6 +47,9 @@ else
         return
     else
         s.saveData;
+
+        s.this_trial = [];
+        s.this_paradigm = [];
 
         % get the list of files
         [~,~,ext]=fileparts(s.file_name);
@@ -69,6 +75,9 @@ assert(length(plugin_to_use) == 1,'[ERR 41] Too many plugins bound to this file 
 % load the file
 eval(['file_load_handle = @s.' s.installed_plugins(plugin_to_use).name ';'])
 file_load_handle();
+
+% update the titlebar with the name of the file we are working with
+s.handles.main_fig.Name = s.file_name;
 
 % enable all controls
 set(s.handles.method_control,'Enable','on')

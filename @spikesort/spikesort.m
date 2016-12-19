@@ -58,7 +58,7 @@ classdef spikesort < handle & matlab.mixin.CustomDisplay
         handles % a structure that handles everything else
 
         % debug
-        verbosity = 0;
+        verbosity = 99;
 
         % auto-update
         req_update
@@ -156,6 +156,12 @@ classdef spikesort < handle & matlab.mixin.CustomDisplay
                 
                 set(s.handles.ax1_all_spikes,'XData',s.time(s.loc),'YData',s.filtered_voltage(s.loc));
                 set(s.handles.ax1_all_spikes,'Marker','o','Color',s.pref.putative_spike_colour,'LineStyle','none')
+
+                % also update the YLim intelligently
+                if s.filter_trace
+                    set(s.handles.ax1,'YLim',[-1.1*max(abs(s.filtered_voltage(s.loc))) 1.1*max(abs(s.filtered_voltage(s.loc)))])
+                else
+                end
             end
         end % end set loc
 
@@ -188,11 +194,19 @@ classdef spikesort < handle & matlab.mixin.CustomDisplay
 
         function s = set.this_paradigm(s,value)
             s.this_paradigm = value;
+            if isempty(value)
+                return
+            end
+            s.this_trial = 1;
+            s.handles.trial_chooser.Value = 1;
             s.readData;
         end
 
         function s = set.this_trial(s,value)
             s.this_trial = value;
+            if isempty(value)
+                return
+            end
             s.readData;
         end
 
