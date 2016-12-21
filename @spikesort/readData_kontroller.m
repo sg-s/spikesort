@@ -23,7 +23,28 @@ s.handles.trial_chooser.Enable = 'on';
 
 % read the voltage trace for the current file
 m = matfile([s.path_name s.file_name]);
+
+size(m.data)
+
+if s.this_paradigm > size(m.data,2)
+	% abort
+	s.raw_voltage = [];
+	s.stimulus = [];
+	set(s.handles.ax1_data,'XData',NaN,'YData',NaN);
+	set(s.handles.ax2_data,'XData',NaN,'YData',NaN);
+	return
+end
+
 this_data = m.data(1,s.this_paradigm);
+if isempty(this_data.voltage)
+	% abort
+	s.raw_voltage = [];
+	s.stimulus = [];
+	set(s.handles.ax1_data,'XData',NaN,'YData',NaN);
+	set(s.handles.ax2_data,'XData',NaN,'YData',NaN);
+	return
+end
+
 s.raw_voltage = this_data.voltage(s.this_trial,:);
 
 
@@ -46,15 +67,15 @@ for i = 1:ntrials
 end
 s.handles.trial_chooser.String = trial_text;
 
-% update the paradigm chooser so that the name reflects the paradigm we are in
-s.handles.paradigm_chooser.Value = s.this_paradigm;
+
 
 s.handles.trial_chooser.Value = s.this_trial;
 
 % disable some buttons as needed
 if s.this_trial == ntrials
 	s.handles.next_trial.Enable = 'off';
-elseif s.this_trial == 1
+end
+if s.this_trial == 1
 	s.handles.prev_trial.Enable = 'off';
 end
 
@@ -63,7 +84,8 @@ nparadigms = length(m.data);
 
 if s.this_paradigm == nparadigms
 	s.handles.next_paradigm.Enable = 'off';
-elseif s.this_paradigm == 1
+end
+if s.this_paradigm == 1
 	s.handles.prev_paradigm.Enable = 'off';
 end
 

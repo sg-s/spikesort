@@ -58,7 +58,7 @@ classdef spikesort < handle & matlab.mixin.CustomDisplay
         handles % a structure that handles everything else
 
         % debug
-        verbosity = 99;
+        verbosity = 0;
 
         % auto-update
         req_update
@@ -199,7 +199,7 @@ classdef spikesort < handle & matlab.mixin.CustomDisplay
             end
             s.this_trial = 1;
             s.handles.trial_chooser.Value = 1;
-            s.readData;
+            s.handles.paradigm_chooser.Value = s.this_paradigm;
         end
 
         function s = set.this_trial(s,value)

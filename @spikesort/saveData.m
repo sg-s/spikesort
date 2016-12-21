@@ -2,7 +2,8 @@ function saveData(s)
 
 if s.verbosity > 5
     cprintf('green','\n[INFO] ')
-    cprintf('text',[mfilename ' called'])
+    d = dbstack;
+    cprintf('text',[mfilename ' called by ' d(2).name])
 end
 
 % figure out which plugin to use to save data

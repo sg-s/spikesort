@@ -4,7 +4,8 @@ function reduceDimensionsCallback(s,~,~)
 
 if s.verbosity > 5
     cprintf('green','\n[INFO] ')
-    cprintf('text',[mfilename ' called'])
+    d = dbstack;
+    cprintf('text',[mfilename ' called by ' d(2).name])
 end
 
 method = (get(s.handles.method_control,'Value'));
