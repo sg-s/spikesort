@@ -126,9 +126,11 @@ classdef spikesort < handle & matlab.mixin.CustomDisplay
                 set(s.handles.ax1_A_spikes,'XData',NaN,'YData',NaN);
                 return
             else
-                set(s.handles.ax1_all_spikes,'XData',NaN,'YData',NaN);
-                set(s.handles.ax1_A_spikes,'XData',s.time(s.A),'YData',s.filtered_voltage(s.A));
-                set(s.handles.ax1_A_spikes,'Marker','o','Color',s.pref.A_spike_colour,'LineStyle','none')
+                if s.filter_trace
+                    set(s.handles.ax1_all_spikes,'XData',NaN,'YData',NaN);
+                    set(s.handles.ax1_A_spikes,'XData',s.time(s.A),'YData',s.filtered_voltage(s.A));
+                    set(s.handles.ax1_A_spikes,'Marker','o','Color',s.pref.A_spike_colour,'LineStyle','none')
+                end
             end
         end % end set A
 
@@ -138,9 +140,12 @@ classdef spikesort < handle & matlab.mixin.CustomDisplay
                 set(s.handles.ax1_B_spikes,'XData',NaN,'YData',NaN);
                 return
             else
-                set(s.handles.ax1_all_spikes,'XData',NaN,'YData',NaN);
-                set(s.handles.ax1_B_spikes,'XData',s.time(s.B),'YData',s.filtered_voltage(s.B));
-                set(s.handles.ax1_B_spikes,'Marker','o','Color',s.pref.B_spike_colour,'LineStyle','none')
+                if s.filter_trace
+                    set(s.handles.ax1_all_spikes,'XData',NaN,'YData',NaN);
+                    set(s.handles.ax1_B_spikes,'XData',s.time(s.B),'YData',s.filtered_voltage(s.B));
+                    set(s.handles.ax1_B_spikes,'Marker','o','Color',s.pref.B_spike_colour,'LineStyle','none')
+                
+                end
                 
             end
         end % end set B

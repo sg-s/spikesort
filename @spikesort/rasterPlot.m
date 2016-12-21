@@ -2,7 +2,8 @@ function rasterPlot(s,~,~)
 
 if s.verbosity > 5
     cprintf('green','\n[INFO] ')
-    cprintf('text',[mfilename ' called'])
+    d = dbstack;
+    cprintf('text',[mfilename ' called by ' d(2).name])
 end
 
 figure('outerposition',[0 0 1000 500],'PaperUnits','points','PaperSize',[1000 500]); hold on
@@ -10,8 +11,10 @@ yoffset = 0;
 ytick = 0;
 L = {};
 
-% unpack data
-spikes = s.current_data.spikes;
+% read data
+keyboard
+m = matfile([s.path_name s.file_name]);
+spikes = s.loadSpikes;
 ControlParadigm = s.current_data.ControlParadigm;
 
 for i = 1:length(spikes)

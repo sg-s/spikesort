@@ -34,8 +34,24 @@ s.time = s.pref.deltat*(1:length(s.raw_voltage));
 % and display it
 if s.filter_trace
     set(s.handles.ax1_data,'XData',s.time,'YData',s.filtered_voltage,'Color','k','Parent',s.handles.ax1);
+    if isempty(s.loc)
+        % make sure we show the whole trace
+        m = min(s.filtered_voltage);
+        M = max(s.filtered_voltage);
+        r = M - m;
+        set(s.handles.ax1,'YLim',[m-r*.1 M+r*.1]);
+    else
+        % force an update
+        s.loc = s.loc;
+    end
 else
     set(s.handles.ax1_data,'XData',s.time,'YData',s.raw_voltage,'Color','k','Parent',s.handles.ax1);
+
+    % also fix the axes limits
+    m = min(s.raw_voltage);
+    M = max(s.raw_voltage);
+    r = M - m;
+    set(s.handles.ax1,'YLim',[m-r*.1 M+r*.1]);
 end
 
 % fix the axis

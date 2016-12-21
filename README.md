@@ -100,15 +100,16 @@ Plugins can be named whatever you want, though you are encouraged to use `camelC
 
 ```
 
-The first line identifies the method as a `spikesort` plugin, and the second line determines the type of plugin it is. Currently, plugins can be of five types:
+The first line identifies the method as a `spikesort` plugin, and the second line determines the type of plugin it is. Currently, plugins can be of six types:
 
 1. `dim-red`
 2. `cluster`
 3. `read-data`
 4. `save-data`
 5. `load-file`
+6. `load-spikes`
 
-If you are writing a `read-data` or `save-data` or `load-file` plugin, the convention for the first three lines is as follows:
+If you are writing a `read-data`, `save-data`,`load-file` or `load-spikes` plugin, the convention for the first three lines is as follows:
 
  ```matlab
 % spikesort plugin
@@ -127,7 +128,7 @@ this_trial
 this_paradigm
 handles.paradigm_chooser.String
 ```
-
+`load-spikes` plugins are expected to read all spikes in that data file and return them. 
 
 # License 
 
