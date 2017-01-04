@@ -19,4 +19,6 @@ else
 end
 
 set(s.handles.ax2_data,'XData',s.time,'YData',s.stimulus,'Color','k')
-set(s.handles.ax2,'YLim',[y1 y2]);
+if y2 > y1
+	set(s.handles.ax2,'YLim',[y1 y2]);
+end
