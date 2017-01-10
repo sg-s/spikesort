@@ -7,5 +7,6 @@ if s.verbosity > 5
     cprintf('text',[mfilename ' called'])
 end
 
+
 delete(s.handles.main_fig)
 delete(s)

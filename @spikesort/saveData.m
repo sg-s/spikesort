@@ -6,6 +6,10 @@ if s.verbosity > 5
     cprintf('text',[mfilename ' called by ' d(2).name])
 end
 
+% compute spike amplitudes for this trial
+s.A_amplitude = s.spikeAmplitudes(s.filtered_voltage,s.A);
+s.B_amplitude = s.spikeAmplitudes(s.filtered_voltage,s.B);
+
 % figure out which plugin to use to save data
 [~,~,chosen_data_ext] = fileparts(s.file_name);
 chosen_data_ext(1) =  [];

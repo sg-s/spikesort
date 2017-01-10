@@ -10,4 +10,6 @@ s.B = [];
 s.N = [];
 s.use_this_fragment = [];
 
+s.plotResp;
+
 s.saveData;

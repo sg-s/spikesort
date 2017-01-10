@@ -18,7 +18,18 @@ if s.filter_trace
     lc = floor(lc/s.pref.deltat);
     hc = 1/s.pref.band_pass(2);
     hc = floor(hc/s.pref.deltat);
+    
+    if any(isnan(s.raw_voltage))
+        cprintf('red','\n[WARN] ')
+        cprintf('NaNs found in voltage trace. Cannot continue.' )
+        s.filtered_voltage = NaN*s.raw_voltage;
+        s.LFP = NaN*s.raw_voltage; 
+        set(s.handles.ax1_data,'XData',s.time,'YData',s.raw_voltage,'Color','k','Parent',s.handles.ax1);
+        return
+    end
+
     if s.pref.useFastBandPass
+
         [s.filtered_voltage,s.LFP] = fastBandPass(s.raw_voltage,lc,hc);
         error('this case is not usable yet. need to clean up trace...')
     else

@@ -12,6 +12,12 @@ if s.verbosity > 5
     cprintf('text',[mfilename ' called'])
 end
 
+if any(isnan(s.raw_voltage))
+    cprintf('red','\n[WARN] ')
+    cprintf('NaNs found in voltage trace. Cannot continue.' )
+    return
+end
+
 if ~isempty(s.A) || ~isempty(s.B)
     return
 end
@@ -50,7 +56,6 @@ if s.verbosity
     cprintf('text',[' found ' oval(length(loc)) ' spikes'])
 end
 
-s.loc = loc;
 
 % cut out the snippets 
 s.R = [];
@@ -71,3 +76,5 @@ if ~isempty(loc)
 
     s.V_snippets = V_snippets;
 end
+
+s.loc = loc;

@@ -16,6 +16,3 @@ cluster_method_handle(s);
  
 s.removeDoublets;
  
-% also calculate the spike amplitudes 
-s.A_amplitude(s.this_trial,s.A) = s.spikeAmplitudes(s.filtered_voltage,s.A);
-s.B_amplitude(s.this_trial,s.B) = s.spikeAmplitudes(s.filtered_voltage,s.B);

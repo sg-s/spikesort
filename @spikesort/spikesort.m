@@ -121,6 +121,11 @@ classdef spikesort < handle & matlab.mixin.CustomDisplay
         end
 
         function s = set.A(s,value)
+            
+            if any(isnan(s.filtered_voltage))
+                set(s.handles.ax1_A_spikes,'XData',NaN,'YData',NaN);
+                return
+            end
             s.A = value;
             if isempty(value)
                 set(s.handles.ax1_A_spikes,'XData',NaN,'YData',NaN);
@@ -135,6 +140,11 @@ classdef spikesort < handle & matlab.mixin.CustomDisplay
         end % end set A
 
         function s = set.B(s,value)
+            
+            if any(isnan(s.filtered_voltage))
+                set(s.handles.ax1_A_spikes,'XData',NaN,'YData',NaN);
+                return
+            end
             s.B = value;
             if isempty(value)
                 set(s.handles.ax1_B_spikes,'XData',NaN,'YData',NaN);
@@ -151,6 +161,11 @@ classdef spikesort < handle & matlab.mixin.CustomDisplay
         end % end set B
 
         function s = set.loc(s,value)
+            
+            if any(isnan(s.filtered_voltage))
+                set(s.handles.ax1_A_spikes,'XData',NaN,'YData',NaN);
+                return
+            end
             s.loc = value;
             if isempty(value)
                 set(s.handles.ax1_all_spikes,'XData',NaN,'YData',NaN);
