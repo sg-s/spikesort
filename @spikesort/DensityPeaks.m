@@ -40,6 +40,7 @@ if s.pref.show_dp_clusters
 	[~,idx]=sort(r,'descend');
 	LL = {'A','B','noise'};
 	legend(LL(idx))
-	pause(3)
+	drawnow
+	pause(1)
 	delete(temp)
 end

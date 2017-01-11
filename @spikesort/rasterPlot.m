@@ -6,27 +6,22 @@ if s.verbosity > 5
     cprintf('text',[mfilename ' called by ' d(2).name])
 end
 
-figure('outerposition',[0 0 1000 500],'PaperUnits','points','PaperSize',[1000 500]); hold on
-yoffset = 0;
-ytick = 0;
-L = {};
+% use the correct plugin 
+[~,~,chosen_data_ext] = fileparts(s.file_name);
+chosen_data_ext(1) =  [];
 
-% read data
-keyboard
-m = matfile([s.path_name s.file_name]);
-spikes = s.loadSpikes;
-ControlParadigm = s.current_data.ControlParadigm;
+% then do some post-load stuff, like loading the first trace so that we see something when we load the file
+plugin_to_use = find(strcmp('plot-spikes',{s.installed_plugins.plugin_type}).*(strcmp(chosen_data_ext,{s.installed_plugins.data_extension})));
+assert(~isempty(plugin_to_use),'[ERR 42] Could not figure out how to read data from file.')
+assert(length(plugin_to_use) == 1,'[ERR 43] Too many plugins bound to this file type. ')
 
-for i = 1:length(spikes)
-    if length(spikes(i).A) > 1
-        raster2(spikes(i).A,spikes(i).B,yoffset);
-        yoffset = yoffset + width(spikes(i).A)*2 + 1;
-        ytick = [ytick yoffset];
-        L = [L strrep(ControlParadigm(i).Name,'_','-')];
-        
-    end
+if s.verbosity 
+	cprintf('green','\n[INFO] ')
+	cprintf(['Using plugin: ' s.installed_plugins(plugin_to_use).name])
 end
-set(gca,'YTick',ytick(1:end-1)+diff(ytick)/2,'YTickLabel',L,'box','on')
-xlabel('Time (s)')
+
+eval(['plot_spikes_handle = @s.' s.installed_plugins(plugin_to_use).name ';'])
+plot_spikes_handle('raster');
+
 
 
