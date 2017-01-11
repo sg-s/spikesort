@@ -45,6 +45,9 @@ if s.handles.prom_auto_control.Value
 end
 
 % find spikes if we have to...
-if isempty([s.A(:); s.B(:)])
+if isempty([s.A(:); s.B(:)]) && ~isempty(s.filtered_voltage)
 	s.findSpikes;
 end
+
+% re-enable things
+s.handles.method_control.Enable = 'on';

@@ -13,3 +13,6 @@ s.use_this_fragment = [];
 s.plotResp;
 
 s.saveData;
+
+% re-enable some things
+s.handles.method_control.Enable = 'on';

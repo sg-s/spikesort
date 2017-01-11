@@ -14,11 +14,16 @@ method = temp{method};
 method = str2func(method);
 
 s.handles.popup.Visible = 'on';
-s.handles.popup.String = {'','','','Reducing dimenisons...'}
+s.handles.popup.String = {'','','','Reducing dimenisons...'};
 drawnow;
 
 method(s);
 
 s.handles.popup.Visible = 'off';
+
+% change the marker on the identified spikes
+set(s.handles.ax1_all_spikes,'Marker','o','Color',s.pref.embedded_spike_colour,'LineStyle','none')
 drawnow;
- 
+
+% disable the reduce dimensions callback
+s.handles.method_control.Enable = 'off';

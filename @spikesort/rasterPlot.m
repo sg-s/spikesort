@@ -6,6 +6,9 @@ if s.verbosity > 5
     cprintf('text',[mfilename ' called by ' d(2).name])
 end
 
+% save data
+s.saveData;
+
 % use the correct plugin 
 [~,~,chosen_data_ext] = fileparts(s.file_name);
 chosen_data_ext(1) =  [];

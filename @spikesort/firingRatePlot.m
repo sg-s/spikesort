@@ -2,153 +2,30 @@ function firingRatePlot(s,~,~)
 
 if s.verbosity > 5
     cprintf('green','\n[INFO] ')
-    cprintf('text',[mfilename ' called'])
+    d = dbstack;
+    cprintf('text',[mfilename ' called by ' d(2).name])
 end
 
-% compatbility layer with legacy code
-pref = s.pref;
-spikes = s.current_data.spikes; 
-SamplingRate = 1/s.pref.deltat;   
-time = s.time;
-ControlParadigm = s.current_data.ControlParadigm;
+% save data
+s.saveData;
 
+% use the correct plugin 
+[~,~,chosen_data_ext] = fileparts(s.file_name);
+chosen_data_ext(1) =  [];
 
-if pref.show_r2
-    figure('outerposition',[0 0 1200 800],'PaperUnits','points','PaperSize',[1200 800]); hold on
-    sp(1)=subplot(2,4,1:3); hold on
-    sp(2)=subplot(2,4,5:7); hold on
-    sp(3)=subplot(2,4,4); hold on
-    sp(4)=subplot(2,4,8); hold on
-else
-    figure('outerposition',[0 0 1000 800],'PaperUnits','points','PaperSize',[1000 800]); hold on
-    sp(1)=subplot(2,1,1); hold on
-    sp(2)=subplot(2,1,2); hold on
-end
-ylabel(sp(1),'Firing Rate (Hz)')
-title(sp(1),'A neuron')
-title(sp(2),'B neuron')
-ylabel(sp(2),'Firing Rate (Hz)')
-xlabel(sp(2),'Time (s)')
+% then do some post-load stuff, like loading the first trace so that we see something when we load the file
+plugin_to_use = find(strcmp('plot-spikes',{s.installed_plugins.plugin_type}).*(strcmp(chosen_data_ext,{s.installed_plugins.data_extension})));
+assert(~isempty(plugin_to_use),'[ERR 42] Could not figure out how to read data from file.')
+assert(length(plugin_to_use) == 1,'[ERR 43] Too many plugins bound to this file type. ')
 
-haz_data = [];
-for i = 1:length(spikes)
-    if length(spikes(i).A) > 1
-        haz_data = [haz_data i];
-    end
-end
-if length(haz_data) == 1
-    c = [0 0 0];
-else
-    c = parula(length(haz_data));
-end
-L = {};
-f_waitbar = waitbar(0.1, 'Computing Firing rates...');
-for i = 1:length(haz_data)
-    l(i) = plot(sp(1),NaN,NaN,'Color',c(i,:));
-    waitbar((i-1)/length(spikes),f_waitbar);
-    if length(spikes(haz_data(i)).A) > 1
-
-        % do A
-        time = (1:length(spikes(haz_data(i)).A))/SamplingRate;
-        [fA,tA] = spiketimes2f(spikes(haz_data(i)).A,time,pref.firing_rate_dt,pref.firing_rate_window_size);
-        tA = tA(:);
-        % remove trials with no spikes
-        fA(:,sum(fA) == 0) = [];
-
-    
-        % censor fA when we ignore some data
-        if isfield(spikes,'use_trace_fragment')
-            if any(sum(spikes(haz_data(i)).use_trace_fragment') < length(spikes(haz_data(i)).A))
-                % there is excluded data somewhere
-                for j = 1:width(spikes(haz_data(i)).use_trace_fragment)
-                    try
-                        fA(spikes(haz_data(i)).use_trace_fragment(j,1:10:end),j) = NaN;
-                    catch
-                    end
-                end
-            end
-        end
-
-        if width(fA) > 1
-            if pref.show_firing_rate_trials
-                for j = 1:width(fA)
-                    l(i) = plot(sp(1),tA,fA(:,j),'Color',c(i,:));
-                end
-            else
-               l(i) = plot(sp(1),tA,nanmean(fA,2),'Color',c(i,:));
-            end
-            if pref.show_firing_rate_r2
-                hash = dataHash(fA);
-                cached_data = (cache(hash));
-                if isempty(cached_data)
-                    r2 = rsquare(fA);
-                else
-                    r2 = cached_data;
-                    cache(hash,r2);
-                end
-                axes(sp(3))
-                imagescnan(r2)
-                caxis([0 1])
-                colorbar
-                axis image
-                axis off
-                
-            end
-        else
-            try
-               l(i) = plot(sp(1),tA,(fA),'Color',c(i,:));
-            catch
-                % no data, ignore.
-            end
-        end
-        
-
-        % do B    
-        time = (1:length(spikes(haz_data(i)).B))/SamplingRate;
-        [fB,tB] = spiketimes2f(spikes(haz_data(i)).B,time);
-        tB = tB(:);
-        % remove trials with no spikes
-        fB(:,sum(fB) == 0) = [];
-
-        if width(fB) > 1
-            if pref.show_firing_rate_trials
-                for j = 1:width(fB)
-                    l(i) = plot(sp(2),tA,fB(:,j),'Color',c(i,:));
-                end
-            else
-               l(i) = plot(sp(2),tB,nanmean(fB,2),'Color',c(i,:));
-            end
-            if pref.show_firing_rate_r2
-                hash = dataHash(fB);
-                cached_data = (cache(hash));
-                if isempty(cached_data)
-                    r2 = rsquare(fB);
-                else
-                    r2 = cached_data;
-                    cache(hash,r2);
-                end
-                axes(sp(4))
-                imagescnan(r2)
-                caxis([0 1])
-                colorbar
-                axis image
-                axis off
-            end
-        else
-            try
-               l(i) = plot(sp(2),tB,(fB),'Color',c(i,:));
-            catch
-            end
-        end
-
-
-        L = [L strrep(ControlParadigm(haz_data(i)).Name,'_','-')];
-        
-    end
+if s.verbosity 
+    cprintf('green','\n[INFO] ')
+    cprintf(['Using plugin: ' s.installed_plugins(plugin_to_use).name])
 end
 
-legend(l,L)
-close(f_waitbar)
-linkaxes(sp(1:2))
-prettyFig('font_units','points');
+eval(['plot_spikes_handle = @s.' s.installed_plugins(plugin_to_use).name ';'])
+plot_spikes_handle('firing_rate');
+
+
+
 
