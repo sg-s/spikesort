@@ -9,13 +9,14 @@ end
 
 % unpack some data
 V = s.filtered_voltage;
-loc = s.loc;
+loc = sort([s.B(:); s.A(:)]);
 time = s.time;
 
 xlimits = get(s.handles.ax1,'XLim');
 xrange = (xlimits(2) - xlimits(1));
 scroll_amount = event.VerticalScrollCount;
-if s.pref.smart_scroll
+if ~s.pref.smart_scroll
+
     if scroll_amount < 0
         if xlimits(1) <= min(time)
             return
@@ -35,17 +36,13 @@ else
     % find number of spikes in view
     n_spikes_in_view = length(loc(loc>(xlimits(1)/s.pref.deltat) & loc<(xlimits(2)/s.pref.deltat)));
     if scroll_amount > 0
-        try
-            newlim(1) = min([max(time) (xlimits(1)+.2*xrange)]);
-            newlim(2) = loc(find(loc > newlim(1)/s.pref.deltat,1,'first') + n_spikes_in_view)*s.pref.deltat;
-        catch
-        end
+        newlim(1) = min([max(time) (xlimits(1)+.2*xrange)]);
+        newlim(2) = loc(find(loc > newlim(1)/s.pref.deltat,1,'first') + n_spikes_in_view)*s.pref.deltat;
+
     else
-        try
-            newlim(2) = max([min(time)+xrange (xlimits(2)-.2*xrange)]);
-            newlim(1) = loc(find(loc < newlim(2)/s.pref.deltat,1,'last') - n_spikes_in_view)*s.pref.deltat;
-        catch
-        end
+        newlim(2) = max([min(time)+xrange (xlimits(2)-.2*xrange)]);
+        newlim(1) = loc(find(loc < newlim(2)/s.pref.deltat,1,'last') - n_spikes_in_view)*s.pref.deltat;
+
     end
 end
 
