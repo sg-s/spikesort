@@ -14,16 +14,4 @@ if s.verbosity > 5
     cprintf('text',[mfilename ' called'])
 end
 
-% write the V_snippets to disk
-Vs = s.V_snippets;
-save('Vs.mat','Vs')
-
-system([fileparts(which('MultiCoreTSNE')) oss 'mct_spikesort_wrapper.py'])
-
-% read the solution
-s.R = h5read('data.h5','/R');
-
-% clean up
-delete('data.h5')
-delete('Vs.mat')
-
+s.R = mctsne(s.V_snippets);
