@@ -11,10 +11,6 @@ if s.verbosity > 5
 end
 
 % early escape
-if isempty([s.A(:); s.B(:); s.N(:)])
-    return
-end
-
 if isempty(s.time) 
     return
 end
@@ -47,8 +43,12 @@ spikes(s.this_paradigm).B(s.this_trial,s.B) = 1;
 spikes(s.this_paradigm).A(s.this_trial,s.A) = 1; 
 spikes(s.this_paradigm).N(s.this_trial,s.N) = 1;
 
-spikes(s.this_paradigm).amplitudes_A(s.this_trial,s.A) = s.A_amplitude;
-spikes(s.this_paradigm).amplitudes_B(s.this_trial,s.B) = s.B_amplitude;
+if ~isempty(s.A)
+    spikes(s.this_paradigm).amplitudes_A(s.this_trial,s.A) = s.A_amplitude;
+end
+if ~isempty(s.B)
+    spikes(s.this_paradigm).amplitudes_B(s.this_trial,s.B) = s.B_amplitude;
+end
 
 save([s.path_name s.file_name],'-append','spikes')
 
