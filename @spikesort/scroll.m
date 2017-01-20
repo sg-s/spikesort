@@ -10,6 +10,9 @@ end
 % unpack some data
 V = s.filtered_voltage;
 loc = sort([s.B(:); s.A(:)]);
+if isempty(loc)
+    loc = s.loc;
+end
 time = s.time;
 
 xlimits = get(s.handles.ax1,'XLim');
