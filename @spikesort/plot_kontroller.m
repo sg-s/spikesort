@@ -1,8 +1,8 @@
 % spikesort plugin
-% plugin_type = 'plot-spikes';
+% plugin_type = 'plot';
 % data_extension = 'kontroller';
 % 
-function s = plotSpikes_kontroller(s,plot_type)
+function s = plot_kontroller(s,plot_type)
 
 
 
@@ -182,6 +182,45 @@ elseif strcmp(plot_type,'firing_rate')
 	close(f_waitbar)
 	linkaxes(sp(1:2))
 	prettyFig('font_units','points');
+elseif strcmp(plot_type,'LFP')
+	% compatbility layer with legacy code
+	m = matfile([s.path_name s.file_name]);
+	data = m.data;
+	pref = s.pref;
+	SamplingRate = 1/s.pref.deltat;   
+	time = s.time;
+	ControlParadigm = m.ControlParadigm;
+
+
+    figure('outerposition',[0 0 1200 600],'PaperUnits','points','PaperSize',[1200 600]); hold on
+	ylabel('\Delta LFP (mV)')
+	xlabel('Time (s)')
+
+	fn = fieldnames(data); fn = fn{1};
+	haz_data = (cellfun(@(x) length(x),{data.(fn)})) > 0;
+
+	if length(haz_data) == 1
+	    c = [0 0 0];
+	else
+	    c = parula(length(haz_data));
+	end
+	L = {};
+	for i = length(haz_data):-1:1
+	    if haz_data(i)
+	    	X = data(i).voltage';
+	    	for j = 1:size(X,2)
+	    		X(:,j) = X(:,j) - X(1,j);
+	    	end
+	    	X = mean(X,2);
+	    	l(i) = plot(time,X,'Color',c(i,:));
+	        L{i} = strrep(ControlParadigm(i).Name,'_','-');
+	        
+	    end
+	end
+
+	legend(l,L)
+	prettyFig('font_units','points');
+
 else
 	error('Unknown plot_type')
 end

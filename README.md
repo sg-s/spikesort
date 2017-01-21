@@ -107,9 +107,9 @@ The first line identifies the method as a `spikesort` plugin, and the second lin
 3. `read-data`
 4. `save-data`
 5. `load-file`
-6. `plot-spikes`
+6. `plot`
 
-If you are writing a `read-data`, `save-data`,`load-file` or `plot-spikes` plugin, the convention for the first three lines is as follows:
+If you are writing a `read-data`, `save-data`,`load-file` or `plot` plugin, the convention for the first three lines is as follows:
 
  ```matlab
 % spikesort plugin
