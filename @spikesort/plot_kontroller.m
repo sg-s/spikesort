@@ -211,7 +211,7 @@ elseif strcmp(plot_type,'LFP')
 	    	for j = 1:size(X,2)
 	    		X(:,j) = X(:,j) - X(1,j);
 	    	end
-	    	X = mean(X,2);
+	    	X = nanmean(X,2);
 	    	l(i) = plot(time,X,'Color',c(i,:));
 	        L{i} = strrep(ControlParadigm(i).Name,'_','-');
 	        
