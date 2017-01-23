@@ -25,6 +25,11 @@ end
 pref = s.pref;
 if s.filter_trace
 	V = s.filtered_voltage;
+
+    % if get(s.handles.kill_ringing_control,'Value')
+    %     s.killRinging;
+    % end
+
 else
 	V = s.raw_voltage;
 end
