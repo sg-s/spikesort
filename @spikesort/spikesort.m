@@ -58,7 +58,7 @@ classdef spikesort < handle & matlab.mixin.CustomDisplay
         handles % a structure that handles everything else
 
         % debug
-        verbosity = 0;
+        verbosity = 1;
 
         % auto-update
         req_update

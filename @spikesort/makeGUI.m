@@ -93,7 +93,7 @@ else
     handles.spike_sign_control = uicontrol(handles.spike_detection_panel,'units','normalized','Position',[.01 .4 .5 .2],'Style','togglebutton','String','Finding +ve spikes','Value',1,'FontSize',s.pref.fs,'Callback',@s.toggleSpikeSign);
 end
 
-% handles.kill_ringing_control = uicontrol(handles.spike_detection_panel,'units','normalized','Position',[.5 .4 .5 .2],'Style','togglebutton','String','Killing ringing','Value',0,'FontSize',s.pref.fs,'Callback',@s.toggleRingingSign,'Visible','off');
+handles.kill_ringing_control = uicontrol(handles.spike_detection_panel,'units','normalized','Position',[.5 .4 .5 .2],'Style','pushbutton','String','Kill ringing','FontSize',s.pref.fs,'Callback',@s.killRinging,'Visible','on');
 
 % dimension reduction and clustering panels
 handles.dimredpanel = uipanel('Title','Dimensionality Reduction','Position',[.3 .67 .3 .07],'BackgroundColor',[1 1 1]);
