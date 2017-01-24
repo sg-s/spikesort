@@ -188,7 +188,6 @@ elseif strcmp(plot_type,'LFP')
 	data = m.data;
 	pref = s.pref;
 	SamplingRate = 1/s.pref.deltat;   
-	time = s.time;
 	ControlParadigm = m.ControlParadigm;
 
 
@@ -202,7 +201,7 @@ elseif strcmp(plot_type,'LFP')
 	if length(haz_data) == 1
 	    c = [0 0 0];
 	else
-	    c = parula(length(haz_data));
+	    c = parula(length(haz_data)+1);
 	end
 	L = {};
 	for i = length(haz_data):-1:1
@@ -212,12 +211,13 @@ elseif strcmp(plot_type,'LFP')
 	    		X(:,j) = X(:,j) - X(1,j);
 	    	end
 	    	X = nanmean(X,2);
-	    	l(i) = plot(time,X,'Color',c(i,:));
-	        L{i} = strrep(ControlParadigm(i).Name,'_','-');
-	        
+    		time = (1:length(X))/SamplingRate;
+    		l(i) = plot(time,X,'Color',c(i,:));
+	    else
+	    	l(i) = plot(NaN,NaN,'Color',c(i,:));
 	    end
+	    L{i} = strrep(ControlParadigm(i).Name,'_','-');
 	end
-
 	legend(l,L)
 	prettyFig('font_units','points');
 
