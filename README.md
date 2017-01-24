@@ -1,6 +1,6 @@
 # spikesort
 
-> Looking for the old `spikesort`? Go [here](https://github.com/sg-s/spikesort/tree/bf519e8e0caaf886ea14cc87c3b94d424574241d)
+![](./images/hero.png)
 
 `spikesort` is a framework written in MATLAB to help you sort spikes from single-channel extracellular recordings. It is 
 
