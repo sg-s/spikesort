@@ -12,6 +12,7 @@
 
 deltat = 1e-4; % what is the time step of the data?
 ephys_channel_name = 'voltage'; % what is the name of the variable that contains the ephys recording in your data? 
+stimulus_channel_name = 'PID'; % what is the name of the variable that contains the stimulus recording in your data? 
 
 %% ~~~~~~~~~~~~~~~~~  GENERAL  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
