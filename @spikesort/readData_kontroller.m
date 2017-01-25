@@ -47,7 +47,7 @@ if s.this_paradigm > size(m.data,2)
 end
 
 this_data = m.data(1,s.this_paradigm);
-if isempty(this_data.voltage)
+if isempty(this_data.(s.pref.ephys_channel_name))
 	% abort, no data for this trial (how did we even get here?)
 	s.raw_voltage = [];
 	s.stimulus = [];
@@ -56,11 +56,12 @@ if isempty(this_data.voltage)
 	return
 end
 
-s.raw_voltage = this_data.voltage(s.this_trial,:);
+
+s.raw_voltage = this_data.(s.pref.ephys_channel_name)(s.this_trial,:);
 
 
 % read the stimulus trace for the current file for the current trial 
-s.stimulus = this_data.PID(s.this_trial,:);
+s.stimulus = this_data.(s.pref.stimulus_channel_name)(s.this_trial,:);
 
 % is this already sorted? 
 if any(strcmp('spikes',who(m)))
@@ -71,7 +72,7 @@ if any(strcmp('spikes',who(m)))
 end
 
 % update the trial chooser with the number of trials we have in this paradigm 
-ntrials = size(this_data.voltage,1);
+ntrials = size(this_data.(s.pref.ephys_channel_name),1);
 trial_text = {};
 for i = 1:ntrials
 	trial_text{i} = ['Trial ' oval(i)];

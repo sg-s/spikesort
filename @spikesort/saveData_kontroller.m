@@ -24,7 +24,7 @@ else
     % create it, and make an entry for ever single one in data
     nparadigms = length(data);
     for i = 1:nparadigms
-        temp = data(i).voltage*0;
+        temp = data(i).(s.pref.ephys_channel_name)*0;
         temp(isnan(temp)) = 0;
         spikes(i).A = sparse(logical(0*temp));
         spikes(i).B = sparse(logical(0*temp));

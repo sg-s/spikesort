@@ -206,7 +206,7 @@ elseif strcmp(plot_type,'LFP')
 	L = {};
 	for i = length(haz_data):-1:1
 	    if haz_data(i)
-	    	X = data(i).voltage';
+	    	X = data(i).(s.pref.ephys_channel_name)';
 	    	for j = 1:size(X,2)
 	    		X(:,j) = X(:,j) - X(1,j);
 	    	end
