@@ -101,7 +101,7 @@ elseif strcmp(plot_type,'firing_rate')
 	        end
 
 	        if width(fA) > 1
-	            if pref.show_firing_rate_trials
+	            if pref.show_individual_trials_firing_rate
 	                for j = 1:width(fA)
 	                    l(i) = plot(sp(1),tA,fA(:,j),'Color',c(i,:));
 	                end
@@ -142,7 +142,7 @@ elseif strcmp(plot_type,'firing_rate')
 	        fB(:,sum(fB) == 0) = [];
 
 	        if width(fB) > 1
-	            if pref.show_firing_rate_trials
+	            if pref.show_individual_trials_firing_rate
 	                for j = 1:width(fB)
 	                    l(i) = plot(sp(2),tA,fB(:,j),'Color',c(i,:));
 	                end
@@ -210,9 +210,16 @@ elseif strcmp(plot_type,'LFP')
 	    	for j = 1:size(X,2)
 	    		X(:,j) = X(:,j) - X(1,j);
 	    	end
-	    	X = nanmean(X,2);
-    		time = (1:length(X))/SamplingRate;
-    		l(i) = plot(time,X,'Color',c(i,:));
+	    	if pref.show_individual_trials_LFP
+	    		for j = 1:size(X,2)
+	    			time = (1:length(X))/SamplingRate;
+    				l(i) = plot(time,X(:,j),'Color',c(i,:));
+	    		end
+	    	else
+	    		X = nanmean(X,2);
+    			time = (1:length(X))/SamplingRate;
+    			l(i) = plot(time,X,'Color',c(i,:));
+    		end
 	    else
 	    	l(i) = plot(NaN,NaN,'Color',c(i,:));
 	    end

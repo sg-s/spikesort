@@ -2,3 +2,5 @@
 *.DS_Store
 *console.log
 *pref.m
+*.asv
+*.eps

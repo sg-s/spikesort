@@ -61,9 +61,9 @@ handles.resp_channel = uicontrol(handles.datapanel,'units','normalized','Positio
 
 
 % file I/O
-uicontrol(handles.main_fig,'units','normalized','Position',[.10 .92 .07 .07],'Style', 'pushbutton', 'String', 'Load File','FontSize',s.pref.fs,'FontWeight',s.pref.fw,'callback',@s.loadFile);
+uicontrol(handles.main_fig,'units','normalized','Position',[.10 .92 .09 .07],'Style', 'pushbutton', 'String', 'Load File','FontSize',s.pref.fs,'FontWeight',s.pref.fw,'callback',@s.loadFile);
 uicontrol(handles.main_fig,'units','normalized','Position',[.05 .93 .03 .05],'Style', 'pushbutton', 'String', '<','FontSize',s.pref.fs,'FontWeight',s.pref.fw,'callback',@s.loadFile);
-uicontrol(handles.main_fig,'units','normalized','Position',[.19 .93 .03 .05],'Style', 'pushbutton', 'String', '>','FontSize',s.pref.fs,'FontWeight',s.pref.fw,'callback',@s.loadFile);
+uicontrol(handles.main_fig,'units','normalized','Position',[.21 .93 .03 .05],'Style', 'pushbutton', 'String', '>','FontSize',s.pref.fs,'FontWeight',s.pref.fw,'callback',@s.loadFile);
 
 % paradigms and trials
 handles.datachooserpanel = uipanel('Title','Paradigms and Trials','Position',[.03 .75 .25 .16],'BackgroundColor',[1 1 1]);
@@ -113,7 +113,7 @@ handles.cluster_control = uicontrol(handles.cluster_panel,'Style','popupmenu','S
 % metadata panel
 handles.metadata_panel = uipanel('Title','Metadata','Position',[.62 .57 .11 .4],'BackgroundColor',[1 1 1]);
 handles.metadata_text_control = uicontrol(handles.metadata_panel,'Style','edit','String','','units','normalized','Position',[.03 .3 .94 .7],'Callback',@s.updateMetadata,'Enable','off','Max',5,'Min',1,'HorizontalAlignment','left');
-uicontrol(handles.metadata_panel,'Style','pushbutton','String','Generate Summary','units','normalized','Position',[.03 .035 .94 .1],'Callback',@s.generateSummary);
+uicontrol(handles.metadata_panel,'Style','pushbutton','String','Generate Summary','units','normalized','Position',[.03 .035 .94 .1],'Callback',@s.generateSummary,'Enable','off');
 
 % manual override panel
 handles.manualpanel = uibuttongroup(handles.main_fig,'Title','Manual Override','Position',[.735 .57 .11 .4]);
@@ -123,8 +123,8 @@ handles.mode_new_B = uicontrol(handles.manualpanel,'units','normalized','Positio
 handles.mode_delete = uicontrol(handles.manualpanel,'units','normalized','Position',[.1 4/8 .8 1/9], 'Style', 'radiobutton', 'String', '-X','FontSize',s.pref.fs);
 handles.mode_A2B = uicontrol(handles.manualpanel,'units','normalized','Position',[.1 3/8 .8 1/9], 'Style', 'radiobutton', 'String', 'A->B','FontSize',s.pref.fs);
 handles.mode_B2A = uicontrol(handles.manualpanel,'units','normalized','Position',[.1 2/8 .8 1/9], 'Style', 'radiobutton', 'String', 'B->A','FontSize',s.pref.fs);
-uicontrol(handles.manualpanel,'units','normalized','Position',[.1 1/8 .8 1/9],'Style','pushbutton','String','Discard View','Callback',@s.modifyTraceDiscard);
-uicontrol(handles.manualpanel,'units','normalized','Position',[.1 0/8 .8 1/9],'Style','pushbutton','String','Retain View','Callback',@s.modifyTraceDiscard);
+uicontrol(handles.manualpanel,'units','normalized','Position',[.1 1/8 .8 1/9],'Style','pushbutton','String','Discard View','Callback',@s.modifyTraceDiscard,'Enable','off');
+uicontrol(handles.manualpanel,'units','normalized','Position',[.1 0/8 .8 1/9],'Style','pushbutton','String','Retain View','Callback',@s.modifyTraceDiscard,'Enable','off');
 
 
 % various toggle switches and pushbuttons

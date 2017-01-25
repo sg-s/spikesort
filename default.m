@@ -11,7 +11,7 @@
 %% ~~~~~~~~~~~~~~~~~  DATA  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 deltat = 1e-4; % what is the time step of the data?
-
+ephys_channel_name = 'voltage'; % what is the name of the variable that contains the ephys recording in your data? 
 
 %% ~~~~~~~~~~~~~~~~~  GENERAL  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -20,6 +20,7 @@ useFastBandPass = false; 	% use a fast, FFT-based bandPass?
 %% ~~~~~~~~~~~~~~~~~  DISPLAY  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 putative_spike_colour = 'm';
+embedded_spike_colour = 'g';
 A_spike_colour = 'r';
 B_spike_colour = 'b';
 
@@ -38,12 +39,14 @@ context_width = .2; % seconds.
 % density peaks automatic cluster visualization 
 show_dp_clusters = true;
 
-%% ~~~~~~~~~~~~~~~~~  FIRING RATE ESTIMATION  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+%% ~~~~~~~~~~~~~~~~~  LFP, RASTER AND FIRING RATE PLOTS  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+show_individual_trials_LFP = true;
+show_individual_trials_firing_rate = false;
 
 % firing rate estimation
-show_firing_rate_trials = false; % calculate firing rate on a trial-by-trial basis?
 show_firing_rate_r2 = false; 	% show r-square of firing rates?
-firing_rate_dt = 1e-1; % time step for firing rate estimation 
+firing_rate_dt = 1e-2; % time step for firing rate estimation 
 firing_rate_window_size = 3e-2; % window size for firing rate convolution
 
 %% ~~~~~~~~~~~~~~~~~  SPIKE DETECTION AND RESOLUTION ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -56,11 +59,11 @@ minimum_peak_width = 1;
 minimum_peak_distance = 1; 			% how separated should the peaks be?
 V_cutoff = -1; 						% ignore peaks beyond this limit 
 band_pass = [100 1000]; 			% in Hz. band pass V to find spikes more easily 
-invert_V = true; 					% sometimes, it is easier to find spikes if you invert V
+invert_V = false; 					% sometimes, it is easier to find spikes if you invert V
 
 % spike resolution
 remove_doublets = true;				% resolve doublet peaks, which are very likely AB or BA, not AA or BB
-doublet_distance = 40; 				% how far out should you look for doublets? 
+doublet_distance = 40; 				% how far out should you look for doublets? in units of timestep
 
 
 % artifact removal 

@@ -4,14 +4,14 @@
 
 `spikesort` is a framework written in MATLAB to help you sort spikes from single-channel extracellular recordings. It is 
 
-1. *highly modular* Almost everything is written as a plugin. `spikesort` is a [MATLAB class](https://www.mathworks.com/help/matlab/matlab_oop/classes-in-the-matlab-language.html), and plugins are methods defined within the class. 
-2. *Accurate* Using the t-SNE dimensionality reduction algorithm, `spikesort` achieves a 99.5% accuracy on test data. For a full report, see [this](https://github.com/sg-s/spikesort/blob/master/tests/html/makeTestReport.pdf). 
-3. *Data-agnostic* `spikesort` interfaces to your data through plugins, and `spikesort` doesn't care what your data format is.
-4. *Bring-your-own-algorithm* `spikesort` splits up the spike sorting problem into two steps: dimensionality reduction and clustering. Every algorithm in either step is written as a plugin, and you can write your and drop it in, with **zero** modifications to the core code. For example, `spikesort` can use the amazing [mutli-core t-SNE algorithm](https://github.com/DmitryUlyanov/Multicore-TSNE) to embed spike shapes in two dimensions **very** rapdily. 
+1. **highly modular** Almost everything is written as a plugin. `spikesort` is a [MATLAB class](https://www.mathworks.com/help/matlab/matlab_oop/classes-in-the-matlab-language.html), and plugins are methods defined within the class. 
+2. **Accurate** Using the t-SNE dimensionality reduction algorithm, `spikesort` achieves a 99.5% accuracy on test data. For a full report, see [this](https://github.com/sg-s/spikesort/blob/master/tests/html/makeTestReport.pdf). 
+3. **Data-agnostic** `spikesort` interfaces to your data through plugins, and `spikesort` doesn't care what your data format is.
+4. **Bring-your-own-algorithm** `spikesort` splits up the spike sorting problem into two steps: dimensionality reduction and clustering. Every algorithm in either step is written as a plugin, and you can write your and drop it in, with *zero* modifications to the core code. For example, `spikesort` can use the amazing [mutli-core t-SNE algorithm](https://github.com/DmitryUlyanov/Multicore-TSNE) to embed spike shapes in two dimensions *very* rapidly. 
 
 ## Installation
 
-`spikesort` is written in MATLAB. It should work on any OS that modern MATLAB runs on, but has only been tested on macOS Sierra. 
+`spikesort` is written in MATLAB, with a sprinkling of Python wrapper code. It should work on any OS that modern MATLAB runs on, but has only been tested on macOS Sierra with MATLAB R2015a. 
 
 The best way to install `spikesort` is through my package manager: 
 
