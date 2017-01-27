@@ -5,11 +5,11 @@
 % This work is licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License. 
 % To view a copy of this license, visit http://creativecommons.org/licenses/by-nc-sa/4.0/.
 
-function showSpikeInContext(data,idx,this_pt)
+function showSpikeInContext(s,data,idx,this_pt)
 
-handles = data.handles;
+handles = s.handles;
 
-pref = readPref;
+pref = s.pref;
 
 t = pref.deltat*(1:length(data.V));
 set(handles.ax1_data,'XData',t,'YData',data.V)

@@ -26,15 +26,13 @@ R = s.R;
 V_snippets = s.V_snippets;
 loc = s.loc;
 V = s.filtered_voltage;
-handles = s.handles;
 
 % repack
 temp = struct;
-temp.handles = handles;
 temp.loc = loc;
 temp.V = V;
 
-idx = manualCluster(R,V_snippets,{'A neuron','B neuron','Noise','Coincident Spikes'},@showSpikeInContext,temp);
+idx = manualCluster(R,V_snippets,{'A neuron','B neuron','Noise','Coincident Spikes'},@s.showSpikeInContext,temp);
 
 
 A = loc(idx==1);
