@@ -65,10 +65,16 @@ s.stimulus = this_data.(s.pref.stimulus_channel_name)(s.this_trial,:);
 
 % is this already sorted? 
 if any(strcmp('spikes',who(m)))
-	this_spikes = m.spikes(1,s.this_paradigm);
-	s.A = find(this_spikes.A(s.this_trial,:));
-	s.B = find(this_spikes.B(s.this_trial,:));
-	s.N = find(this_spikes.N(s.this_trial,:));
+	try
+		this_spikes = m.spikes(1,s.this_paradigm);
+		s.A = find(this_spikes.A(s.this_trial,:));
+		s.B = find(this_spikes.B(s.this_trial,:));
+		s.N = find(this_spikes.N(s.this_trial,:));
+	catch
+		s.A = [];
+		s.B = [];
+		s.N = [];
+	end
 end
 
 % update the trial chooser with the number of trials we have in this paradigm 

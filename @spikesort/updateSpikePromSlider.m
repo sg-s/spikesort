@@ -22,3 +22,5 @@ set(s.handles.spike_prom_slider,'Max',ub);
 if current_value > ub || current_value < 0
 	set(s.handles.spike_prom_slider,'Value',(0+ub)/2);
 end
+
+s.findSpikes;

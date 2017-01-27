@@ -42,7 +42,8 @@ show_dp_clusters = true;
 
 %% ~~~~~~~~~~~~~~~~~  LFP, RASTER AND FIRING RATE PLOTS  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-show_individual_trials_LFP = true;
+show_individual_trials_stimulus = false;
+show_individual_trials_LFP = false;
 show_individual_trials_firing_rate = false;
 
 % firing rate estimation
@@ -59,7 +60,7 @@ minimum_peak_prominence = 'auto'; 	% minimum peak prominence for peak detection.
 minimum_peak_width = 1;
 minimum_peak_distance = 1; 			% how separated should the peaks be?
 V_cutoff = -1; 						% ignore peaks beyond this limit 
-band_pass = [100 1000]; 			% in Hz. band pass V to find spikes more easily 
+band_pass = [5 .5]; 			% in ms. fluctuations longer than the first element are ignored, and fluctuations shorter than the second element are averaged across. 
 invert_V = false; 					% sometimes, it is easier to find spikes if you invert V
 
 % spike resolution

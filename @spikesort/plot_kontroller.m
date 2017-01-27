@@ -227,7 +227,51 @@ elseif strcmp(plot_type,'LFP')
 	end
 	legend(l,L)
 	prettyFig('font_units','points');
+elseif strcmp(plot_type,'stimulus')
+	% compatbility layer with legacy code
+	m = matfile([s.path_name s.file_name]);
+	data = m.data;
+	pref = s.pref;
+	SamplingRate = 1/s.pref.deltat;   
+	ControlParadigm = m.ControlParadigm;
 
+
+    figure('outerposition',[0 0 1200 600],'PaperUnits','points','PaperSize',[1200 600]); hold on
+	ylabel('Stimulus ')
+	xlabel('Time (s)')
+
+	fn = fieldnames(data); fn = fn{1};
+	haz_data = (cellfun(@(x) length(x),{data.(fn)})) > 0;
+
+	if length(haz_data) == 1
+	    c = [0 0 0];
+	else
+	    c = parula(length(haz_data)+1);
+	end
+	L = {};
+	for i = length(haz_data):-1:1
+	    if haz_data(i)
+	    	X = data(i).(s.pref.stimulus_channel_name)';
+	    	for j = 1:size(X,2)
+	    		X(:,j) = X(:,j) - X(1,j);
+	    	end
+	    	if pref.show_individual_trials_stimulus
+	    		for j = 1:size(X,2)
+	    			time = (1:length(X))/SamplingRate;
+    				l(i) = plot(time,X(:,j),'Color',c(i,:));
+	    		end
+	    	else
+	    		X = nanmean(X,2);
+    			time = (1:length(X))/SamplingRate;
+    			l(i) = plot(time,X,'Color',c(i,:));
+    		end
+	    else
+	    	l(i) = plot(NaN,NaN,'Color',c(i,:));
+	    end
+	    L{i} = strrep(ControlParadigm(i).Name,'_','-');
+	end
+	legend(l,L)
+	prettyFig('font_units','points');
 else
 	error('Unknown plot_type')
 end

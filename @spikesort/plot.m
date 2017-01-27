@@ -33,6 +33,8 @@ case 'LFP'
 	plot_spikes_handle('LFP');
 case 'Firing Rate'
 	plot_spikes_handle('firing_rate');
+case 'Stimulus'
+	plot_spikes_handle('stimulus');
 otherwise
 	error('Unknown calling function.')
 end

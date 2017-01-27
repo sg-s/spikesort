@@ -13,6 +13,7 @@ temp =  findall(handles.main_fig,'Type','uitoggletool','-or','Type','uipushtool'
 
 % make plots menu
 handles.menu1 = uimenu('Label','Make Plots...');
+uimenu(handles.menu1,'Label','Stimulus','Callback',@s.plot);
 uimenu(handles.menu1,'Label','LFP','Callback',@s.plot);
 uimenu(handles.menu1,'Label','Raster','Callback',@s.plot);
 uimenu(handles.menu1,'Label','Firing Rate','Callback',@s.plot);

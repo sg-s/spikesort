@@ -14,10 +14,8 @@ if s.filter_trace
         cprintf('text',' filtering trace...')
     end
 
-    lc = 1/s.pref.band_pass(1);
-    lc = floor(lc/s.pref.deltat);
-    hc = 1/s.pref.band_pass(2);
-    hc = floor(hc/s.pref.deltat);
+    lc = floor(s.pref.band_pass(1)*1e-3/s.pref.deltat);
+    hc = floor(s.pref.band_pass(2)*1e-3/s.pref.deltat);
     
     if any(isnan(s.raw_voltage))
         cprintf('red','\n[WARN] ')
@@ -33,7 +31,12 @@ if s.filter_trace
         [s.filtered_voltage,s.LFP] = fastBandPass(s.raw_voltage,lc,hc);
         error('this case is not usable yet. need to clean up trace...')
     else
-        [s.filtered_voltage,s.LFP] = bandPass(s.raw_voltage,lc,hc);
+        LFP = filtfilt(ones(lc,1),lc,s.raw_voltage);
+        % now subtract the LFP from the raw voltage to get the spikes
+        Vf = s.raw_voltage(:) - LFP(:);
+        % clean it up; remove some HF noise
+        s.filtered_voltage = filtfilt(ones(hc,1),hc,Vf);
+        s.LFP = LFP;
     end
 
 else
