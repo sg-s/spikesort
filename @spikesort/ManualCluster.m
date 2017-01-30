@@ -48,3 +48,7 @@ s.A = A;
 s.B = B;
 s.N = N;
 
+% cleanup
+set(s.handles.ax1_spike_marker,'Visible','off');
+
+

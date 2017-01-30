@@ -17,9 +17,11 @@ set(handles.ax1,'XLim',[data.loc(this_pt)*pref.deltat - pref.context_width data.
 yy = get(handles.ax1,'YLim');
 
 % show clicked point with a vertical red line
-set(handles.ax1_spike_marker,'XData',[data.loc(this_pt) data.loc(this_pt)]*pref.deltat,'YData',yy,'Color','r')
+set(handles.ax1_spike_marker,'XData',[data.loc(this_pt) data.loc(this_pt)]*pref.deltat,'YData',yy,'Color','r','Visible','on');
 
 % plot A and B
 set(handles.ax1_A_spikes,'XData',data.loc(idx == 1)*pref.deltat,'YData',data.V(data.loc(idx == 1)),'Color','r','LineStyle','none','Marker','o');
 set(handles.ax1_B_spikes,'XData',data.loc(idx == 2)*pref.deltat,'YData',data.V(data.loc(idx == 2)),'Color','b','LineStyle','none','Marker','o');
 set(handles.ax1_all_spikes,'XData',data.loc(idx == 3)*pref.deltat,'YData',data.V(data.loc(idx == 3)),'Color','k','LineStyle','none','Marker','x');
+
+s.handles = handles;
