@@ -4,3 +4,6 @@
 *pref.m
 *.asv
 *.eps
+*.pyc
+*.ipynb_checkpoints*
+*.ipynb

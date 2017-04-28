@@ -1,17 +1,27 @@
-#!/usr/bin/env python
+# mct.py
+
 from MulticoreTSNE import MulticoreTSNE as TSNE
 import numpy as np
 
-class mct():
+"""Python module demonstrates passing MATLAB types to Python functions"""
+def search(words):
+    """Return list of words containing 'son'"""
+    newlist = [w for w in words if 'son' in w]
+    return newlist
 
-	def __init__(self):
-		self.X = None
-		self.n_samples = None
-		self.version_number = '0.0.5'
+def theend(words):
+    """Append 'The End' to list of words"""
+    words.append('The End')
+    return words
 
-	def embed(self):
-		X = np.array(self.X)
-		self.X = X.reshape(int(self.n_samples),int(len(X)/self.n_samples))
-		tsne = TSNE(n_jobs=4)
-		R = tsne.fit_transform(self.X)
-		return R
+
+
+def embed(X,n_samples):
+
+	X = np.array(X)
+	X = X.reshape(int(len(X)/n_samples),int(n_samples))
+	tsne = TSNE(n_jobs=4)
+	R = tsne.fit_transform(X)
+	return R
+
+
