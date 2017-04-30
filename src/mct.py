@@ -22,6 +22,6 @@ def embed(X,n_samples):
 	X = X.reshape(int(len(X)/n_samples),int(n_samples))
 	tsne = TSNE(n_jobs=4)
 	R = tsne.fit_transform(X)
-	return R
+    return R
 
 
