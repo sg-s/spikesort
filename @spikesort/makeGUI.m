@@ -10,6 +10,7 @@ end
 % make the master figure, and the axes to plot the voltage traces
 handles.main_fig = figure('position',[50 50 1200 700], 'Toolbar','figure','Menubar','none','Name',s.version_name,'NumberTitle','off','IntegerHandle','off','WindowButtonDownFcn',@s.mouseCallback,'WindowScrollWheelFcn',@s.scroll,'CloseRequestFcn',@s.close,'Color','w');
 temp =  findall(handles.main_fig,'Type','uitoggletool','-or','Type','uipushtool');
+delete(temp([1:8 11:15]))
 
 % make plots menu
 handles.menu1 = uimenu('Label','Make Plots...');
@@ -24,7 +25,12 @@ uimenu(handles.menu2,'Label','Template Match','Callback',@s.matchTemplate);
 handles.remove_artifacts_menu = uimenu(handles.menu2,'Label','Remove Artifacts','Callback',@removeArtifacts,'Checked',s.pref.remove_artifacts);
 uimenu(handles.menu2,'Label','Reload preferences','Callback',@s.reloadPreferences,'Separator','on');
 uimenu(handles.menu2,'Label','Reset zoom','Callback',@s.resetZoom);
-delete(temp([1:8 11:15]))
+
+% machine learning
+handles.menu3 = uimenu('Label','Machine Learning');
+uimenu(handles.menu3,'Label','Train Network...','Callback',@s.makeMachineLearningGUI);
+uimenu(handles.menu3,'Label','Load Network...','Callback',@s.loadNetwork);
+uimenu(handles.menu3,'Label','Classify','Callback',@s.classify);
 
 % make the two axes
 handles.ax1 = axes('parent',handles.main_fig,'Position',[0.07 0.05 0.87 0.29]); hold on
