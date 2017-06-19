@@ -40,13 +40,13 @@ B = loc(idx==2);
 N = loc(idx==3);
 
 % handle coincident spikes
-A = unique([A loc(idx==4)]);
-B = unique([B loc(idx==4)]);
+A = unique([A(:); loc(idx==4)]);
+B = unique([B(:); loc(idx==4)]);
 
 
-s.A = A;
-s.B = B;
-s.N = N;
+s.A = A(:);
+s.B = B(:);
+s.N = N(:);
 
 % cleanup
 set(s.handles.ax1_spike_marker,'Visible','off');
