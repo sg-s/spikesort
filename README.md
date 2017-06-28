@@ -11,7 +11,7 @@
 
 ## Installation
 
-`spikesort` is written in MATLAB, with a sprinkling of Python wrapper code. It should work on any OS that modern MATLAB runs on, but has only been tested on macOS Sierra with MATLAB R2015a. 
+`spikesort` is written in MATLAB, with a sprinkling of Python wrapper code. It should work on any OS that modern MATLAB runs on, but has only been tested on macOS Sierra with MATLAB R2015a-R2017a. 
 
 The best way to install `spikesort` is through my package manager: 
 
