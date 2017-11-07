@@ -1,5 +1,7 @@
 # spikesort
 
+[![GitHub last commit](https://img.shields.io/github/last-commit/sg-s/spikesort.svg)]()
+
 ![](./images/hero2.png)
 
 `spikesort` is a framework written in MATLAB to help you sort spikes from single-channel extracellular recordings. It is 
