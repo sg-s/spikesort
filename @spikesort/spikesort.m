@@ -92,7 +92,7 @@ classdef spikesort < handle & matlab.mixin.CustomDisplay
             end
 
             % add src folder to path
-            addpath([fileparts(fileparts(which(mfilename))) oss 'src'])
+            addpath([fileparts(fileparts(which(mfilename))) filesep 'src'])
 
 
             % load preferences
@@ -102,7 +102,7 @@ classdef spikesort < handle & matlab.mixin.CustomDisplay
             s = plugins(s);
 
             % get the version name and number
-            s.build_number = ['v' strtrim(fileread([fileparts(fileparts(which(mfilename))) oss 'build_number']))];
+            s.build_number = ['v' strtrim(fileread([fileparts(fileparts(which(mfilename))) filesep 'build_number']))];
             s.version_name = ['spikesort (' s.build_number ')'];
 
             % make gui

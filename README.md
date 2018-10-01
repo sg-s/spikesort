@@ -19,10 +19,9 @@ The best way to install `spikesort` is through my package manager:
 
 ```
 % copy and paste this code in your MATLAB prompt
-urlwrite('http://srinivas.gs/install.m','install.m'); 
+urlwrite('https://srinivas.gs/install.m','install.m'); 
 install sg-s/spikesort
 install sg-s/srinivas.gs_mtools   % spikesort needs this package to run
-install sg-s/bhtsne               % Barnes-Hut t-SNE
 ```
 
 This script grabs the code and fixes your path. 
@@ -45,13 +44,6 @@ g++ sptree.cpp tsne.cpp -o bh_tsne -O2
 
 Note that my fork of `bhtsne` may have modifications, and this is what you should use with `spikesort`. If you're running Windows, you need to use whatever compiler you have to compile this. See [this](https://github.com/sg-s/bhtsne) for instructions on how to build the binary.
 
-### install `tag`
-
-On macOS, `spikesort` supports file tagging. To get this working, you need to have [homebrew](http://brew.sh) installed. You can then install `tag` using
-
-````
-brew install tag
-````
 
 ### install [Multicore-TSNE](https://github.com/DmitryUlyanov/Multicore-TSNE)
 
