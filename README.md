@@ -19,7 +19,7 @@ The best way to install `spikesort` is through my package manager:
 
 ```
 % copy and paste this code in your MATLAB prompt
-urlwrite('https://srinivas.gs/install.m','install.m'); 
+websave('install.m','https://git.io/viWvp')
 install sg-s/spikesort
 install sg-s/srinivas.gs_mtools   % spikesort needs this package to run
 ```
