@@ -32,7 +32,7 @@ temp = struct;
 temp.loc = loc;
 temp.V = V;
 
-idx = manualCluster(R,V_snippets,{'A neuron','B neuron','Noise','Coincident Spikes'},@s.showSpikeInContext,temp);
+idx = manualCluster(R,V_snippets,{'A neuron','B neuron','Noise','Coincident Spikes'},@s.showSpikeInContext);
 
 
 A = loc(idx==1);
