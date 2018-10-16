@@ -82,7 +82,6 @@ s.handles.main_fig.Name = s.file_name;
 % enable all controls
 set(s.handles.method_control,'Enable','on')
 set(s.handles.sine_control,'Enable','on');
-set(s.handles.autosort_control,'Enable','on');
 set(s.handles.redo_control,'Enable','on');
 set(s.handles.filtermode,'Enable','on');
 set(s.handles.cluster_control,'Enable','on');
