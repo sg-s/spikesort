@@ -24,7 +24,9 @@ uimenu(handles.menu2,'Label','Template Match','Callback',@s.matchTemplate);
 handles.remove_artifacts_menu = uimenu(handles.menu2,'Label','Remove Artifacts','Callback',@removeArtifacts,'Checked',s.pref.remove_artifacts);
 uimenu(handles.menu2,'Label','Reload preferences','Callback',@s.reloadPreferences,'Separator','on');
 uimenu(handles.menu2,'Label','Reset zoom','Callback',@s.resetZoom);
-delete(temp([1:8 11:15]))
+if verLessThan('matlab','9.5.0 (R2018b)')
+    delete(temp([1:8 11:15]))
+end
 
 % make the two axes
 handles.ax1 = axes('parent',handles.main_fig,'Position',[0.07 0.05 0.87 0.29]); hold on
